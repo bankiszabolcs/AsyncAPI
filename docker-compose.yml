@@ -14,11 +14,14 @@ services:
       # A publikus URL-t a böngésző használja, ezért localhost kell
       - Storage__PublicUrl=http://localhost:9000
       - Redis__ConnectionString=redis:6379
+      - Database__ConnectionString=Host=postgres;Database=asyncapi;Username=postgres;Password=postgres
     depends_on:
       minio:
-        condition: service_started   # elég hogy elindult, nem kell healthcheck
+        condition: service_started
       redis:
-        condition: service_healthy   # megvárja amíg a Redis tényleg válaszol
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
 
   minio:
     image: minio/minio
@@ -44,6 +47,23 @@ services:
       timeout: 3s     # 3 másodpercen belül kell válasz
       retries: 5      # 5 egymás utáni kudarc után unhealthy — az app nem indul el
 
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=asyncapi
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   minio_data:
-  redis_data:  # perzisztens kötet: újraindítás után sem veszik el a queue tartalma
+  redis_data:
+  postgres_data:

@@ -1,0 +1,49 @@
+services:
+  app:
+    build:
+      context: ./AsyncApi
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - UploadDirectory=/tmp/uploads
+      # Dockeron belül a MinIO service neve alapján éri el az appot
+      - Storage__Endpoint=minio:9000
+      # A publikus URL-t a böngésző használja, ezért localhost kell
+      - Storage__PublicUrl=http://localhost:9000
+      - Redis__ConnectionString=redis:6379
+    depends_on:
+      minio:
+        condition: service_started   # elég hogy elindult, nem kell healthcheck
+      redis:
+        condition: service_healthy   # megvárja amíg a Redis tényleg válaszol
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"   # S3 API (az app és a böngésző is ezen ér el mindent)
+      - "9001:9001"   # MinIO webes admin felület
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"   # helyi fejlesztéshez elérhető kívülről is
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]  # PONG választ vár; ha nem jön, unhealthy
+      interval: 5s    # 5 másodpercenként ellenőrzi
+      timeout: 3s     # 3 másodpercen belül kell válasz
+      retries: 5      # 5 egymás utáni kudarc után unhealthy — az app nem indul el
+
+volumes:
+  minio_data:
+  redis_data:  # perzisztens kötet: újraindítás után sem veszik el a queue tartalma

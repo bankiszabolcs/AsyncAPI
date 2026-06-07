@@ -1,15 +1,20 @@
 {
   "version": 2,
-  "dgSpecHash": "tOJNAUHwAxk=",
+  "dgSpecHash": "QBC9gg12UmY=",
   "success": true,
   "projectFilePath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
   "expectedPackageFiles": [
+    "/Users/bankiszabolcs/.nuget/packages/awssdk.core/4.0.8/awssdk.core.4.0.8.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/awssdk.s3/4.0.24.1/awssdk.s3.4.0.24.1.nupkg.sha512",
     "/Users/bankiszabolcs/.nuget/packages/ffmpegcore/5.4.0/ffmpegcore.5.4.0.nupkg.sha512",
     "/Users/bankiszabolcs/.nuget/packages/instances/3.0.2/instances.3.0.2.nupkg.sha512",
     "/Users/bankiszabolcs/.nuget/packages/microsoft.aspnetcore.openapi/10.0.8/microsoft.aspnetcore.openapi.10.0.8.nupkg.sha512",
     "/Users/bankiszabolcs/.nuget/packages/microsoft.openapi/2.0.0/microsoft.openapi.2.0.0.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/respite/3.0.47-preview/respite.3.0.47-preview.nupkg.sha512",
     "/Users/bankiszabolcs/.nuget/packages/scalar.aspnetcore/2.14.14/scalar.aspnetcore.2.14.14.nupkg.sha512",
-    "/Users/bankiszabolcs/.nuget/packages/sixlabors.imagesharp/3.1.10/sixlabors.imagesharp.3.1.10.nupkg.sha512"
+    "/Users/bankiszabolcs/.nuget/packages/sixlabors.imagesharp/3.1.10/sixlabors.imagesharp.3.1.10.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/stackexchange.redis/3.0.47-preview/stackexchange.redis.3.0.47-preview.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/system.io.hashing/10.0.5/system.io.hashing.10.0.5.nupkg.sha512"
   ],
   "logs": [
     {

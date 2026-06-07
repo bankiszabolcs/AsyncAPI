@@ -1,21 +1,23 @@
-using System.Collections.Concurrent;
-using System.Threading.Channels;
 using AsyncApi.Models;
 using AsyncApi.Services;
 
 // BackgroundService: az alkalmazás élettartama alatt folyamatosan fut a háttérben
 public class ThumbnailGenerationService(
-    ILogger<ThumbnailGenerationService> logger,                                    // hibák és események naplózása
-    ImageService imageService,                                                     // a tényleges thumbnail generálás logikája
-    Channel<ThumbnailGenerationJob> channel,                                       // ebből olvassa ki a feldolgozandó job-okat (a controller írja bele)
-    ConcurrentDictionary<string, ThumbnailGenerationStatus> statusDictionary)     // itt frissíti a job állapotát (Processing → Completed/Failed)
+    ILogger<ThumbnailGenerationService> logger,
+    ImageService imageService,
+    QueueService queueService,    // korábban Channel volt; most Redis Stream-ből olvassa a job-okat
+    StatusService statusService)  // korábban ConcurrentDictionary volt; most Redis-ben tárolja az állapotot
     : BackgroundService
 {
     // Az ASP.NET Core automatikusan hívja meg induláskor; addig fut, míg az app le nem áll
-    // ReadAllAsync megvárja az újabb elemeket, nem pörög üres loopban (nem CPU-igényes)
+    // DequeueAsync ugyanúgy viselkedik mint a korábbi ReadAllAsync: vár ha nincs új job
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var job in channel.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var job in queueService.DequeueAsync<ThumbnailGenerationJob>(
+            QueueService.ThumbnailStreamKey,
+            QueueService.ThumbnailGroupName,
+            consumerName: Environment.MachineName, // egyedi név, multi-instance esetén fontos
+            stoppingToken))
         {
             try
             {
@@ -29,24 +31,24 @@ public class ThumbnailGenerationService(
             catch (Exception ex)
             {
                 // Job-szintű hiba: logolja és folytatja a következő job-bal
-                logger.LogError(ex, "Error processing thumbnail generation job");
+                logger.LogError(ex, "Error processing thumbnail generation job {Id}", job.Id);
             }
         }
     }
 
-    // Feldolgoz egy job-ot: státuszt frissít, thumbnail-eket generál, majd sikerjelzés vagy hiba
+    // Státuszt Redis-be ír (nem memóriába), majd feldolgozza a job-ot
     private async Task ProcessJobAsync(ThumbnailGenerationJob job)
     {
-        statusDictionary[job.Id] = ThumbnailGenerationStatus.Processing;
+        await statusService.SetStatusAsync(job.Id, ThumbnailGenerationStatus.Processing);
 
         try
         {
-            await imageService.GenerateThumbnailsAsync(job.OriginalFilePath, job.FolderPath, job.Id);
-            statusDictionary[job.Id] = ThumbnailGenerationStatus.Completed;
+            await imageService.ProcessAndUploadAsync(job.Id, job.OriginalFilePath, job.FolderPath);
+            await statusService.SetStatusAsync(job.Id, ThumbnailGenerationStatus.Completed);
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            statusDictionary[job.Id] = ThumbnailGenerationStatus.Failed;
+            await statusService.SetStatusAsync(job.Id, ThumbnailGenerationStatus.Failed);
             throw; // továbbdobja, hogy az ExecuteAsync catch ága logolhassa
         }
     }

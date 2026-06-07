@@ -1,17 +1,22 @@
-using System.Collections.Concurrent;
-using System.Threading.Channels;
 using AsyncApi.Models;
 using AsyncApi.Services;
 
+// BackgroundService: az alkalmazás élettartama alatt folyamatosan fut a háttérben
 public class VideoProcessingService(
     ILogger<VideoProcessingService> logger,
     VideoService videoService,
-    Channel<VideoProcessingJob> channel,
-    ConcurrentDictionary<string, VideoProcessingStatus> statusDictionary) : BackgroundService
+    QueueService queueService,    // korábban Channel volt; most Redis Stream-ből olvassa a job-okat
+    StatusService statusService)  // korábban ConcurrentDictionary volt; most Redis-ben tárolja az állapotot
+    : BackgroundService
 {
+    // DequeueAsync ugyanúgy viselkedik mint a korábbi ReadAllAsync: vár ha nincs új job
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var job in channel.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var job in queueService.DequeueAsync<VideoProcessingJob>(
+            QueueService.VideoStreamKey,
+            QueueService.VideoGroupName,
+            consumerName: Environment.MachineName, // egyedi név, multi-instance esetén fontos
+            stoppingToken))
         {
             try
             {
@@ -28,23 +33,19 @@ public class VideoProcessingService(
         }
     }
 
+    // Státuszt Redis-be ír (nem memóriába), majd feldolgozza a job-ot
     private async Task ProcessJobAsync(VideoProcessingJob job)
     {
-        statusDictionary[job.Id] = VideoProcessingStatus.Processing;
+        await statusService.SetStatusAsync(job.Id, VideoProcessingStatus.Processing);
 
         try
         {
-            // HLS és sprite generálás párhuzamosan fut — mindkettő az eredeti fájlból dolgozik
-            await Task.WhenAll(
-                videoService.GenerateHlsAsync(job.OriginalFilePath, job.FolderPath),
-                videoService.GenerateSpriteAsync(job.OriginalFilePath, job.FolderPath)
-            );
-
-            statusDictionary[job.Id] = VideoProcessingStatus.Completed;
+            await videoService.ProcessAndUploadAsync(job.Id, job.OriginalFilePath, job.FolderPath);
+            await statusService.SetStatusAsync(job.Id, VideoProcessingStatus.Completed);
         }
         catch (Exception)
         {
-            statusDictionary[job.Id] = VideoProcessingStatus.Failed;
+            await statusService.SetStatusAsync(job.Id, VideoProcessingStatus.Failed);
             throw;
         }
     }

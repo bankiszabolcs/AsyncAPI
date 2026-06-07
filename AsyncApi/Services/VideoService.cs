@@ -3,7 +3,7 @@ using FFMpegCore.Enums;
 
 namespace AsyncApi.Services;
 
-public sealed class VideoService
+public sealed class VideoService(StorageService storageService)
 {
     private static readonly string[] AllowedExtensions = [".mp4", ".mov", ".mkv", ".avi", ".webm"];
     private static readonly string[] AllowedMimeTypes =
@@ -39,9 +39,25 @@ public sealed class VideoService
         return originalFilePath;
     }
 
+    // HLS generálás + sprite párhuzamosan, majd minden fájl feltöltése MinIO-ra, temp törlése
+    public async Task ProcessAndUploadAsync(string id, string originalFilePath, string folderPath)
+    {
+        await Task.WhenAll(
+            GenerateHlsAsync(originalFilePath, folderPath),
+            GenerateSpriteAsync(originalFilePath, folderPath)
+        );
+
+        // Eredeti videó törlése (nem kell MinIO-ra), csak a feldolgozott fájlok mennek fel
+        File.Delete(originalFilePath);
+
+        await storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Videos);
+
+        Directory.Delete(folderPath, recursive: true);
+    }
+
     // Generálja a HLS szegmenseket és a master.m3u8-at 3 minőségben
     // Minden minőségnek saját almappája lesz: 1080p/, 720p/, 480p/
-    public async Task GenerateHlsAsync(string originalFilePath, string folderPath)
+    private static async Task GenerateHlsAsync(string originalFilePath, string folderPath)
     {
         foreach (var (width, bitrate, name) in HlsQualities)
         {
@@ -71,7 +87,7 @@ public sealed class VideoService
 
     // Generál egy sprite képet (rács elrendezésű frame-ek) és a hozzá tartozó WebVTT fájlt
     // A sprite-ot a videólejátszó a timeline hover előnézethez használja
-    public async Task GenerateSpriteAsync(string originalFilePath, string folderPath)
+    private static async Task GenerateSpriteAsync(string originalFilePath, string folderPath)
     {
         var spritePath = Path.Combine(folderPath, "sprite.jpg");
 

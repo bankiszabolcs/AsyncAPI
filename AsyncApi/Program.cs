@@ -1,68 +1,56 @@
-using System.Collections.Concurrent;
-using System.Threading.Channels;
-using AsyncApi.Models;
 using AsyncApi.Services;
-using VideoProcessingStatus = AsyncApi.Models.VideoProcessingStatus;
 using Scalar.AspNetCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Engedélyezi az API controllereket (pl. ThumbnailsController)
+// Engedélyezi az API controllereket (pl. ThumbnailsController, VideosController)
 builder.Services.AddControllers();
 
 // Beépített .NET 10 OpenAPI dokumentáció generálás (Swashbuckle nélkül)
 builder.Services.AddOpenApi();
 
-// Képvalidálásért és thumbnail készítésért felelős service
-builder.Services.AddSingleton<ImageService>();
+// --- Redis ---
 
-// Aszinkron job-sor: max 100 elemet tárol, ha tele van, a beírás vár (nem dob hibát)
-// A controller ír bele, a ThumbnailGenerationService olvas ki belőle
-builder.Services.AddSingleton(_ =>
+// Egyetlen kapcsolat az egész app életciklusa alatt; thread-safe, megosztható minden service között
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
-    var channel = Channel.CreateBounded<ThumbnailGenerationJob>(new BoundedChannelOptions(100)
-    {
-        FullMode = BoundedChannelFullMode.Wait
-    });
-
-    return channel;
+    var connectionString = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    return ConnectionMultiplexer.Connect(connectionString);
 });
 
-// Thread-safe szótár a job-ok állapotának nyomon követéséhez (jobId -> státusz)
-builder.Services.AddSingleton<ConcurrentDictionary<string, ThumbnailGenerationStatus>>();
+builder.Services.AddSingleton<QueueService>();
+builder.Services.AddSingleton<StatusService>();
 
-// Háttérszolgáltatás, amely folyamatosan dolgozza fel a channel-ből érkező job-okat
+// --- Tárhely (MinIO) ---
+
+// MinIO S3-kompatibilis tárhellyel kommunikál; fájlok feltöltése és publikus URL generálás
+builder.Services.AddSingleton<StorageService>();
+
+// --- Kép feldolgozás ---
+
+// Képvalidálásért, thumbnail készítésért és MinIO feltöltésért felelős service
+builder.Services.AddSingleton<ImageService>();
+
+// Háttérszolgáltatás, amely folyamatosan dolgozza fel a Redis queue-ból érkező thumbnail job-okat
 builder.Services.AddHostedService<ThumbnailGenerationService>();
 
 // --- Videó feldolgozás ---
 
+// HLS generálásért, sprite készítésért és MinIO feltöltésért felelős service
 builder.Services.AddSingleton<VideoService>();
 
-// Külön channel és státusz szótár a videó job-oknak (független a thumbnail pipeline-tól)
-builder.Services.AddSingleton(_ =>
-{
-    var channel = Channel.CreateBounded<VideoProcessingJob>(new BoundedChannelOptions(50)
-    {
-        FullMode = BoundedChannelFullMode.Wait
-    });
-
-    return channel;
-});
-builder.Services.AddSingleton<ConcurrentDictionary<string, VideoProcessingStatus>>();
-
+// Háttérszolgáltatás, amely folyamatosan dolgozza fel a Redis queue-ból érkező videó job-okat
 builder.Services.AddHostedService<VideoProcessingService>();
 
 var app = builder.Build();
 
-// OpenAPI JSON végpont csak fejlesztői környezetben elérhető (/openapi/v1.json)
+// OpenAPI JSON végpont és Scalar UI csak fejlesztői környezetben elérhető
 if (app.Environment.IsDevelopment())
 {
     app.MapScalarApiReference();
     app.MapOpenApi();
 }
-
-// HTTP kéréseket automatikusan HTTPS-re irányítja át
-app.UseHttpsRedirection();
 
 // Engedélyezi az autorizációs middleware-t (szükséges a MapControllers előtt)
 app.UseAuthorization();

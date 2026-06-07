@@ -8,13 +8,34 @@
     ".NETCoreApp,Version=v10.0": {
       "AsyncApi/1.0.0": {
         "dependencies": {
+          "AWSSDK.S3": "4.0.24.1",
           "FFMpegCore": "5.4.0",
           "Microsoft.AspNetCore.OpenApi": "10.0.8",
           "Scalar.AspNetCore": "2.14.14",
-          "SixLabors.ImageSharp": "3.1.10"
+          "SixLabors.ImageSharp": "3.1.10",
+          "StackExchange.Redis": "3.0.47-preview"
         },
         "runtime": {
           "AsyncApi.dll": {}
+        }
+      },
+      "AWSSDK.Core/4.0.8": {
+        "runtime": {
+          "lib/net8.0/AWSSDK.Core.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.8.0"
+          }
+        }
+      },
+      "AWSSDK.S3/4.0.24.1": {
+        "dependencies": {
+          "AWSSDK.Core": "4.0.8"
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.S3.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.24.1"
+          }
         }
       },
       "FFMpegCore/5.4.0": {
@@ -55,6 +76,14 @@
           }
         }
       },
+      "RESPite/3.0.47-preview": {
+        "runtime": {
+          "lib/net10.0/RESPite.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.0.47.24282"
+          }
+        }
+      },
       "Scalar.AspNetCore/2.14.14": {
         "runtime": {
           "lib/net10.0/Scalar.AspNetCore.dll": {
@@ -70,6 +99,26 @@
             "fileVersion": "3.1.10.0"
           }
         }
+      },
+      "StackExchange.Redis/3.0.47-preview": {
+        "dependencies": {
+          "RESPite": "3.0.47-preview",
+          "System.IO.Hashing": "10.0.5"
+        },
+        "runtime": {
+          "lib/net10.0/StackExchange.Redis.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.0.47.24282"
+          }
+        }
+      },
+      "System.IO.Hashing/10.0.5": {
+        "runtime": {
+          "lib/net10.0/System.IO.Hashing.dll": {
+            "assemblyVersion": "10.0.0.5",
+            "fileVersion": "10.0.526.15411"
+          }
+        }
       }
     }
   },
@@ -78,6 +127,20 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "AWSSDK.Core/4.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JFq4sdtnlLePkISe5M0j1a5ushTrvwCGO1CNOGZaoBv33dscHls14m5dsPzyrN54xn924MtAP+s5xTdfNGNTUQ==",
+      "path": "awssdk.core/4.0.8",
+      "hashPath": "awssdk.core.4.0.8.nupkg.sha512"
+    },
+    "AWSSDK.S3/4.0.24.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-SM1h5MobQMs/Xvl3L3G0wbPpOZtcaemoS4AD35qfz/QRndZQyk+ryZ6kowBc5dhIEiy1g9Le9WFaIksvIpq0dw==",
+      "path": "awssdk.s3/4.0.24.1",
+      "hashPath": "awssdk.s3.4.0.24.1.nupkg.sha512"
     },
     "FFMpegCore/5.4.0": {
       "type": "package",
@@ -107,6 +170,13 @@
       "path": "microsoft.openapi/2.0.0",
       "hashPath": "microsoft.openapi.2.0.0.nupkg.sha512"
     },
+    "RESPite/3.0.47-preview": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-LvjDGyNYKS7hO2f/jNbZAaiFpZaWqtZIfEPuUIwivfHZbnMVRJTnsCUro2HRvWs4f3khKBWE942PZPFzMmzWdA==",
+      "path": "respite/3.0.47-preview",
+      "hashPath": "respite.3.0.47-preview.nupkg.sha512"
+    },
     "Scalar.AspNetCore/2.14.14": {
       "type": "package",
       "serviceable": true,
@@ -120,6 +190,20 @@
       "sha512": "sha512-R1HEPcqx3v+kvlOTPouP0g/Nzzud9pHtjlgGbFax3Ivaz8kkaGfS2EPfyDGpmfoTUQ3nQ5wxdhYyYa9fwYA9cw==",
       "path": "sixlabors.imagesharp/3.1.10",
       "hashPath": "sixlabors.imagesharp.3.1.10.nupkg.sha512"
+    },
+    "StackExchange.Redis/3.0.47-preview": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6S54/UWztlFIwo+n+59RsdTPFkVZ5mDyz8RvJHgBxuyHa95v51bZvn6xcx/Q+73pH99qUqbKwLN9ldYAMy/eGg==",
+      "path": "stackexchange.redis/3.0.47-preview",
+      "hashPath": "stackexchange.redis.3.0.47-preview.nupkg.sha512"
+    },
+    "System.IO.Hashing/10.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8IBJWcCT9+e4Bmevm4T7+fQEiAh133KGiz4oiVTgJckd3Q76OFdR1falgn9lpz7+C4HJvogCDJeAa2QmvbeVtg==",
+      "path": "system.io.hashing/10.0.5",
+      "hashPath": "system.io.hashing.10.0.5.nupkg.sha512"
     }
   }
 }

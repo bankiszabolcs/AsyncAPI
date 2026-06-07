@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "dgSpecHash": "tOJNAUHwAxk=",
+  "success": true,
+  "projectFilePath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
+  "expectedPackageFiles": [
+    "/Users/bankiszabolcs/.nuget/packages/ffmpegcore/5.4.0/ffmpegcore.5.4.0.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/instances/3.0.2/instances.3.0.2.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/microsoft.aspnetcore.openapi/10.0.8/microsoft.aspnetcore.openapi.10.0.8.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/microsoft.openapi/2.0.0/microsoft.openapi.2.0.0.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/scalar.aspnetcore/2.14.14/scalar.aspnetcore.2.14.14.nupkg.sha512",
+    "/Users/bankiszabolcs/.nuget/packages/sixlabors.imagesharp/3.1.10/sixlabors.imagesharp.3.1.10.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "message": "Package 'SixLabors.ImageSharp' 3.1.10 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc",
+      "projectPath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
+      "libraryId": "SixLabors.ImageSharp",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
+}

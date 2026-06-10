@@ -46,7 +46,6 @@ public sealed class ImageService(StorageService storageService)
     }
 
     // Létrehozza az összes thumbnail méretet az eredeti képből; a height=0 megtartja az arányokat
-    // Task.Delay(5_000) szándékosan lassítja a feldolgozást, hogy az aszinkron viselkedés látható legyen
     private static async Task GenerateThumbnailsAsync(string originalFilePath, string folderPath, string id)
     {
         var extension = Path.GetExtension(originalFilePath);
@@ -55,10 +54,25 @@ public sealed class ImageService(StorageService storageService)
         foreach (var width in ThumbnailWidths)
         {
             var thumbnailPath = Path.Combine(folderPath, $"{id}_w{width}{extension}");
-            var resizedImage = image.Clone(x => x.Resize(width, 0));
-            await resizedImage.SaveAsync(thumbnailPath);
-
-            await Task.Delay(5_000);
+            using var resized = image.Clone(x => x.Resize(width, 0));
+            await resized.SaveAsync(thumbnailPath);
         }
+    }
+
+    // Átméretezi a megadott képet az összes standard szélességre; videó thumbnail-ek is használják
+    public static async Task GenerateResizedCopiesAsync(Image image, string folderPath, string baseName)
+    {
+        foreach (var width in ThumbnailWidths)
+        {
+            var path = Path.Combine(folderPath, $"{baseName}_w{width}.jpg");
+            using var resized = image.Clone(x => x.Resize(width, 0));
+            await resized.SaveAsync(path);
+        }
+    }
+
+    public static async Task GenerateResizedCopiesAsync(string sourcePath, string folderPath, string baseName)
+    {
+        using var image = await Image.LoadAsync(sourcePath);
+        await GenerateResizedCopiesAsync(image, folderPath, baseName);
     }
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj": {}
+    "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj": {}
   },
   "projects": {
-    "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj": {
+    "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
+        "projectUniqueName": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
         "projectName": "AsyncApi",
-        "projectPath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
+        "projectPath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/AsyncApi.csproj",
         "packagesPath": "/Users/bankiszabolcs/.nuget/packages/",
-        "outputPath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/obj/",
+        "outputPath": "/Users/bankiszabolcs/Programozás/AsyncAPI/AsyncApi/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/bankiszabolcs/.nuget/NuGet/NuGet.Config"

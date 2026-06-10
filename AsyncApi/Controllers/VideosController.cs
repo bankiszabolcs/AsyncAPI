@@ -66,6 +66,9 @@ public sealed class VideosController(
                 ["preview"] = storageService.GetPublicUrl($"{id}/sprite.vtt",  StorageBucket.Videos)
             };
 
+            foreach (var width in ImageService.ThumbnailWidths)
+                links[$"thumb_w{width}"] = storageService.GetPublicUrl($"{id}/{id}_thumb_w{width}.jpg", StorageBucket.Images);
+
             response = new { id, status, links };
         }
 

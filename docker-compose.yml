@@ -57,6 +57,9 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Init scriptek: első indulásnál (üres volume esetén) ábécé sorrendben lefutnak
+      # 01_schema.sql → táblák, 02_pgmemento.sh → audit telepítés
+      - ./database:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

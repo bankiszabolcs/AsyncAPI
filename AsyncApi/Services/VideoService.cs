@@ -12,7 +12,6 @@ public sealed class VideoService(StorageService storageService)
         "video/x-msvideo", "video/webm"
     ];
 
-    // Minden minőségi szinthez: felbontás szélessége és célbitráta
     private static readonly (int Width, int Bitrate, string Name)[] HlsQualities =
     [
         (1920, 5000, "1080p"),
@@ -39,24 +38,31 @@ public sealed class VideoService(StorageService storageService)
         return originalFilePath;
     }
 
-    // HLS generálás + sprite párhuzamosan, majd minden fájl feltöltése MinIO-ra, temp törlése
+    // FFProbe egyszer fut le; a duration-t megosztja a sprite és a thumbnail generálás között
     public async Task ProcessAndUploadAsync(string id, string originalFilePath, string folderPath)
     {
+        var thumbFolder = Path.Combine(Path.GetDirectoryName(folderPath)!, "..", "thumbs", id);
+        Directory.CreateDirectory(thumbFolder);
+
+        var mediaInfo = await FFProbe.AnalyseAsync(originalFilePath);
+
         await Task.WhenAll(
             GenerateHlsAsync(originalFilePath, folderPath),
-            GenerateSpriteAsync(originalFilePath, folderPath)
+            GenerateSpriteAsync(originalFilePath, folderPath, mediaInfo.Duration),
+            GenerateVideoThumbnailsAsync(originalFilePath, thumbFolder, id, mediaInfo.Duration)
         );
 
-        // Eredeti videó törlése (nem kell MinIO-ra), csak a feldolgozott fájlok mennek fel
         File.Delete(originalFilePath);
 
-        await storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Videos);
+        await Task.WhenAll(
+            storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Videos),
+            storageService.UploadDirectoryAsync(thumbFolder, id, StorageBucket.Images)
+        );
 
         Directory.Delete(folderPath, recursive: true);
+        Directory.Delete(thumbFolder, recursive: true);
     }
 
-    // Generálja a HLS szegmenseket és a master.m3u8-at 3 minőségben
-    // Minden minőségnek saját almappája lesz: 1080p/, 720p/, 480p/
     private static async Task GenerateHlsAsync(string originalFilePath, string folderPath)
     {
         foreach (var (width, bitrate, name) in HlsQualities)
@@ -85,13 +91,10 @@ public sealed class VideoService(StorageService storageService)
         await WriteMasterPlaylistAsync(folderPath);
     }
 
-    // Generál egy sprite képet (rács elrendezésű frame-ek) és a hozzá tartozó WebVTT fájlt
-    // A sprite-ot a videólejátszó a timeline hover előnézethez használja
-    private static async Task GenerateSpriteAsync(string originalFilePath, string folderPath)
+    private static async Task GenerateSpriteAsync(string originalFilePath, string folderPath, TimeSpan duration)
     {
         var spritePath = Path.Combine(folderPath, "sprite.jpg");
 
-        // Minden 10. másodpercből kivesz egy 160x90-es frame-et, 10x10-es rácsba rendezi
         await FFMpegArguments
             .FromFileInput(originalFilePath)
             .OutputToFile(spritePath, overwrite: true, options => options
@@ -99,12 +102,28 @@ public sealed class VideoService(StorageService storageService)
                 .WithFrameOutputCount(1))
             .ProcessAsynchronously();
 
-        var mediaInfo = await FFProbe.AnalyseAsync(originalFilePath);
-        await WriteWebVttAsync(folderPath, mediaInfo.Duration);
+        await WriteWebVttAsync(folderPath, duration);
     }
 
-    // A master.m3u8 hivatkozik a 3 minőségi szintű playlistre;
-    // a videólejátszó (pl. HLS.js) ez alapján vált automatikusan
+    // Teljes felbontású frame kimentése a 10. másodpercből (vagy az elejéről ha rövidebb a videó),
+    // majd az ImageService meglévő resize logikájával legenerálja az összes standard méretet
+    private static async Task GenerateVideoThumbnailsAsync(
+        string originalFilePath, string thumbFolder, string id, TimeSpan duration)
+    {
+        var seekTime   = duration.TotalSeconds >= 10 ? TimeSpan.FromSeconds(10) : TimeSpan.Zero;
+        var sourcePath = Path.Combine(thumbFolder, "source.jpg");
+
+        await FFMpegArguments
+            .FromFileInput(originalFilePath, false, options => options.Seek(seekTime))
+            .OutputToFile(sourcePath, overwrite: true, options => options
+                .WithFrameOutputCount(1)
+                .WithCustomArgument("-q:v 2"))
+            .ProcessAsynchronously();
+
+        await ImageService.GenerateResizedCopiesAsync(sourcePath, thumbFolder, $"{id}_thumb");
+        File.Delete(sourcePath);
+    }
+
     private static async Task WriteMasterPlaylistAsync(string folderPath)
     {
         var masterPath = Path.Combine(folderPath, "master.m3u8");
@@ -121,26 +140,24 @@ public sealed class VideoService(StorageService storageService)
         await File.WriteAllLinesAsync(masterPath, lines);
     }
 
-    // WebVTT: szövegfájl ami megmondja a lejátszónak, hogy a sprite képen belül
-    // melyik időintervallumhoz melyik téglalap tartozik
     private static async Task WriteWebVttAsync(string folderPath, TimeSpan duration)
     {
         var vttPath = Path.Combine(folderPath, "sprite.vtt");
         var lines = new List<string> { "WEBVTT", "" };
 
         const int intervalSeconds = 10;
-        const int frameWidth = 160;
-        const int frameHeight = 90;
-        const int columns = 10;
+        const int frameWidth      = 160;
+        const int frameHeight     = 90;
+        const int columns         = 10;
 
         var totalFrames = (int)(duration.TotalSeconds / intervalSeconds);
 
         for (var i = 0; i < totalFrames; i++)
         {
             var start = TimeSpan.FromSeconds(i * intervalSeconds);
-            var end = TimeSpan.FromSeconds((i + 1) * intervalSeconds);
-            var x = (i % columns) * frameWidth;
-            var y = (i / columns) * frameHeight;
+            var end   = TimeSpan.FromSeconds((i + 1) * intervalSeconds);
+            var x     = i % columns * frameWidth;
+            var y     = i / columns * frameHeight;
 
             lines.Add($"{start:hh\\:mm\\:ss\\.fff} --> {end:hh\\:mm\\:ss\\.fff}");
             lines.Add($"sprite.jpg#xywh={x},{y},{frameWidth},{frameHeight}");

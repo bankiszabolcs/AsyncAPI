@@ -1,3 +1,6 @@
 {
-    "dotnet.defaultSolution": "AsyncApi.slnx"
+    "dotnet.defaultSolution": "AsyncApi.slnx",
+    "files.associations": {
+        "appsettings*.json": "jsonc"
+    }
 }

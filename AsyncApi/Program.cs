@@ -1,61 +1,77 @@
+using AsyncApi.Data;
+using AsyncApi.Data.Repositories;
+using AsyncApi.Infrastructure;
 using AsyncApi.Services;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using Serilog;
 using StackExchange.Redis;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-// Engedélyezi az API controllereket (pl. ThumbnailsController, VideosController)
-builder.Services.AddControllers();
-
-// Beépített .NET 10 OpenAPI dokumentáció generálás (Swashbuckle nélkül)
-builder.Services.AddOpenApi();
-
-// --- Redis ---
-
-// Egyetlen kapcsolat az egész app életciklusa alatt; thread-safe, megosztható minden service között
-builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+try
 {
-    var connectionString = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
-    return ConnectionMultiplexer.Connect(connectionString);
-});
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<QueueService>();
-builder.Services.AddSingleton<StatusService>();
+    builder.Host.UseSerilog((context, loggerConfig) =>
+        loggerConfig.ReadFrom.Configuration(context.Configuration));
 
-// --- Tárhely (MinIO) ---
+    builder.Services.AddControllers();
+    builder.Services.AddOpenApi();
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    builder.Services.AddProblemDetails();
 
-// MinIO S3-kompatibilis tárhellyel kommunikál; fájlok feltöltése és publikus URL generálás
-builder.Services.AddSingleton<StorageService>();
+    // --- Redis ---
+    builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    {
+        var connectionString = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+        return ConnectionMultiplexer.Connect(connectionString);
+    });
 
-// --- Kép feldolgozás ---
+    // --- Adatbázis (PostgreSQL) ---
+    builder.Services.AddDbContext<AsyncApiDbContext>(options =>
+        options.UseNpgsql(builder.Configuration["Database:ConnectionString"]));
 
-// Képvalidálásért, thumbnail készítésért és MinIO feltöltésért felelős service
-builder.Services.AddSingleton<ImageService>();
+    builder.Services.AddScoped<VideoRepository>();
+    builder.Services.AddScoped<ImageRepository>();
 
-// Háttérszolgáltatás, amely folyamatosan dolgozza fel a Redis queue-ból érkező thumbnail job-okat
-builder.Services.AddHostedService<ThumbnailGenerationService>();
+    builder.Services.AddSingleton<QueueService>();
+    builder.Services.AddSingleton<StatusService>();
 
-// --- Videó feldolgozás ---
+    // --- Tárhely (MinIO) ---
+    builder.Services.AddSingleton<StorageService>();
 
-// HLS generálásért, sprite készítésért és MinIO feltöltésért felelős service
-builder.Services.AddSingleton<VideoService>();
+    // --- Kép feldolgozás ---
+    builder.Services.AddSingleton<ImageService>();
+    builder.Services.AddHostedService<ThumbnailGenerationService>();
 
-// Háttérszolgáltatás, amely folyamatosan dolgozza fel a Redis queue-ból érkező videó job-okat
-builder.Services.AddHostedService<VideoProcessingService>();
+    // --- Videó feldolgozás ---
+    builder.Services.AddSingleton<VideoService>();
+    builder.Services.AddHostedService<VideoProcessingService>();
 
-var app = builder.Build();
+    var app = builder.Build();
 
-// OpenAPI JSON végpont és Scalar UI csak fejlesztői környezetben elérhető
-if (app.Environment.IsDevelopment())
-{
-    app.MapScalarApiReference();
-    app.MapOpenApi();
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapScalarApiReference();
+        app.MapOpenApi();
+    }
+
+    app.UseExceptionHandler();
+    app.UseRequestContextLogging();
+    app.UseSerilogRequestLogging();
+    app.UseAuthorization();
+    app.MapControllers();
+
+    app.Run();
 }
-
-// Engedélyezi az autorizációs middleware-t (szükséges a MapControllers előtt)
-app.UseAuthorization();
-
-// Bekötik a controllerekben definiált route-okat a HTTP pipeline-ba
-app.MapControllers();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

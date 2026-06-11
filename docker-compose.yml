@@ -15,6 +15,7 @@ services:
       - Storage__PublicUrl=http://localhost:9000
       - Redis__ConnectionString=redis:6379
       - Database__ConnectionString=Host=postgres;Database=asyncapi;Username=postgres;Password=postgres
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
     depends_on:
       minio:
         condition: service_started
@@ -22,6 +23,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      seq:
+        condition: service_started
 
   minio:
     image: minio/minio
@@ -66,7 +69,19 @@ services:
       timeout: 3s
       retries: 5
 
+  seq:
+    image: datalust/seq:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq_data:/data
+
 volumes:
   minio_data:
   redis_data:
   postgres_data:
+  seq_data:

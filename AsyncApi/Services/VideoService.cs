@@ -3,7 +3,9 @@ using FFMpegCore.Enums;
 
 namespace AsyncApi.Services;
 
-public sealed class VideoService(StorageService storageService)
+public sealed class VideoService(
+    ILogger<VideoService> logger,
+    StorageService storageService)
 {
     private static readonly string[] AllowedExtensions = [".mp4", ".mov", ".mkv", ".avi", ".webm"];
     private static readonly string[] AllowedMimeTypes =
@@ -41,26 +43,38 @@ public sealed class VideoService(StorageService storageService)
     // FFProbe egyszer fut le; a duration-t megosztja a sprite és a thumbnail generálás között
     public async Task ProcessAndUploadAsync(string id, string originalFilePath, string folderPath)
     {
-        var thumbFolder = Path.Combine(Path.GetDirectoryName(folderPath)!, "..", "thumbs", id);
-        Directory.CreateDirectory(thumbFolder);
+        logger.LogInformation("Starting video processing for {VideoId}", id);
 
-        var mediaInfo = await FFProbe.AnalyseAsync(originalFilePath);
+        try
+        {
+            var thumbFolder = Path.Combine(Path.GetDirectoryName(folderPath)!, "..", "thumbs", id);
+            Directory.CreateDirectory(thumbFolder);
 
-        await Task.WhenAll(
-            GenerateHlsAsync(originalFilePath, folderPath),
-            GenerateSpriteAsync(originalFilePath, folderPath, mediaInfo.Duration),
-            GenerateVideoThumbnailsAsync(originalFilePath, thumbFolder, id, mediaInfo.Duration)
-        );
+            var mediaInfo = await FFProbe.AnalyseAsync(originalFilePath);
 
-        File.Delete(originalFilePath);
+            await Task.WhenAll(
+                GenerateHlsAsync(originalFilePath, folderPath),
+                GenerateSpriteAsync(originalFilePath, folderPath, mediaInfo.Duration),
+                GenerateVideoThumbnailsAsync(originalFilePath, thumbFolder, id, mediaInfo.Duration)
+            );
 
-        await Task.WhenAll(
-            storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Videos),
-            storageService.UploadDirectoryAsync(thumbFolder, id, StorageBucket.Images)
-        );
+            File.Delete(originalFilePath);
 
-        Directory.Delete(folderPath, recursive: true);
-        Directory.Delete(thumbFolder, recursive: true);
+            await Task.WhenAll(
+                storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Videos),
+                storageService.UploadDirectoryAsync(thumbFolder, id, StorageBucket.Images)
+            );
+
+            Directory.Delete(folderPath, recursive: true);
+            Directory.Delete(thumbFolder, recursive: true);
+
+            logger.LogInformation("Video processing completed for {VideoId}", id);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Video processing failed for {VideoId}", id);
+            throw;
+        }
     }
 
     private static async Task GenerateHlsAsync(string originalFilePath, string folderPath)

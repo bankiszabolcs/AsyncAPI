@@ -3,7 +3,9 @@ using SixLabors.ImageSharp.Processing;
 
 namespace AsyncApi.Services;
 
-public sealed class ImageService(StorageService storageService)
+public sealed class ImageService(
+    ILogger<ImageService> logger,
+    StorageService storageService)
 {
     // A generálandó thumbnail méretek pixelben (szélesség); más osztályok is hivatkoznak rá
     public static readonly int[] ThumbnailWidths = [32, 64, 128, 256, 512, 1024];
@@ -36,27 +38,44 @@ public sealed class ImageService(StorageService storageService)
     }
 
     // A háttérszolgáltatás hívja: thumbnail-eket generál, feltölti MinIO-ra, törli a temp mappát
-    public async Task ProcessAndUploadAsync(string id, string originalFilePath, string folderPath)
+    // Visszaadja az eredeti kép méreteit, hogy a DB-be is visszaírhassuk
+    public async Task<(int Width, int Height)> ProcessAndUploadAsync(string id, string originalFilePath, string folderPath)
     {
-        await GenerateThumbnailsAsync(originalFilePath, folderPath, id);
+        logger.LogInformation("Starting image processing for {ImageId}", id);
 
-        await storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Images);
+        try
+        {
+            var (width, height) = await GenerateThumbnailsAsync(originalFilePath, folderPath, id);
+            await storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Images);
+            Directory.Delete(folderPath, recursive: true);
 
-        Directory.Delete(folderPath, recursive: true);
+            logger.LogInformation("Image processing completed for {ImageId}", id);
+            return (width, height);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Image processing failed for {ImageId}", id);
+            throw;
+        }
     }
 
     // Létrehozza az összes thumbnail méretet az eredeti képből; a height=0 megtartja az arányokat
-    private static async Task GenerateThumbnailsAsync(string originalFilePath, string folderPath, string id)
+    // Visszaadja az eredeti kép méreteit
+    private static async Task<(int Width, int Height)> GenerateThumbnailsAsync(string originalFilePath, string folderPath, string id)
     {
         var extension = Path.GetExtension(originalFilePath);
 
         using var image = await Image.LoadAsync(originalFilePath);
-        foreach (var width in ThumbnailWidths)
+        var (width, height) = (image.Width, image.Height);
+
+        foreach (var w in ThumbnailWidths)
         {
-            var thumbnailPath = Path.Combine(folderPath, $"{id}_w{width}{extension}");
-            using var resized = image.Clone(x => x.Resize(width, 0));
+            var thumbnailPath = Path.Combine(folderPath, $"{id}_w{w}{extension}");
+            using var resized = image.Clone(x => x.Resize(w, 0));
             await resized.SaveAsync(thumbnailPath);
         }
+
+        return (width, height);
     }
 
     // Átméretezi a megadott képet az összes standard szélességre; videó thumbnail-ek is használják

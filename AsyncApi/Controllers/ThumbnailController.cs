@@ -1,3 +1,4 @@
+using AsyncApi.Data.Repositories;
 using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,14 @@ public sealed class ThumbnailsController(
     ImageService imageService,
     StorageService storageService,
     QueueService queueService,      // korábban Channel<ThumbnailGenerationJob> volt
-    StatusService statusService)    // korábban két ConcurrentDictionary volt (státusz + kiterjesztés)
+    StatusService statusService,
+    ImageRepository imageRepository
+    )    // korábban két ConcurrentDictionary volt (státusz + kiterjesztés)
     : ControllerBase
 {
     private readonly string _uploadDirectory = configuration["UploadDirectory"] ?? "uploads";
+    private readonly Guid _technicalUserId = Guid.Parse(configuration["TechnicalUser:Id"]
+        ?? throw new InvalidOperationException("TechnicalUser:Id nincs beállítva az appsettings-ben."));
 
     // POST /thumbnails — feltölti a képet, sorba állítja a thumbnail generálást, visszaadja a státusz URL-t
     [HttpPost]
@@ -26,22 +31,25 @@ public sealed class ThumbnailsController(
         if (!imageService.IsValidImage(file))
             return BadRequest("Invalid image file. Only JPG, PNG, and GIF formats are allowed.");
 
-        var id = Guid.NewGuid().ToString();
+        var id = Guid.NewGuid();
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var folderPath = Path.Combine(_uploadDirectory, "images", id);
+        var folderPath = Path.Combine(_uploadDirectory, "images", id.ToString());
         var fileName = $"{id}{extension}";
 
         var originalFilePath = await imageService.SaveOriginalImageAsync(file, folderPath, fileName);
 
         // Kiterjesztés Redis-be mentve — a státusz endpointban kell a MinIO URL felépítéséhez
-        await statusService.SetExtensionAsync(id, extension);
+        await statusService.SetExtensionAsync(id.ToString(), extension);
+
+        // DB rekord létrehozása — kiterjesztés is mentve, hogy a status endpoint össze tudja rakni a URL-t
+        await imageRepository.CreateAsync(id, file.FileName, extension, _technicalUserId);
 
         // Job Redis Stream-be írva — korábban channel.Writer.WriteAsync(job) volt
-        var job = new ThumbnailGenerationJob(id, originalFilePath, folderPath);
+        var job = new ThumbnailGenerationJob(id.ToString(), originalFilePath, folderPath);
         await queueService.EnqueueAsync(QueueService.ThumbnailStreamKey, job);
 
         // Státusz Redis-be írva — korábban statusDictionary[id] = ... volt
-        await statusService.SetStatusAsync(id, ThumbnailGenerationStatus.Queued);
+        await statusService.SetStatusAsync(id.ToString(), ThumbnailGenerationStatus.Queued);
 
         var statusUrl = linkGenerator.GetUriByAction(HttpContext, nameof(GetStatus), "Thumbnails", new { id })
             ?? throw new InvalidOperationException("Failed to generate URL.");

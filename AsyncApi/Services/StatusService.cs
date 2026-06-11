@@ -1,18 +1,40 @@
+using AsyncApi.Enums;
+using AsyncApi.Data.Repositories;
 using StackExchange.Redis;
 
 namespace AsyncApi.Services;
 
-public sealed class StatusService(IConnectionMultiplexer redis)
+public sealed class StatusService(IConnectionMultiplexer redis, IServiceScopeFactory scopeFactory)
 {
     // Ennyi ideig marad meg a státusz és a metaadatok a Redis-ben újraindítás után is
     private static readonly TimeSpan Ttl = TimeSpan.FromDays(7);
 
-    // Státusz mentése Redis-be string formában (pl. "Queued", "Processing", "Completed", "Failed")
-    // Az enum.ToString() emberi olvasható formátumot ad, ami Redis-ben is könnyen debugolható
+    // Redis-only — kontrollerek hívják feltöltéskor
+    // DB-t nem kell frissíteni, mert CreateAsync már 'queued'-del hozta létre a rekordot
     public async Task SetStatusAsync(string id, Enum status)
     {
         var db = redis.GetDatabase();
         await db.StringSetAsync($"status:{id}", status.ToString(), Ttl);
+    }
+
+    // Redis + DB — háttérszolgáltatások hívják (Processing, Completed, Failed átmeneteknél)
+    // IServiceScopeFactory kell, mert StatusService singleton, de a repository scoped
+    public async Task SetVideoStatusAsync(Guid id, ProcessingStatus status)
+    {
+        await SetStatusAsync(id.ToString(), status);
+
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var repo = scope.ServiceProvider.GetRequiredService<VideoRepository>();
+        await repo.UpdateStatusAsync(id, status);
+    }
+
+    public async Task SetImageStatusAsync(Guid id, ProcessingStatus status, int? width = null, int? height = null)
+    {
+        await SetStatusAsync(id.ToString(), status);
+
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var repo = scope.ServiceProvider.GetRequiredService<ImageRepository>();
+        await repo.UpdateStatusAsync(id, status, width, height);
     }
 
     // Státusz lekérése és visszaalakítása a kért enum típusra
@@ -28,14 +50,12 @@ public sealed class StatusService(IConnectionMultiplexer redis)
     }
 
     // Fájlkiterjesztés mentése — szükséges a MinIO URL felépítéséhez a státusz endpointban
-    // Pl. ".jpg", ".png" — feltöltéskor ismert, de a státusz lekérésekor is kell
     public async Task SetExtensionAsync(string id, string extension)
     {
         var db = redis.GetDatabase();
         await db.StringSetAsync($"ext:{id}", extension, Ttl);
     }
 
-    // Fájlkiterjesztés lekérése job ID alapján
     public async Task<string?> GetExtensionAsync(string id)
     {
         var db = redis.GetDatabase();

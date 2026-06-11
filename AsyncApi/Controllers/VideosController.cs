@@ -1,3 +1,4 @@
+using AsyncApi.Data.Repositories;
 using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,13 @@ public sealed class VideosController(
     VideoService videoService,
     StorageService storageService,
     QueueService queueService,      // korábban Channel<VideoProcessingJob> volt
-    StatusService statusService)    // korábban ConcurrentDictionary<string, VideoProcessingStatus> volt
+    StatusService statusService,
+    VideoRepository videoRepository)    // korábban ConcurrentDictionary<string, VideoProcessingStatus> volt
     : ControllerBase
 {
     private readonly string _uploadDirectory = configuration["UploadDirectory"] ?? "uploads";
+    private readonly Guid _technicalUserId = Guid.Parse(configuration["TechnicalUser:Id"]
+        ?? throw new InvalidOperationException("TechnicalUser:Id nincs beállítva az appsettings-ben."));
 
     // POST /videos — feltölti a videót, sorba állítja a feldolgozást, visszaadja a státusz URL-t
     [HttpPost]
@@ -28,18 +32,21 @@ public sealed class VideosController(
         if (!videoService.IsValidVideo(file))
             return BadRequest("Invalid video file. Allowed formats: mp4, mov, mkv, avi, webm.");
 
-        var id = Guid.NewGuid().ToString();
-        var folderPath = Path.Combine(_uploadDirectory, "videos", id);
+        var id = Guid.NewGuid();
+        var folderPath = Path.Combine(_uploadDirectory, "videos", id.ToString());
         var fileName = $"{id}{Path.GetExtension(file.FileName)}";
 
         var originalFilePath = await videoService.SaveOriginalVideoAsync(file, folderPath, fileName);
 
+        // DB rekord létrehozása — id és userId kötelező, a többi mező később frissíthető
+        await videoRepository.CreateAsync(id, file.FileName, _technicalUserId);
+
         // Job Redis Stream-be írva — korábban channel.Writer.WriteAsync(job) volt
-        var job = new VideoProcessingJob(id, originalFilePath, folderPath);
+        var job = new VideoProcessingJob(id.ToString(), originalFilePath, folderPath);
         await queueService.EnqueueAsync(QueueService.VideoStreamKey, job);
 
         // Státusz Redis-be írva — korábban statusDictionary[id] = ... volt
-        await statusService.SetStatusAsync(id, VideoProcessingStatus.Queued);
+        await statusService.SetStatusAsync(id.ToString(), VideoProcessingStatus.Queued);
 
         var statusUrl = linkGenerator.GetUriByAction(HttpContext, nameof(GetStatus), "Videos", new { id })
             ?? throw new InvalidOperationException("Failed to generate URL.");

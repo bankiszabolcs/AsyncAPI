@@ -28,6 +28,15 @@ public sealed class StatusService(IConnectionMultiplexer redis, IServiceScopeFac
         await repo.UpdateStatusAsync(id, status);
     }
 
+    public async Task SetVideoCompletedAsync(Guid id, int durationSeconds)
+    {
+        await SetStatusAsync(id.ToString(), ProcessingStatus.Completed);
+
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var repo = scope.ServiceProvider.GetRequiredService<VideoRepository>();
+        await repo.UpdateCompletedAsync(id, durationSeconds);
+    }
+
     public async Task SetImageStatusAsync(Guid id, ProcessingStatus status, int? width = null, int? height = null)
     {
         await SetStatusAsync(id.ToString(), status);

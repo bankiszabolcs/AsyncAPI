@@ -41,7 +41,7 @@ public sealed class VideoService(
     }
 
     // FFProbe egyszer fut le; a duration-t megosztja a sprite és a thumbnail generálás között
-    public async Task ProcessAndUploadAsync(string id, string originalFilePath, string folderPath)
+    public async Task<TimeSpan> ProcessAndUploadAsync(string id, string originalFilePath, string folderPath)
     {
         logger.LogInformation("Starting video processing for {VideoId}", id);
 
@@ -69,6 +69,7 @@ public sealed class VideoService(
             Directory.Delete(thumbFolder, recursive: true);
 
             logger.LogInformation("Video processing completed for {VideoId}", id);
+            return mediaInfo.Duration;
         }
         catch (Exception ex)
         {

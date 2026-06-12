@@ -17,6 +17,8 @@ public class VideoRepository(AsyncApiDbContext db)
             OriginalFileName = originalFileName,
             CreateUserId     = userId,
             CreateDate       = DateTime.UtcNow,
+            ModifyUserId     = userId,
+            ModifyDate       = DateTime.UtcNow,
             Active           = true,
             Version          = 1
             // StatusId és VisibilityId a DB default értékét kapja (1=Queued, 3=Private)
@@ -33,6 +35,15 @@ public class VideoRepository(AsyncApiDbContext db)
         var video = await db.Videos.FindAsync(id);
         if (video is null) return;
         video.StatusId = (int)status;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task UpdateCompletedAsync(Guid id, int durationSeconds)
+    {
+        var video = await db.Videos.FindAsync(id);
+        if (video is null) return;
+        video.StatusId        = (int)ProcessingStatus.Completed;
+        video.DurationSeconds = durationSeconds;
         await db.SaveChangesAsync();
     }
 

@@ -1,3 +1,4 @@
+using AsyncApi.Enums;
 using AsyncApi.Models;
 using AsyncApi.Services;
 
@@ -33,19 +34,19 @@ public class VideoProcessingService(
         }
     }
 
-    // Státuszt Redis-be ír (nem memóriába), majd feldolgozza a job-ot
     private async Task ProcessJobAsync(VideoProcessingJob job)
     {
-        await statusService.SetStatusAsync(job.Id, VideoProcessingStatus.Processing);
+        var id = Guid.Parse(job.Id);
+        await statusService.SetVideoStatusAsync(id, ProcessingStatus.Processing);
 
         try
         {
-            await videoService.ProcessAndUploadAsync(job.Id, job.OriginalFilePath, job.FolderPath);
-            await statusService.SetStatusAsync(job.Id, VideoProcessingStatus.Completed);
+            var duration = await videoService.ProcessAndUploadAsync(job.Id, job.OriginalFilePath, job.FolderPath);
+            await statusService.SetVideoCompletedAsync(id, (int)duration.TotalSeconds);
         }
         catch (Exception)
         {
-            await statusService.SetStatusAsync(job.Id, VideoProcessingStatus.Failed);
+            await statusService.SetVideoStatusAsync(id, ProcessingStatus.Failed);
             throw;
         }
     }

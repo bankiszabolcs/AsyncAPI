@@ -12,3 +12,12 @@
   --p-surface-border:   rgba(255, 255, 255, 0.07);
   --p-surface-hover:    rgba(255, 255, 255, 0.07);
 }
+
+/* Profil-menü: csak a saját, lekerekített <a> hover látszódjon — a PrimeNG
+   alapértelmezett, teljes szélességű (téglalap) item-hoverét kikapcsoljuk.
+   A szabály rétegen kívüli, ezért felülírja a primeng layert. */
+.user-menu .p-menu-item-content,
+.user-menu .p-menu-item-content:hover {
+  background: transparent;
+  border-radius: 0;
+}

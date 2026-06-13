@@ -42,7 +42,6 @@
       [outlined]="true"
       size="small"
       severity="secondary"
-      routerLink="/upload"
     />
     <p-button
       icon="pi pi-bell"
@@ -50,12 +49,106 @@
       [rounded]="true"
       severity="secondary"
       aria-label="Értesítések"
+      (click)="notifPopover.toggle($event)"
     />
     <p-avatar
       icon="pi pi-user"
       shape="circle"
       class="cursor-pointer ml-1"
+      (click)="onAvatarClick(userMenu, $event)"
+      aria-label="Profil"
     />
+
+    <!-- Asztali nézet: legördülő menü -->
+    <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" styleClass="user-menu !w-64 !mt-2">
+      <ng-template #start>
+        <div class="flex items-center gap-3 px-3 py-3">
+          <p-avatar icon="pi pi-user" shape="circle" size="large" />
+          <div class="flex flex-col min-w-0">
+            <span class="font-medium text-sm text-(--p-text-color) truncate">Felhasználó</span>
+            <span class="text-xs text-(--p-text-muted-color) truncate">A fiók kezelése</span>
+          </div>
+        </div>
+        <hr class="border-(--p-surface-border) m-0" />
+      </ng-template>
+      <ng-template #item let-item>
+        <a
+          pRipple
+          [routerLink]="item.routerLink"
+          class="flex items-center gap-3 mx-1 my-0.5 px-3 py-2.5 rounded-lg cursor-pointer no-underline
+            text-(--p-text-color) hover:bg-(--p-surface-hover) transition-colors duration-150"
+        >
+          <i class="pi {{ item.icon }} text-base text-(--p-text-muted-color)"></i>
+          <span class="text-sm">{{ item.label }}</span>
+        </a>
+      </ng-template>
+    </p-menu>
+
+    <!-- Értesítések: lebegő panel (egyelőre dummy skeleton tartalommal) -->
+    <p-popover #notifPopover styleClass="!mt-2">
+      <div class="w-80">
+        <div class="flex items-center justify-between px-1 pb-2 mb-1 border-b border-(--p-surface-border)">
+          <span class="text-sm font-semibold text-(--p-text-color)">Értesítések</span>
+        </div>
+        @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="flex gap-3 p-2 rounded-lg animate-pulse">
+            <div class="w-10 h-10 rounded-full bg-(--p-surface-card) shrink-0"></div>
+            <div class="flex-1 space-y-2 pt-1">
+              <div class="h-3 bg-(--p-surface-card) rounded w-full"></div>
+              <div class="h-3 bg-(--p-surface-card) rounded w-2/3"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </p-popover>
   </div>
 
 </header>
+
+<!-- Tablet / mobil nézet: jobbról becsúszó panel (YouTube-stílus) -->
+<p-drawer
+  [(visible)]="drawerVisible"
+  position="right"
+  styleClass="!w-80 !max-w-[85vw]"
+>
+  <ng-template #header>
+    <div class="flex items-center gap-3 pl-2 py-2">
+      <p-avatar icon="pi pi-user" shape="circle" size="large" />
+      <div class="flex flex-col">
+        <span class="font-medium text-(--p-text-color)">Felhasználó</span>
+        <span class="text-xs text-(--p-text-muted-color)">A fiók kezelése</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <nav class="flex flex-col px-1 pt-2">
+    @for (item of userMenuItems; track $index) {
+      @if (item.separator) {
+        <hr class="my-2 border-(--p-surface-border)" />
+      } @else if (item.routerLink) {
+        <a
+          [routerLink]="item.routerLink"
+          (click)="drawerVisible.set(false)"
+          pRipple
+          class="flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer no-underline
+            text-(--p-text-color) hover:bg-(--p-surface-hover) transition-colors duration-150"
+        >
+          <i class="pi {{ item.icon }} text-xl shrink-0"></i>
+          <span class="text-sm">{{ item.label }}</span>
+        </a>
+      } @else {
+        <button
+          type="button"
+          (click)="onDrawerItemClick(item)"
+          pRipple
+          class="flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer w-full text-left
+            bg-transparent border-none text-(--p-text-color)
+            hover:bg-(--p-surface-hover) transition-colors duration-150"
+        >
+          <i class="pi {{ item.icon }} text-xl shrink-0"></i>
+          <span class="text-sm">{{ item.label }}</span>
+        </button>
+      }
+    }
+  </nav>
+</p-drawer>

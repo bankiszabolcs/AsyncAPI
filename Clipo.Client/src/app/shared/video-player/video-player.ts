@@ -19,6 +19,7 @@ export class VideoPlayer implements OnDestroy {
   readonly title = input('');
   readonly thumbnailsUrl = input('');
   readonly poster = input('');
+  readonly autoplay = input(true);
 
   private readonly sanitizer = inject(DomSanitizer);
   private readonly http = inject(HttpClient);
@@ -105,6 +106,7 @@ export class VideoPlayer implements OnDestroy {
           .map((l, i) => ({ index: i, label: `${l.height}p` }))
           .reverse();
         this.qualityLevels.set(levels);
+        this.tryAutoplay(el);
       });
 
       this.hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -112,7 +114,22 @@ export class VideoPlayer implements OnDestroy {
       });
     } else if (el.canPlayType('application/vnd.apple.mpegurl')) {
       el.src = src;
+      el.addEventListener('loadedmetadata', () => this.tryAutoplay(el), { once: true });
     }
+  }
+
+  /**
+   * Automatikus lejátszás indítása. A böngészők a hangos autoplayt
+   * felhasználói interakció nélkül blokkolják, ezért elutasítás esetén
+   * némítva próbáljuk újra — így a videó mindenképp elindul.
+   */
+  private tryAutoplay(el: HTMLVideoElement): void {
+    if (!this.autoplay()) return;
+    el.play().catch(() => {
+      el.muted = true;
+      this.isMuted.set(true);
+      el.play().catch(() => {/* némítva is blokkolva → marad a play gomb */});
+    });
   }
 
   private loadVtt(url: string): void {

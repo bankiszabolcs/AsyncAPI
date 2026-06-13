@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, OnDestroy, signal, viewChild, ElementRef } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TimeAgoPipe } from '../pipes/time-ago.pipe';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import Hls from 'hls.js';
@@ -9,7 +9,7 @@ import { parseVtt, SpriteFrame } from '../video-player/vtt-parser';
 
 @Component({
   selector: 'app-video-card',
-  imports: [DatePipe, RouterLink],
+  imports: [RouterLink, TimeAgoPipe],
   templateUrl: './video-card.html',
 })
 export class VideoCard implements OnDestroy {

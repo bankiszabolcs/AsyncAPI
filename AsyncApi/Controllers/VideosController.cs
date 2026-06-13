@@ -117,6 +117,7 @@ public sealed class VideosController(
             tags   = video.VideoTags.Select(vt => vt.Tag.Name),
             media = new
             {
+                masterStream = isCompleted ? storageService.GetPublicUrl($"{video.Id}/master.m3u8", StorageBucket.Videos) : null,
                 streams = isCompleted
                     ? VideoService.StreamQualities.Select(q => new
                     {

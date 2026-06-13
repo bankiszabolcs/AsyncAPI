@@ -6,6 +6,7 @@ export interface VideoStream {
 }
 
 export interface VideoDetailMedia {
+  masterStream: string;
   streams: VideoStream[];
   sprite: string;
   preview: string;

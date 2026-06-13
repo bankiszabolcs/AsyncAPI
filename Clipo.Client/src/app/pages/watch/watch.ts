@@ -1,14 +1,14 @@
 import { Component, computed, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
+import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VideoService } from '../../core/services/video.service';
 import { VideoPlayer } from '../../shared/video-player/video-player';
 
 @Component({
   selector: 'app-watch',
-  imports: [VideoPlayer, DatePipe],
+  imports: [VideoPlayer, TimeAgoPipe],
   templateUrl: './watch.html',
 })
 export class Watch {
@@ -44,16 +44,9 @@ export class Watch {
     return thumbs.reduce((best, t) => (t.width > best.width ? t : best)).url;
   });
 
-  // Legjobb minőségű stream kiválasztása
-  readonly streamUrl = computed(() => {
-    const streams = this.videoResource.value()?.media.streams ?? [];
-    if (!streams.length) return '';
-    for (const q of ['1080p', '720p', '480p']) {
-      const match = streams.find(s => s.quality === q);
-      if (match) return match.url;
-    }
-    return streams[0].url;
-  });
+  readonly streamUrl = computed(() =>
+    this.videoResource.value()?.media.masterStream ?? ''
+  );
 
   readonly vttUrl = computed(() =>
     this.videoResource.value()?.media.preview ?? ''

@@ -96,7 +96,7 @@
         {{ video().title }}
       </h3>
       <span class="text-xs text-(--p-text-muted-color) truncate">{{ video().author.name }}</span>
-      <span class="text-xs text-(--p-text-muted-color)">{{ video().publishedAt | date:'yyyy. MM. dd.' }}</span>
+      <span class="text-xs text-(--p-text-muted-color)">{{ video().publishedAt | timeAgo }}</span>
     </div>
   </div>
 

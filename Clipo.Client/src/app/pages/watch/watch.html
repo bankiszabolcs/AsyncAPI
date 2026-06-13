@@ -57,7 +57,7 @@
             </div>
             <div>
               <p class="font-medium text-sm text-(--p-text-color)">{{ video.author.name }}</p>
-              <p class="text-xs text-(--p-text-muted-color)">{{ video.publishedAt | date:'yyyy. MMM d.' }}</p>
+              <p class="text-xs text-(--p-text-muted-color)">{{ video.publishedAt | timeAgo }}</p>
             </div>
           </div>
         </div>

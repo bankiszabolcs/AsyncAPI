@@ -7,6 +7,8 @@ import { HttpClient } from '@angular/common/http';
 import Hls from 'hls.js';
 import { parseVtt, SpriteFrame } from './vtt-parser';
 
+interface QualityLevel { index: number; label: string; }
+
 @Component({
   selector: 'app-video-player',
   imports: [],
@@ -23,7 +25,6 @@ export class VideoPlayer implements OnDestroy {
   private hls: Hls | null = null;
   private hideControlsTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // Lejátszó állapot
   readonly isPlaying = signal(false);
   readonly currentTime = signal(0);
   readonly duration = signal(0);
@@ -32,6 +33,18 @@ export class VideoPlayer implements OnDestroy {
   readonly isMuted = signal(false);
   readonly isFullscreen = signal(false);
   readonly showControls = signal(true);
+
+  // Minőség
+  readonly qualityLevels = signal<QualityLevel[]>([]);
+  readonly selectedLevel = signal(-1);   // -1 = Auto (ABR)
+  readonly playingLevel = signal(-1);    // ténylegesen lejátszott szint
+  readonly showQualityMenu = signal(false);
+
+  readonly qualityLabel = computed(() => {
+    const sel = this.selectedLevel();
+    if (sel === -1) return 'Auto';
+    return this.qualityLevels().find(l => l.index === sel)?.label ?? 'Auto';
+  });
 
   // Sprite seek preview
   private readonly frames = signal<SpriteFrame[]>([]);
@@ -56,7 +69,6 @@ export class VideoPlayer implements OnDestroy {
     return frames.find(f => t >= f.start && t < f.end) ?? frames[frames.length - 1];
   });
 
-  // bypassSecurityTrustStyle kell, mert a sprite.jpg MinIO URL-en van
   readonly safeSpriteUrl = computed(() => {
     const f = this.spriteFrame();
     if (!f) return null;
@@ -64,14 +76,11 @@ export class VideoPlayer implements OnDestroy {
   });
 
   constructor() {
-    // HLS inicializálás — a viewChild csak nézet init után lesz elérhető,
-    // ezért a dependencia mindkettőt figyeli: src() és videoEl()
     effect(() => {
       const src = this.src();
       const el = this.videoEl()?.nativeElement;
       if (src && el) this.initHls(src, el);
     });
-
     effect(() => {
       const url = this.thumbnailsUrl();
       if (url) this.loadVtt(url);
@@ -80,11 +89,26 @@ export class VideoPlayer implements OnDestroy {
 
   private initHls(src: string, el: HTMLVideoElement): void {
     this.hls?.destroy();
+    this.qualityLevels.set([]);
+    this.selectedLevel.set(-1);
+    this.playingLevel.set(-1);
 
     if (Hls.isSupported()) {
-      this.hls = new Hls();
+      this.hls = new Hls({ capLevelToPlayerSize: true });
       this.hls.loadSource(src);
       this.hls.attachMedia(el);
+
+      this.hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+        // Szintek csökkenő minőség szerint (legjobb először)
+        const levels: QualityLevel[] = data.levels
+          .map((l, i) => ({ index: i, label: `${l.height}p` }))
+          .reverse();
+        this.qualityLevels.set(levels);
+      });
+
+      this.hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
+        this.playingLevel.set(data.level);
+      });
     } else if (el.canPlayType('application/vnd.apple.mpegurl')) {
       el.src = src;
     }
@@ -96,7 +120,24 @@ export class VideoPlayer implements OnDestroy {
     });
   }
 
-  // Video element eseménykezelők
+  // Minőségváltás
+  setLevel(level: number): void {
+    if (!this.hls) return;
+    this.hls.currentLevel = level;
+    this.selectedLevel.set(level);
+    this.showQualityMenu.set(false);
+  }
+
+  toggleQualityMenu(e: MouseEvent): void {
+    e.stopPropagation();
+    this.showQualityMenu.update(v => !v);
+  }
+
+  closeQualityMenu(): void {
+    this.showQualityMenu.set(false);
+  }
+
+  // Video eseménykezelők
   onTimeUpdate(e: Event): void {
     this.currentTime.set((e.target as HTMLVideoElement).currentTime);
   }
@@ -116,10 +157,10 @@ export class VideoPlayer implements OnDestroy {
   onPause(): void { this.isPlaying.set(false); }
   onEnded(): void { this.isPlaying.set(false); }
 
-  // Vezérlők
   togglePlay(): void {
     const el = this.videoEl()?.nativeElement;
     if (!el) return;
+    if (this.showQualityMenu()) { this.closeQualityMenu(); return; }
     el.paused ? el.play() : el.pause();
   }
 
@@ -135,9 +176,7 @@ export class VideoPlayer implements OnDestroy {
     this.hoverRatio.set((e.clientX - rect.left) / rect.width);
   }
 
-  onSeekLeave(): void {
-    this.hoverRatio.set(null);
-  }
+  onSeekLeave(): void { this.hoverRatio.set(null); }
 
   toggleMute(): void {
     const el = this.videoEl()?.nativeElement;
@@ -172,7 +211,10 @@ export class VideoPlayer implements OnDestroy {
     this.showControls.set(true);
     if (this.hideControlsTimer) clearTimeout(this.hideControlsTimer);
     this.hideControlsTimer = setTimeout(() => {
-      if (this.isPlaying()) this.showControls.set(false);
+      if (this.isPlaying()) {
+        this.showControls.set(false);
+        this.showQualityMenu.set(false);
+      }
     }, 3000);
   }
 

@@ -6,6 +6,7 @@
   <video
     #videoEl
     class="w-full aspect-video block"
+    [poster]="poster()"
     (click)="togglePlay()"
     (timeupdate)="onTimeUpdate($event)"
     (durationchange)="onDurationChange($event)"

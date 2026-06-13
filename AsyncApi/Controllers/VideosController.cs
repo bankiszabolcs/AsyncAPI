@@ -98,7 +98,8 @@ public sealed class VideosController(
         if (video is null) return NotFound();
 
         var isCompleted = video.StatusId == (int)ProcessingStatus.Completed;
-        var hasThumbnails = video.ThumbnailImageId is not null || isCompleted;
+        // A thumbnail már Processing alatt elérhető (a feldolgozás legelején feltöltjük)
+        var hasThumbnails = isCompleted || video.StatusId == (int)ProcessingStatus.Processing;
 
         return Ok(new
         {

@@ -9,9 +9,14 @@ import { Sidebar } from './layout/sidebar/sidebar';
   templateUrl: './app.html',
 })
 export class App {
-  readonly sidebarCollapsed = signal(false);
+  // Fekvő tableten (~1280px alatt) vagy kisebb kijelzőn alapból csukva töltsön be a menü.
+  readonly sidebarCollapsed = signal(this.isSmallScreen());
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update(v => !v);
+  }
+
+  private isSmallScreen(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth < 1280;
   }
 }

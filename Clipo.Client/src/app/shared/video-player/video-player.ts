@@ -18,6 +18,7 @@ export class VideoPlayer implements OnDestroy {
   readonly src = input.required<string>();
   readonly title = input('');
   readonly thumbnailsUrl = input('');
+  readonly poster = input('');
 
   private readonly sanitizer = inject(DomSanitizer);
   private readonly http = inject(HttpClient);

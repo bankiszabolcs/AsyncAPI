@@ -54,18 +54,20 @@ public sealed class VideoService(
 
             var mediaInfo = await FFProbe.AnalyseAsync(originalFilePath);
 
+            // Thumbnail először, és rögtön fel is töltjük — így a videó még feldolgozás
+            // alatt van, de a kliens már megkapja a thumbnailt (háttérkép a lejátszóban).
+            await GenerateVideoThumbnailsAsync(originalFilePath, thumbFolder, id, mediaInfo.Duration);
+            await storageService.UploadDirectoryAsync(thumbFolder, id, StorageBucket.Images);
+
+            // Utána a lassú rész: HLS kódolás + sprite párhuzamosan
             await Task.WhenAll(
                 GenerateHlsAsync(originalFilePath, folderPath),
-                GenerateSpriteAsync(originalFilePath, folderPath, mediaInfo.Duration),
-                GenerateVideoThumbnailsAsync(originalFilePath, thumbFolder, id, mediaInfo.Duration)
+                GenerateSpriteAsync(originalFilePath, folderPath, mediaInfo.Duration)
             );
 
             File.Delete(originalFilePath);
 
-            await Task.WhenAll(
-                storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Videos),
-                storageService.UploadDirectoryAsync(thumbFolder, id, StorageBucket.Images)
-            );
+            await storageService.UploadDirectoryAsync(folderPath, id, StorageBucket.Videos);
 
             Directory.Delete(folderPath, recursive: true);
             Directory.Delete(thumbFolder, recursive: true);

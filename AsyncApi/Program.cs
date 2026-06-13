@@ -23,7 +23,11 @@ try
         options.AddPolicy("Angular", policy =>
         {
             if (builder.Environment.IsDevelopment())
-                policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
+                policy.SetIsOriginAllowed(origin =>
+                {
+                    var host = new Uri(origin).Host;
+                    return host == "localhost" || host.StartsWith("192.168.");
+                }).AllowAnyHeader().AllowAnyMethod();
             else
                 policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"]
                     ?? throw new InvalidOperationException("Cors:AllowedOrigin nincs beállítva."))

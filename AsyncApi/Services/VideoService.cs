@@ -21,6 +21,8 @@ public sealed class VideoService(
         (854,  1400, "480p")
     ];
 
+    public static IEnumerable<string> StreamQualities => HlsQualities.Select(q => q.Name);
+
     public bool IsValidVideo(IFormFile file)
     {
         if (file.Length == 0) return false;

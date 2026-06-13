@@ -1,0 +1,61 @@
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center h-14 px-2 gap-2
+  bg-(--p-surface-section)
+  shadow-[0_1px_0_rgba(255,255,255,0.07)]">
+
+  <!-- Bal: hamburger + logo -->
+  <div class="flex items-center gap-1 shrink-0">
+    <p-button
+      icon="pi pi-bars"
+      [text]="true"
+      [rounded]="true"
+      severity="secondary"
+      (click)="sidebarToggle.emit()"
+      aria-label="Menü"
+    />
+    <a routerLink="/" class="flex items-center gap-2 px-2 no-underline select-none">
+      <i class="pi pi-video text-2xl text-red-500"></i>
+      <span class="text-lg font-bold tracking-tight text-(--p-text-color)">Clipo</span>
+    </a>
+  </div>
+
+  <!-- Közép: keresés -->
+  <div class="flex-1 flex justify-center">
+    <div class="flex items-center w-full max-w-xl gap-3 px-4 py-1.5 rounded-full
+      bg-(--p-surface-card) border border-(--p-surface-border)
+      focus-within:border-(--p-primary-color) transition-colors duration-150">
+      <i class="pi pi-search shrink-0 text-(--p-text-muted-color) text-sm"></i>
+      <input
+        type="search"
+        placeholder="Keresés..."
+        class="flex-1 bg-transparent outline-none border-none text-sm
+          text-(--p-text-color) placeholder:text-(--p-text-muted-color)"
+      />
+    </div>
+  </div>
+
+  <!-- Jobb: feltöltés + értesítő + avatar -->
+  <div class="flex items-center gap-1 shrink-0">
+    <p-button
+      routerLink="/upload"
+      label="Feltöltés"
+      icon="pi pi-upload"
+      [outlined]="true"
+      size="small"
+      severity="secondary"
+      routerLink="/upload"
+    />
+    <p-button
+      icon="pi pi-bell"
+      [text]="true"
+      [rounded]="true"
+      severity="secondary"
+      aria-label="Értesítések"
+    />
+    <p-avatar
+      icon="pi pi-user"
+      shape="circle"
+      class="cursor-pointer ml-1"
+    />
+  </div>
+
+</header>

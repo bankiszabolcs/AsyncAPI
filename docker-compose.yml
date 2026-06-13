@@ -69,6 +69,17 @@ services:
       timeout: 3s
       retries: 5
 
+  frontend:
+    build:
+      context: ./Clipo.Client
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./Clipo.Client/src:/app/src   # hot reload: a src változásai azonnal érvényesülnek
+    depends_on:
+      - app
+
   seq:
     image: datalust/seq:latest
     environment:

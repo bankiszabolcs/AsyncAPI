@@ -1,0 +1,103 @@
+<article
+  class="flex flex-col gap-3 cursor-pointer group"
+  [routerLink]="['/watch', video().id]"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
+>
+
+  <!-- Outer wrapper: relative, nincs overflow-hidden, hogy a sprite tooltip ne legyen levágva -->
+  <div class="relative w-full aspect-video rounded-xl">
+
+    <!-- Inner clip: rounded + overflow-hidden csak az img/video számára -->
+    <div class="absolute inset-0 rounded-xl overflow-hidden bg-(--p-surface-card)">
+      @if (fallback()) {
+        <img
+          [srcset]="srcset()"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          [src]="fallback()!"
+          [alt]="video().title"
+          loading="lazy"
+          class="w-full h-full object-cover transition-[transform,opacity] duration-300"
+          [class.scale-105]="isHovering()"
+          [class.opacity-0]="isHovering()"
+        />
+      } @else {
+        <div class="w-full h-full flex items-center justify-center text-(--p-text-muted-color)">
+          <i class="pi pi-video text-4xl"></i>
+        </div>
+      }
+
+      <video
+        #videoPreview
+        muted
+        playsinline
+        (timeupdate)="onTimeUpdate($event)"
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+        [class.opacity-100]="isHovering()"
+        [class.opacity-0]="!isHovering()"
+      ></video>
+    </div>
+
+    <!-- Duration badge — csak amikor nem hoveroelünk -->
+    @if (!isHovering()) {
+      <span class="absolute bottom-2 right-1.5 bg-black/80 text-white text-xs font-medium px-1.5 py-0.5 rounded leading-none z-10">
+        {{ displayDuration() }}
+      </span>
+    }
+
+    <!-- Seek bar + sprite tooltip — csak hover alatt, overflow-hidden-en kívül -->
+    @if (isHovering()) {
+      <div
+        class="absolute bottom-1 left-2 right-2 group/seek z-20"
+        (mousemove)="onThumbnailMove($event)"
+        (mouseleave)="onSeekBarLeave()"
+      >
+        <!-- Sprite tooltip -->
+        @if (spriteFrame(); as frame) {
+          <div
+            class="absolute bottom-full mb-2 pointer-events-none -translate-x-1/2"
+            [style.left.%]="(thumbnailHoverRatio() ?? 0) * 100"
+          >
+            <div
+              class="rounded overflow-hidden border border-white/20 shadow-xl"
+              [style.width.px]="frame.w"
+              [style.height.px]="frame.h"
+              [style.background-image]="safeSpriteStyle()"
+              [style.background-position]="'-' + frame.x + 'px -' + frame.y + 'px'"
+              [style.background-size]="'auto'"
+            ></div>
+            <p class="text-center text-xs text-white mt-1 font-medium drop-shadow">
+              {{ hoverTime() }}
+            </p>
+          </div>
+        }
+
+        <!-- Seek sáv -->
+        <div class="py-1.5 cursor-pointer" (click)="seekPreview($event)">
+          <div class="relative h-1 group-hover/seek:h-1.5 transition-all duration-150 bg-white/30 rounded-full">
+            <div
+              class="absolute inset-y-0 left-0 bg-red-500 rounded-full transition-none"
+              [style.width.%]="thumbnailHoverRatio() !== null ? (thumbnailHoverRatio()! * 100) : progress()"
+            ></div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- Meta -->
+  <div class="flex gap-3 px-1">
+    <div class="shrink-0 w-9 h-9 rounded-full bg-(--p-surface-card) flex items-center justify-center text-(--p-text-muted-color) text-sm">
+      <i class="pi pi-user"></i>
+    </div>
+    <div class="flex flex-col gap-0.5 min-w-0">
+      <h3 class="text-sm font-semibold text-(--p-text-color) line-clamp-2 leading-snug">
+        {{ video().title }}
+      </h3>
+      <span class="text-xs text-(--p-text-muted-color) truncate">{{ video().author.name }}</span>
+      <span class="text-xs text-(--p-text-muted-color)">{{ video().publishedAt | date:'yyyy. MM. dd.' }}</span>
+    </div>
+  </div>
+
+</article>

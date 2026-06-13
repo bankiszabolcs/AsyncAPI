@@ -18,6 +18,19 @@ try
     builder.Host.UseSerilog((context, loggerConfig) =>
         loggerConfig.ReadFrom.Configuration(context.Configuration));
 
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("Angular", policy =>
+        {
+            if (builder.Environment.IsDevelopment())
+                policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
+            else
+                policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"]
+                    ?? throw new InvalidOperationException("Cors:AllowedOrigin nincs beállítva."))
+                    .AllowAnyHeader().AllowAnyMethod();
+        });
+    });
+
     builder.Services.AddControllers();
     builder.Services.AddOpenApi();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -60,6 +73,7 @@ try
     }
 
     app.UseExceptionHandler();
+    app.UseCors("Angular");
     app.UseRequestContextLogging();
     app.UseSerilogRequestLogging();
     app.UseAuthorization();

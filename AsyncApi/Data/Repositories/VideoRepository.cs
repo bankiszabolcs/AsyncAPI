@@ -51,6 +51,7 @@ public class VideoRepository(AsyncApiDbContext db)
     {
         return await db.Videos
             .Include(v => v.User)
+            .Include(v => v.Status)
             .Include(v => v.ThumbnailImage)
             .Include(v => v.VideoTags)
                 .ThenInclude(vt => vt.Tag)

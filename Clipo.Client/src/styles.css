@@ -1,0 +1,14 @@
+@layer tailwind-base, primeng, tailwind-utilities;
+
+@import 'tailwindcss';
+@import 'primeicons/primeicons.css';
+
+/* Dark mode surface overrides — az Aura preset értékeit felülírjuk,
+   mert az alapértelmezett border szín túl látható. */
+.dark {
+  --p-surface-ground:   #0f0f0f;
+  --p-surface-section:  #161616;
+  --p-surface-card:     #1e1e1e;
+  --p-surface-border:   rgba(255, 255, 255, 0.07);
+  --p-surface-hover:    rgba(255, 255, 255, 0.07);
+}

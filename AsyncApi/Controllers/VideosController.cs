@@ -1,4 +1,5 @@
 using AsyncApi.Data.Repositories;
+using AsyncApi.Enums;
 using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -52,6 +53,88 @@ public sealed class VideosController(
             ?? throw new InvalidOperationException("Failed to generate URL.");
 
         return Accepted(statusUrl, new { id, status = VideoProcessingStatus.Queued });
+    }
+
+    // GET /videos — kész és publikus videók listája lapozással
+    [HttpGet]
+    public async Task<IActionResult> GetVideos([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        var videos = await videoRepository.GetListAsync(page, pageSize);
+
+        var result = videos.Select(v => new
+        {
+            id          = v.Id,
+            title       = v.Title,
+            description = v.Description,
+            duration    = v.DurationSeconds,
+            publishedAt = v.PublishedAt,
+            author = new
+            {
+                id   = v.User.Id,
+                name = v.User.DisplayName ?? v.User.Username
+            },
+            media = new
+            {
+                sprite   = storageService.GetPublicUrl($"{v.Id}/sprite.jpg",         StorageBucket.Videos),
+                preview  = storageService.GetPublicUrl($"{v.Id}/sprite.vtt",         StorageBucket.Videos),
+                // hover preview: legalacsonyabb minőségű stream, frontenden hls.js kell hozzá
+                hoverStream = storageService.GetPublicUrl($"{v.Id}/480p/index.m3u8", StorageBucket.Videos),
+                thumbnails = ImageService.ThumbnailWidths.Select(w => new
+                {
+                    width = w,
+                    url   = storageService.GetPublicUrl($"{v.Id}/{v.Id}_thumb_w{w}.jpg", StorageBucket.Images)
+                })
+            }
+        });
+
+        return Ok(result);
+    }
+
+    // GET /videos/{id} — egy videó adatai; csak a ténylegesen elérhető médiát adja vissza
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetVideo(Guid id)
+    {
+        var video = await videoRepository.GetByIdAsync(id);
+        if (video is null) return NotFound();
+
+        var isCompleted = video.StatusId == (int)ProcessingStatus.Completed;
+        var hasThumbnails = video.ThumbnailImageId is not null || isCompleted;
+
+        return Ok(new
+        {
+            id          = video.Id,
+            title       = video.Title,
+            description = video.Description,
+            duration    = video.DurationSeconds,
+            publishedAt = video.PublishedAt,
+            statusId    = video.StatusId,
+            status      = video.Status.Title,
+            author = new
+            {
+                id   = video.User.Id,
+                name = video.User.DisplayName ?? video.User.Username
+            },
+            tags   = video.VideoTags.Select(vt => vt.Tag.Name),
+            media = new
+            {
+                streams = isCompleted
+                    ? VideoService.StreamQualities.Select(q => new
+                    {
+                        quality = q,
+                        url     = storageService.GetPublicUrl($"{video.Id}/{q}/index.m3u8", StorageBucket.Videos)
+                    })
+                    : null,
+                sprite  = isCompleted ? storageService.GetPublicUrl($"{video.Id}/sprite.jpg", StorageBucket.Videos) : null,
+                preview = isCompleted ? storageService.GetPublicUrl($"{video.Id}/sprite.vtt", StorageBucket.Videos) : null,
+                thumbnails = hasThumbnails
+                    ? ImageService.ThumbnailWidths.Select(w => new
+                    {
+                        width = w,
+                        url   = storageService.GetPublicUrl($"{video.Id}/{video.Id}_thumb_w{w}.jpg", StorageBucket.Images)
+                    })
+                    : null
+            }
+        });
     }
 
     // GET /videos/{id}/status — státusz lekérése Redis-ből; ha kész, MinIO URL-eket ad vissza

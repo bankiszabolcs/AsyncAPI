@@ -1,0 +1,28 @@
+<nav
+  class="flex flex-col h-full shrink-0 overflow-hidden transition-[width] duration-300 ease-in-out
+    bg-(--p-surface-section)
+    shadow-[1px_0_0_rgba(255,255,255,0.05)]
+    pt-2 pb-4"
+  [style.width]="collapsed() ? '72px' : '240px'"
+>
+  @for (item of navItems; track item.route) {
+    <a
+      [routerLink]="item.route"
+      routerLinkActive="bg-(--p-surface-hover) font-semibold"
+      [routerLinkActiveOptions]="{ exact: !!item.exact }"
+      pRipple
+      [pTooltip]="collapsed() ? item.label : ''"
+      tooltipPosition="right"
+      class="flex items-center gap-4 py-3 my-0.5 mx-2 rounded-xl cursor-pointer
+        text-(--p-text-color) no-underline
+        hover:bg-(--p-surface-hover) transition-colors duration-150"
+      [class.px-5]="!collapsed()"
+      [class.justify-center]="collapsed()"
+    >
+      <i class="pi {{ item.icon }} text-xl shrink-0"></i>
+      @if (!collapsed()) {
+        <span class="text-sm whitespace-nowrap">{{ item.label }}</span>
+      }
+    </a>
+  }
+</nav>

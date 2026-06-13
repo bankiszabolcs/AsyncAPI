@@ -1,0 +1,9 @@
+<div class="flex flex-col h-screen bg-(--p-surface-ground) text-(--p-text-color)">
+  <app-navbar (sidebarToggle)="toggleSidebar()" />
+  <div class="flex flex-1 overflow-hidden pt-14">
+    <app-sidebar [collapsed]="sidebarCollapsed()" />
+    <main class="flex-1 overflow-y-auto">
+      <router-outlet />
+    </main>
+  </div>
+</div>

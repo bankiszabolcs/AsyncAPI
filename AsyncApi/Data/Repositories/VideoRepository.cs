@@ -73,6 +73,16 @@ public class VideoRepository(AsyncApiDbContext db)
             .ToListAsync();
     }
 
+    // Saját videók — minden státusz, csak a user saját videói
+    public async Task<List<Video>> GetAllByUserIdAsync(Guid userId)
+    {
+        return await db.Videos
+            .Include(v => v.Status)
+            .Where(v => v.UserId == userId && v.Active)
+            .OrderByDescending(v => v.CreateDate)
+            .ToListAsync();
+    }
+
     public async Task IncrementViewCountAsync(Guid id)
     {
         await db.Database.ExecuteSqlRawAsync(

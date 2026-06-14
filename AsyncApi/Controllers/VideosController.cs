@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using AsyncApi.Data.Repositories;
 using AsyncApi.Enums;
 using AsyncApi.Models;
 using AsyncApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AsyncApi.Controllers;
@@ -19,15 +21,26 @@ public sealed class VideosController(
     : ControllerBase
 {
     private readonly string _uploadDirectory = configuration["UploadDirectory"] ?? "uploads";
-    private readonly Guid _technicalUserId = Guid.Parse(configuration["TechnicalUser:Id"]
-        ?? throw new InvalidOperationException("TechnicalUser:Id nincs beállítva az appsettings-ben."));
+
+    // A bejelentkezett user Keycloak sub-ja (== DB user Id). null ha nincs/érvénytelen.
+    private Guid? CurrentUserId
+    {
+        get
+        {
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            return Guid.TryParse(sub, out var id) ? id : null;
+        }
+    }
 
     // POST /videos — feltölti a videót, sorba állítja a feldolgozást, visszaadja a státusz URL-t
     [HttpPost]
+    [Authorize]
     [RequestSizeLimit(2_000_000_000)]
     [RequestFormLimits(MultipartBodyLengthLimit = 2_000_000_000)]
     public async Task<IActionResult> UploadVideo(IFormFile? file)
     {
+        if (CurrentUserId is not { } userId) return Unauthorized();
+
         if (file is null) return BadRequest("No file uploaded.");
 
         if (!videoService.IsValidVideo(file))
@@ -39,8 +52,8 @@ public sealed class VideosController(
 
         var originalFilePath = await videoService.SaveOriginalVideoAsync(file, folderPath, fileName);
 
-        // DB rekord létrehozása — id és userId kötelező, a többi mező később frissíthető
-        await videoRepository.CreateAsync(id, file.FileName, _technicalUserId);
+        // DB rekord létrehozása — a tulajdonos a bejelentkezett user
+        await videoRepository.CreateAsync(id, file.FileName, userId);
 
         // Job Redis Stream-be írva — korábban channel.Writer.WriteAsync(job) volt
         var job = new VideoProcessingJob(id.ToString(), originalFilePath, folderPath);
@@ -85,6 +98,44 @@ public sealed class VideosController(
                     url   = storageService.GetPublicUrl($"{v.Id}/{v.Id}_thumb_w{w}.jpg", StorageBucket.Images)
                 })
             }
+        });
+
+        return Ok(result);
+    }
+
+    // GET /videos/my — bejelentkezett user összes videója, státusztól függetlenül
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<IActionResult> GetMyVideos()
+    {
+        if (CurrentUserId is not { } userId) return Unauthorized();
+
+        var videos = await videoRepository.GetAllByUserIdAsync(userId);
+
+        var result = videos.Select(v =>
+        {
+            var isCompleted   = v.StatusId == (int)ProcessingStatus.Completed;
+            var hasThumbnails = isCompleted || v.StatusId == (int)ProcessingStatus.Processing;
+
+            return new
+            {
+                id          = v.Id,
+                title       = v.Title,
+                duration    = v.DurationSeconds,
+                publishedAt = v.PublishedAt,
+                statusId    = v.StatusId,
+                status      = v.Status.Title,
+                media = new
+                {
+                    thumbnails = hasThumbnails
+                        ? ImageService.ThumbnailWidths.Select(w => new
+                        {
+                            width = w,
+                            url   = storageService.GetPublicUrl($"{v.Id}/{v.Id}_thumb_w{w}.jpg", StorageBucket.Images)
+                        })
+                        : null
+                }
+            };
         });
 
         return Ok(result);

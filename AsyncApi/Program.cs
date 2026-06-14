@@ -2,7 +2,9 @@ using AsyncApi.Data;
 using AsyncApi.Data.Repositories;
 using AsyncApi.Infrastructure;
 using AsyncApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 using StackExchange.Redis;
@@ -53,6 +55,22 @@ try
 
     builder.Services.AddScoped<VideoRepository>();
     builder.Services.AddScoped<ImageRepository>();
+    builder.Services.AddScoped<UserRepository>();
+
+    // --- Keycloak JWT autentikáció ---
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.Authority            = builder.Configuration["Keycloak:Authority"];
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidIssuer      = builder.Configuration["Keycloak:ValidIssuer"],
+                NameClaimType    = "preferred_username",
+            };
+        });
+    builder.Services.AddAuthorization();
 
     builder.Services.AddSingleton<QueueService>();
     builder.Services.AddSingleton<StatusService>();
@@ -86,6 +104,7 @@ try
             diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
         };
     });
+    app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
 

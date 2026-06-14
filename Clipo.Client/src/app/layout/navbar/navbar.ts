@@ -1,4 +1,4 @@
-import { Component, output, signal, HostListener } from '@angular/core';
+import { Component, output, signal, inject, HostListener } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -8,6 +8,7 @@ import { Drawer } from 'primeng/drawer';
 import { Popover } from 'primeng/popover';
 import { Ripple } from 'primeng/ripple';
 import { MenuItem } from 'primeng/api';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -16,6 +17,7 @@ import { MenuItem } from 'primeng/api';
 })
 export class Navbar {
   readonly sidebarToggle = output<void>();
+  readonly auth = inject(AuthService);
 
   // Asztali nézet alatt (~1280px) a profil/értesítés/keresés drawerként nyílik,
   // fölötte legördülő menüként / popoverként / beágyazott keresőmezőként.
@@ -67,7 +69,7 @@ export class Navbar {
   }
 
   private logout(): void {
-    // TODO: kijelentkezés logika
+    this.auth.logout();
   }
 
   private checkMobile(): boolean {

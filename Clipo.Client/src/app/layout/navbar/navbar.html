@@ -77,22 +77,39 @@
       aria-label="Értesítések"
       (click)="onBellClick(notifPopover, $event)"
     />
-    <p-avatar
-      icon="pi pi-user"
-      shape="circle"
-      class="cursor-pointer ml-1"
-      (click)="onAvatarClick(userMenu, $event)"
-      aria-label="Profil"
-    />
+
+    @if (auth.isLoggedIn()) {
+      <p-avatar
+        [image]="auth.user()?.picture ?? undefined"
+        [icon]="auth.user()?.picture ? undefined : 'pi pi-user'"
+        shape="circle"
+        class="cursor-pointer ml-1"
+        (click)="onAvatarClick(userMenu, $event)"
+        aria-label="Profil"
+      />
+    } @else {
+      <p-button
+        label="Bejelentkezés"
+        icon="pi pi-sign-in"
+        [outlined]="true"
+        size="small"
+        (click)="auth.login()"
+      />
+    }
 
     <!-- Asztali nézet: legördülő menü -->
     <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" styleClass="user-menu !w-64 !mt-2">
       <ng-template #start>
         <div class="flex items-center gap-3 px-3 py-3">
-          <p-avatar icon="pi pi-user" shape="circle" size="large" />
+          <p-avatar
+            [image]="auth.user()?.picture ?? undefined"
+            [icon]="auth.user()?.picture ? undefined : 'pi pi-user'"
+            shape="circle"
+            size="large"
+          />
           <div class="flex flex-col min-w-0">
-            <span class="font-medium text-sm text-(--p-text-color) truncate">Felhasználó</span>
-            <span class="text-xs text-(--p-text-muted-color) truncate">A fiók kezelése</span>
+            <span class="font-medium text-sm text-(--p-text-color) truncate">{{ auth.user()?.name || 'Felhasználó' }}</span>
+            <span class="text-xs text-(--p-text-muted-color) truncate">{{ auth.user()?.email || 'A fiók kezelése' }}</span>
           </div>
         </div>
         <hr class="border-(--p-surface-border) m-0" />
@@ -131,10 +148,15 @@
 >
   <ng-template #header>
     <div class="flex items-center gap-3 pl-2 py-2">
-      <p-avatar icon="pi pi-user" shape="circle" size="large" />
+      <p-avatar
+        [image]="auth.user()?.picture ?? undefined"
+        [icon]="auth.user()?.picture ? undefined : 'pi pi-user'"
+        shape="circle"
+        size="large"
+      />
       <div class="flex flex-col">
-        <span class="font-medium text-(--p-text-color)">Felhasználó</span>
-        <span class="text-xs text-(--p-text-muted-color)">A fiók kezelése</span>
+        <span class="font-medium text-(--p-text-color)">{{ auth.user()?.name || 'Felhasználó' }}</span>
+        <span class="text-xs text-(--p-text-muted-color)">{{ auth.user()?.email || 'A fiók kezelése' }}</span>
       </div>
     </div>
   </ng-template>

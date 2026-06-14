@@ -1,28 +1,154 @@
+@let u = auth.user();
+
 <div class="max-w-5xl mx-auto p-6">
 
   <!-- Channel header -->
   <div class="flex items-center gap-5">
-    <div class="w-24 h-24 rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0">
-      <i class="pi pi-user text-4xl text-(--p-text-muted-color)"></i>
+    <div class="w-24 h-24 rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0 overflow-hidden">
+      @if (u?.picture) {
+        <img [src]="u.picture" alt="" class="w-full h-full object-cover" />
+      } @else {
+        <i class="pi pi-user text-4xl text-(--p-text-muted-color)"></i>
+      }
     </div>
     <div class="min-w-0">
-      <h1 class="text-2xl font-bold text-(--p-text-color)">My Channel</h1>
-      <p class="text-sm text-(--p-text-muted-color) mt-1">0 subscribers · 0 videos</p>
+      <h1 class="text-2xl font-bold text-(--p-text-color)">{{ u?.name || 'Csatorna' }}</h1>
+      <p class="text-sm text-(--p-text-muted-color) mt-1">
+        {{ videos().length }} videó
+      </p>
     </div>
   </div>
 
-  <!-- Tabs (static placeholder) -->
+  <!-- Tabs -->
   <div class="flex gap-6 mt-8 border-b border-(--p-surface-border) text-sm font-medium">
-    <span class="pb-3 -mb-px border-b-2 border-(--p-primary-color) text-(--p-text-color)">Videos</span>
-    <span class="pb-3 text-(--p-text-muted-color)">Playlists</span>
-    <span class="pb-3 text-(--p-text-muted-color)">About</span>
+    <button
+      class="pb-3 -mb-px border-b-2 transition-colors cursor-pointer bg-transparent border-none"
+      [class.border-(--p-primary-color)]="activeTab() === 'videos'"
+      [class.text-(--p-text-color)]="activeTab() === 'videos'"
+      [class.border-transparent]="activeTab() !== 'videos'"
+      [class.text-(--p-text-muted-color)]="activeTab() !== 'videos'"
+      (click)="activeTab.set('videos')"
+    >Videók</button>
+    <button
+      class="pb-3 -mb-px border-b-2 transition-colors cursor-pointer bg-transparent border-none"
+      [class.border-(--p-primary-color)]="activeTab() === 'playlists'"
+      [class.text-(--p-text-color)]="activeTab() === 'playlists'"
+      [class.border-transparent]="activeTab() !== 'playlists'"
+      [class.text-(--p-text-muted-color)]="activeTab() !== 'playlists'"
+      (click)="activeTab.set('playlists')"
+    >Lejátszási listák</button>
+    <button
+      class="pb-3 -mb-px border-b-2 transition-colors cursor-pointer bg-transparent border-none"
+      [class.border-(--p-primary-color)]="activeTab() === 'about'"
+      [class.text-(--p-text-color)]="activeTab() === 'about'"
+      [class.border-transparent]="activeTab() !== 'about'"
+      [class.text-(--p-text-muted-color)]="activeTab() !== 'about'"
+      (click)="activeTab.set('about')"
+    >Névjegy</button>
   </div>
 
-  <!-- Empty state -->
-  <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
-    <i class="pi pi-video text-5xl text-(--p-text-muted-color)"></i>
-    <p class="text-(--p-text-color) font-medium">No videos yet</p>
-    <p class="text-sm text-(--p-text-muted-color)">Videos you upload will appear here.</p>
-  </div>
+  <!-- Videos tab -->
+  @if (activeTab() === 'videos') {
+    @if (isLoading()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        @for (_ of [1,2,3,4,5,6]; track $index) {
+          <div class="animate-pulse">
+            <div class="w-full aspect-video bg-(--p-surface-card) rounded-xl"></div>
+            <div class="mt-2 space-y-2">
+              <div class="h-4 bg-(--p-surface-card) rounded w-3/4"></div>
+              <div class="h-3 bg-(--p-surface-card) rounded w-1/2"></div>
+            </div>
+          </div>
+        }
+      </div>
+
+    } @else if (videos().length === 0) {
+      <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
+        <i class="pi pi-video text-5xl text-(--p-text-muted-color)"></i>
+        <p class="text-(--p-text-color) font-medium">Még nincs videód</p>
+        <p class="text-sm text-(--p-text-muted-color)">A feltöltött videóid itt fognak megjelenni.</p>
+        <a routerLink="/upload"
+           class="mt-2 px-4 py-2 rounded-lg bg-(--p-primary-color) text-white text-sm font-medium no-underline hover:opacity-90 transition-opacity">
+          Videó feltöltése
+        </a>
+      </div>
+
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        @for (video of videos(); track video.id) {
+          <a [routerLink]="video.statusId === 3 ? ['/watch', video.id] : null"
+             class="group block no-underline"
+             [class.cursor-default]="video.statusId !== 3"
+             [class.cursor-pointer]="video.statusId === 3">
+
+            <!-- Thumbnail -->
+            <div class="relative w-full aspect-video bg-(--p-surface-card) rounded-xl overflow-hidden">
+              @if (thumbnail(video); as thumb) {
+                <img [src]="thumb" [alt]="video.title"
+                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                     [class.opacity-50]="video.statusId !== 3" />
+              } @else {
+                <div class="w-full h-full flex items-center justify-center">
+                  <i class="pi pi-video text-3xl text-(--p-text-muted-color)"></i>
+                </div>
+              }
+
+              <!-- Státusz badge (ha nem kész) -->
+              @if (video.statusId !== 3) {
+                <div class="absolute inset-0 flex items-center justify-center">
+                  @if (video.statusId === 2) {
+                    <i class="pi pi-spin pi-spinner text-2xl text-white"></i>
+                  }
+                </div>
+              }
+
+              <!-- Időtartam badge -->
+              @if (video.statusId === 3 && video.duration) {
+                <span class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                  {{ fmtDuration(video.duration) }}
+                </span>
+              }
+            </div>
+
+            <!-- Info -->
+            <div class="mt-2 flex items-start gap-2">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-(--p-text-color) line-clamp-2 leading-snug">{{ video.title }}</p>
+                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                  @if (video.statusId !== 3) {
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="statusClass[video.statusId]">
+                      {{ statusLabel[video.statusId] }}
+                    </span>
+                  } @else if (video.publishedAt) {
+                    <span class="text-xs text-(--p-text-muted-color)">{{ video.publishedAt | timeAgo }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  }
+
+  <!-- Playlists tab -->
+  @if (activeTab() === 'playlists') {
+    <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
+      <i class="pi pi-list text-5xl text-(--p-text-muted-color)"></i>
+      <p class="text-(--p-text-color) font-medium">Még nincs lejátszási listád</p>
+    </div>
+  }
+
+  <!-- About tab -->
+  @if (activeTab() === 'about') {
+    <div class="mt-6 space-y-3 text-sm text-(--p-text-color)">
+      @if (u?.email) {
+        <div class="flex items-center gap-3">
+          <i class="pi pi-envelope text-(--p-text-muted-color)"></i>
+          <span>{{ u.email }}</span>
+        </div>
+      }
+    </div>
+  }
 
 </div>

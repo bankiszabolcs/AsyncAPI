@@ -30,6 +30,7 @@ export const routes: Routes = [
   {
     path: 'channel',
     loadComponent: () => import('./pages/channel/channel').then(m => m.Channel),
+    providers: [VideoService],
   },
   {
     path: 'studio',

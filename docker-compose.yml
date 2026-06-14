@@ -6,9 +6,14 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - app
-      - frontend
-      - minio
+      app:
+        condition: service_started
+      frontend:
+        condition: service_started
+      minio:
+        condition: service_started
+      keycloak:
+        condition: service_started
 
   app:
     build:
@@ -23,6 +28,10 @@ services:
       - Redis__ConnectionString=redis:6379
       - Database__ConnectionString=Host=postgres;Database=asyncapi;Username=postgres;Password=postgres
       - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
+      # JWKS letöltés: belső Docker hálózaton éri el a Keycloak-ot (/auth prefix-szel)
+      - Keycloak__Authority=http://keycloak:8180/auth/realms/clipo
+      # JWT iss claim: a publikus URL (nginx forwarded headerei alapján)
+      - Keycloak__ValidIssuer=http://localhost/auth/realms/clipo
     depends_on:
       minio:
         condition: service_started
@@ -79,6 +88,25 @@ services:
       - ./Clipo.Client/src:/app/src
     depends_on:
       - app
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    command: start-dev
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=postgres
+      - KC_HTTP_PORT=8180
+      # Keycloak /auth úton szolgál (belül és kívül is) — egyezik az nginx /auth/ proxyval
+      - KC_HTTP_RELATIVE_PATH=/auth
+      # A publikus URL-t (issuer, redirect) az nginx X-Forwarded-* headereiből vezeti le
+      - KC_PROXY_HEADERS=xforwarded
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   seq:
     image: datalust/seq:latest

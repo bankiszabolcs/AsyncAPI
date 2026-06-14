@@ -17,8 +17,8 @@
   </div>
 
   <!-- Stat cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-    @for (stat of stats; track stat.label) {
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+    @for (stat of stats(); track stat.label) {
       <div class="p-5 rounded-xl bg-(--p-surface-card)">
         <div class="flex items-center gap-3 text-(--p-text-muted-color)">
           <i class="pi {{ stat.icon }} text-lg"></i>
@@ -29,12 +29,135 @@
     }
   </div>
 
-  <!-- Content table placeholder -->
+  <!-- Your videos -->
   <h2 class="text-lg font-semibold text-(--p-text-color) mt-10 mb-4">Your videos</h2>
-  <div class="flex flex-col items-center justify-center text-center gap-3 py-16 rounded-xl bg-(--p-surface-card)">
-    <i class="pi pi-inbox text-5xl text-(--p-text-muted-color)"></i>
-    <p class="text-(--p-text-color) font-medium">Nothing here yet</p>
-    <p class="text-sm text-(--p-text-muted-color)">Upload your first video to get started.</p>
-  </div>
+
+  @if (isLoading()) {
+    <div class="flex flex-col divide-y divide-(--p-surface-border) rounded-xl bg-(--p-surface-card) overflow-hidden">
+      @for (_ of [1,2,3]; track $index) {
+        <div class="flex items-center gap-4 px-4 py-3 animate-pulse">
+          <div class="w-40 aspect-video rounded-lg bg-(--p-surface-ground) shrink-0"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 bg-(--p-surface-ground) rounded w-2/3"></div>
+            <div class="h-3 bg-(--p-surface-ground) rounded w-1/3"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (videos()!.length === 0) {
+    <div class="flex flex-col items-center justify-center text-center gap-3 py-16 rounded-xl bg-(--p-surface-card)">
+      <i class="pi pi-inbox text-5xl text-(--p-text-muted-color)"></i>
+      <p class="text-(--p-text-color) font-medium">Nothing here yet</p>
+      <p class="text-sm text-(--p-text-muted-color)">Upload your first video to get started.</p>
+    </div>
+  } @else {
+    <div class="flex flex-col divide-y divide-(--p-surface-border) rounded-xl bg-(--p-surface-card) overflow-hidden">
+      @for (v of videos(); track v.id) {
+        <div class="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-(--p-surface-hover)">
+
+          <!-- Thumbnail -->
+          <div class="relative w-40 aspect-video rounded-lg overflow-hidden bg-(--p-surface-ground) shrink-0">
+            @if (thumbnail(v); as t) {
+              <img [src]="t" alt="" class="w-full h-full object-cover" />
+            } @else {
+              <div class="w-full h-full flex items-center justify-center text-(--p-text-muted-color)">
+                <i class="pi pi-video text-2xl"></i>
+              </div>
+            }
+            @if (isCompleted(v) && v.duration) {
+              <span class="absolute bottom-1 right-1 bg-black/80 text-white text-xs font-medium px-1 py-0.5 rounded leading-none">
+                {{ formatDuration(v.duration) }}
+              </span>
+            }
+          </div>
+
+          <!-- Main column — ugyanazok az elemek nézet és szerkesztés alatt, így nem ugrik -->
+          <div class="flex-1 min-w-0">
+            <input
+              type="text"
+              maxlength="200"
+              placeholder="Title"
+              [readonly]="editingId() !== v.id"
+              class="block w-full bg-transparent p-0 border-0 border-b border-transparent outline-none
+                     leading-snug truncate font-medium text-(--p-text-color)
+                     placeholder:text-(--p-text-muted-color) read-only:cursor-default"
+              [style.border-bottom-color]="editingId() === v.id ? 'var(--p-orange-500)' : 'transparent'"
+              [ngModel]="editingId() === v.id ? editTitle() : v.title"
+              (ngModelChange)="editTitle.set($event)"
+            />
+            <textarea
+              placeholder="No description"
+              [readonly]="editingId() !== v.id"
+              class="block w-full mt-1 h-8 leading-4 bg-transparent p-0 border-0 outline-none resize-none
+                     text-xs text-(--p-text-color) placeholder:text-(--p-text-muted-color) read-only:cursor-default"
+              [ngModel]="editingId() === v.id ? editDescription() : (v.description || '')"
+              (ngModelChange)="editDescription.set($event)"
+            ></textarea>
+            @if (!isCompleted(v)) {
+              <span class="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full bg-(--p-surface-ground) text-(--p-text-muted-color)">
+                {{ v.status }}
+              </span>
+            }
+          </div>
+
+          <!-- Visibility — ugyanaz a select nézet és szerkesztés alatt (nézetben letiltva), így nem ugrik -->
+          <div class="hidden sm:block w-36 shrink-0 text-sm text-(--p-text-muted-color)">
+            <p-select
+              [options]="visibilityOptions"
+              optionLabel="label"
+              optionValue="value"
+              [disabled]="editingId() !== v.id"
+              [styleClass]="editingId() === v.id ? 'flat-select w-full' : 'flat-select flat-readonly w-full'"
+              [ngModel]="editingId() === v.id ? editVisibilityId() : v.visibilityId"
+              (ngModelChange)="editVisibilityId.set($event)"
+            >
+              <ng-template #selectedItem let-opt>
+                <div class="flex items-center gap-2">
+                  <i class="pi {{ opt?.icon }} text-(--p-text-muted-color)"></i>
+                  <span>{{ opt?.label }}</span>
+                </div>
+              </ng-template>
+              <ng-template #item let-opt>
+                <div class="flex items-center gap-2">
+                  <i class="pi {{ opt.icon }} text-(--p-text-muted-color)"></i>
+                  <span>{{ opt.label }}</span>
+                </div>
+              </ng-template>
+            </p-select>
+          </div>
+
+          <!-- Actions — fix szélesség, hogy a Public ne ugráljon szerkesztéskor -->
+          <div class="flex items-center justify-end gap-2 shrink-0 w-32 pl-2">
+            @if (editingId() === v.id) {
+              <p-button
+                icon="pi pi-times"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                [disabled]="saving()"
+                (click)="cancelEdit()"
+              />
+              <p-button
+                icon="pi pi-check"
+                label="Save"
+                size="small"
+                [loading]="saving()"
+                (click)="saveEdit(v)"
+              />
+            } @else {
+              <p-button
+                icon="pi pi-pencil"
+                label="Edit"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                (click)="startEdit(v)"
+              />
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
 
 </div>

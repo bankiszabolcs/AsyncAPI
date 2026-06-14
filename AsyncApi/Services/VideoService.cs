@@ -121,16 +121,19 @@ public sealed class VideoService(
 
     private static async Task GenerateSpriteAsync(string originalFilePath, string folderPath, TimeSpan duration)
     {
+        var totalSeconds    = (int)duration.TotalSeconds;
+        var intervalSeconds = Math.Max(1, totalSeconds / 100);
+
         var spritePath = Path.Combine(folderPath, "sprite.jpg");
 
         await FFMpegArguments
             .FromFileInput(originalFilePath)
             .OutputToFile(spritePath, overwrite: true, options => options
-                .WithCustomArgument("-vf fps=1/10,scale=160:90,tile=10x10")
+                .WithCustomArgument($"-vf fps=1/{intervalSeconds},scale=160:90,tile=10x10")
                 .WithFrameOutputCount(1))
             .ProcessAsynchronously();
 
-        await WriteWebVttAsync(folderPath, duration);
+        await WriteWebVttAsync(folderPath, duration, intervalSeconds);
     }
 
     // Teljes felbontású frame kimentése a 10. másodpercből (vagy az elejéről ha rövidebb a videó),
@@ -170,15 +173,14 @@ public sealed class VideoService(
         await File.WriteAllLinesAsync(masterPath, lines);
     }
 
-    private static async Task WriteWebVttAsync(string folderPath, TimeSpan duration)
+    private static async Task WriteWebVttAsync(string folderPath, TimeSpan duration, int intervalSeconds)
     {
         var vttPath = Path.Combine(folderPath, "sprite.vtt");
         var lines = new List<string> { "WEBVTT", "" };
 
-        const int intervalSeconds = 10;
-        const int frameWidth      = 160;
-        const int frameHeight     = 90;
-        const int columns         = 10;
+        const int frameWidth  = 160;
+        const int frameHeight = 90;
+        const int columns     = 10;
 
         var totalFrames = (int)(duration.TotalSeconds / intervalSeconds);
 

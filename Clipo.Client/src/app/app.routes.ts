@@ -35,6 +35,7 @@ export const routes: Routes = [
   {
     path: 'studio',
     loadComponent: () => import('./pages/studio/studio').then(m => m.Studio),
+    providers: [VideoService],
   },
   {
     path: 'settings',

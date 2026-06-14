@@ -1,6 +1,8 @@
 <a
-  class="flex flex-col gap-3 cursor-pointer group no-underline text-inherit"
-  [routerLink]="['/watch', video().id]"
+  class="flex flex-col gap-3 group no-underline text-inherit"
+  [class.cursor-pointer]="isCompleted()"
+  [class.cursor-default]="!isCompleted()"
+  [routerLink]="isCompleted() ? ['/watch', video().id] : null"
   (mouseenter)="onMouseEnter()"
   (mouseleave)="onMouseLeave()"
 >
@@ -20,6 +22,7 @@
           class="w-full h-full object-cover transition-[transform,opacity] duration-300"
           [class.scale-105]="isHovering()"
           [class.opacity-0]="isHovering()"
+          [class.opacity-60]="!isCompleted()"
         />
       } @else {
         <div class="w-full h-full flex items-center justify-center text-(--p-text-muted-color)">
@@ -38,8 +41,25 @@
       ></video>
     </div>
 
-    <!-- Duration badge — csak amikor nem hoveroelünk -->
-    @if (!isHovering()) {
+    <!-- Status overlay — feldolgozás / sorban áll / sikertelen esetén -->
+    @if (!isCompleted()) {
+      <div class="absolute inset-0 flex items-center justify-center rounded-xl z-10">
+        @switch (video().statusId) {
+          @case (2) {
+            <i class="pi pi-spin pi-spinner text-white text-2xl drop-shadow"></i>
+          }
+          @case (4) {
+            <i class="pi pi-times-circle text-red-400 text-2xl drop-shadow"></i>
+          }
+          @default {
+            <i class="pi pi-clock text-white/70 text-2xl drop-shadow"></i>
+          }
+        }
+      </div>
+    }
+
+    <!-- Duration badge — csak befejezett, nem hoverolés alatt -->
+    @if (isCompleted() && !isHovering()) {
       <span class="absolute bottom-2 right-1.5 bg-black/80 text-white text-xs font-medium px-1.5 py-0.5 rounded leading-none z-10">
         {{ displayDuration() }}
       </span>
@@ -53,17 +73,17 @@
         (mouseleave)="onSeekBarLeave()"
       >
         <!-- Sprite tooltip -->
-        @if (spriteFrame(); as frame) {
+        @if (spriteFrame()) {
           <div
             class="absolute bottom-full mb-2 pointer-events-none -translate-x-1/2"
-            [style.left.%]="(thumbnailHoverRatio() ?? 0) * 100"
+            [style.left]="tooltipLeft()"
           >
             <div
               class="rounded overflow-hidden border border-white/20 shadow-xl"
-              [style.width.px]="frame.w"
-              [style.height.px]="frame.h"
+              [style.width.px]="spriteFrame()!.w"
+              [style.height.px]="spriteFrame()!.h"
               [style.background-image]="safeSpriteStyle()"
-              [style.background-position]="'-' + frame.x + 'px -' + frame.y + 'px'"
+              [style.background-position]="spritePosition()"
               [style.background-size]="'auto'"
             ></div>
             <p class="text-center text-xs text-white mt-1 font-medium drop-shadow">
@@ -95,8 +115,16 @@
       <h3 class="text-sm font-semibold text-(--p-text-color) line-clamp-2 leading-snug">
         {{ video().title }}
       </h3>
-      <span class="text-xs text-(--p-text-muted-color) truncate">{{ video().author.name }}</span>
-      <span class="text-xs text-(--p-text-muted-color)">{{ video().publishedAt | timeAgo }}</span>
+      @if (video().author?.name) {
+        <span class="text-xs text-(--p-text-muted-color) truncate">{{ video().author!.name }}</span>
+      }
+      @if (!isCompleted()) {
+        <span class="text-xs px-2 py-0.5 rounded-full font-medium w-fit mt-0.5" [class]="statusBadgeClass()">
+          {{ statusLabelText() }}
+        </span>
+      } @else {
+        <span class="text-xs text-(--p-text-muted-color)">{{ video().publishedAt | timeAgo }}</span>
+      }
     </div>
   </div>
 

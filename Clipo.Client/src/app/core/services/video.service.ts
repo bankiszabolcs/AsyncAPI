@@ -6,6 +6,7 @@ import { Video } from '../models/video.model';
 import { VideoDetail } from '../models/video-detail.model';
 import { VideoStatus } from '../models/video-status.model';
 import { MyVideo } from '../models/my-video.model';
+import { UpdateVideoRequest, UpdateVideoResponse } from '../models/video-update.model';
 
 @Injectable()
 export class VideoService {
@@ -30,5 +31,11 @@ export class VideoService {
 
   getMyVideos(): Observable<MyVideo[]> {
     return this.http.get<MyVideo[]>(`${this.baseUrl}/my`);
+  }
+
+  // Cím / leírás / láthatóság szerkesztése (authorizált, csak a tulajdonos).
+  // Több oldalról is újrahasználható (Studio lista, dedikált szerkesztő oldal).
+  updateVideo(id: string, payload: UpdateVideoRequest): Observable<UpdateVideoResponse> {
+    return this.http.put<UpdateVideoResponse>(`${this.baseUrl}/${id}`, payload);
   }
 }

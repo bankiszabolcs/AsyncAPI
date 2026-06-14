@@ -47,6 +47,26 @@ public class VideoRepository(AsyncApiDbContext db)
         await db.SaveChangesAsync();
     }
 
+    // Cím / leírás / láthatóság frissítése — kizárólag a tulajdonos módosíthat.
+    // null visszatérés: a videó nem létezik, vagy nem a megadott useré.
+    // ModifyDate-et DB trigger állítja, itt nem írjuk.
+    public async Task<Video?> UpdateDetailsAsync(
+        Guid id, Guid userId, string title, string? description, int visibilityId)
+    {
+        var video = await db.Videos
+            .Include(v => v.Status)
+            .FirstOrDefaultAsync(v => v.Id == id && v.UserId == userId && v.Active);
+        if (video is null) return null;
+
+        video.Title        = title;
+        video.Description  = description;
+        video.VisibilityId = visibilityId;
+        video.ModifyUserId = userId;
+
+        await db.SaveChangesAsync();
+        return video;
+    }
+
     public async Task<Video?> GetByIdAsync(Guid id)
     {
         return await db.Videos

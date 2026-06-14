@@ -4,8 +4,22 @@ import { TimeAgoPipe } from '../pipes/time-ago.pipe';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import Hls from 'hls.js';
-import { Video } from '../../core/models/video.model';
+import { VideoThumbnail } from '../../core/models/video.model';
 import { parseVtt, SpriteFrame } from '../video-player/vtt-parser';
+
+export interface CardVideo {
+  id: string;
+  title: string;
+  duration: number;
+  publishedAt: string | null;
+  statusId?: number;
+  author?: { id: string; name: string };
+  media: {
+    thumbnails: VideoThumbnail[] | null;
+    hoverStream?: string | null;
+    preview?: string | null;
+  };
+}
 
 @Component({
   selector: 'app-video-card',
@@ -13,7 +27,7 @@ import { parseVtt, SpriteFrame } from '../video-player/vtt-parser';
   templateUrl: './video-card.html',
 })
 export class VideoCard implements OnDestroy {
-  readonly video = input.required<Video>();
+  readonly video = input.required<CardVideo>();
 
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
@@ -26,13 +40,18 @@ export class VideoCard implements OnDestroy {
   readonly currentTime = signal(0);
   readonly thumbnailHoverRatio = signal<number | null>(null);
 
+  readonly isCompleted = computed(() => {
+    const s = this.video().statusId;
+    return s === undefined || s === 3;
+  });
+
   readonly srcset = computed(() =>
-    this.video().media.thumbnails.map(t => `${t.url} ${t.width}w`).join(', ')
+    (this.video().media.thumbnails ?? []).map(t => `${t.url} ${t.width}w`).join(', ')
   );
 
   readonly fallback = computed(() => {
     const thumbs = this.video().media.thumbnails;
-    if (!thumbs.length) return null;
+    if (!thumbs?.length) return null;
     return thumbs.reduce((best, t) => (t.width > best.width ? t : best)).url;
   });
 
@@ -61,12 +80,38 @@ export class VideoCard implements OnDestroy {
     return this.sanitizer.bypassSecurityTrustStyle(`url("${f.url}")`);
   });
 
+  readonly spritePosition = computed(() => {
+    const f = this.spriteFrame();
+    return f ? `-${f.x}px -${f.y}px` : 'left top';
+  });
+
+  readonly tooltipLeft = computed(() => {
+    const r = this.thumbnailHoverRatio() ?? 0;
+    const half = (this.spriteFrame()?.w ?? 160) / 2;
+    return `clamp(${half}px, ${r * 100}%, calc(100% - ${half}px))`;
+  });
+
   readonly hoverTime = computed(() => {
     const r = this.thumbnailHoverRatio();
     return r !== null ? this.formatTime(Math.round(r * this.video().duration)) : '';
   });
 
+  readonly statusLabelText = computed(() => {
+    const labels: Record<number, string> = { 1: 'Sorban áll', 2: 'Feldolgozás alatt', 4: 'Sikertelen' };
+    return labels[this.video().statusId ?? 3] ?? '';
+  });
+
+  readonly statusBadgeClass = computed(() => {
+    const classes: Record<number, string> = {
+      1: 'bg-gray-500/20 text-gray-400',
+      2: 'bg-blue-500/20 text-blue-400',
+      4: 'bg-red-500/20 text-red-400',
+    };
+    return classes[this.video().statusId ?? 3] ?? '';
+  });
+
   onMouseEnter(): void {
+    if (!this.isCompleted()) return;
     this.isHovering.set(true);
     this.currentTime.set(0);
     this.loadVttOnce();
@@ -119,6 +164,7 @@ export class VideoCard implements OnDestroy {
     const el = this.videoEl()?.nativeElement;
     if (!el) return;
     const url = this.video().media.hoverStream;
+    if (!url) return;
     if (Hls.isSupported()) {
       this.hls = new Hls();
       this.hls.loadSource(url);

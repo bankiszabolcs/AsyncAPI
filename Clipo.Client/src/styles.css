@@ -27,3 +27,47 @@
 .app-sidebar-drawer .p-drawer-content {
   padding: 0;
 }
+
+/* Studio inline szerkesztés: a láthatóság-select keret/háttér nélkül,
+   csak alsó szegéllyel — illeszkedik a helyben szerkeszthető mezőkhöz. */
+.flat-select.p-select {
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px solid var(--p-surface-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+.flat-select.p-select:not(.p-disabled):hover,
+.flat-select.p-select.p-focus {
+  border-bottom-color: var(--p-primary-color);
+}
+/* HTTP loading indicator: vékony piros csík az oldal tetején */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  height: 3px !important;
+}
+.loading-bar .p-progressbar-value {
+  background: var(--p-red-500);
+}
+
+.flat-select .p-select-label {
+  padding: 0.125rem 0;
+  font-size: 0.875rem;
+}
+
+/* Nézet (nem szerkesztett) állapot: a select sima szövegnek tűnjön —
+   nincs alsó szegély, nincs chevron, és nem halványul el a letiltástól. */
+.flat-readonly.p-select {
+  border-bottom-color: transparent;
+  cursor: default;
+}
+.flat-readonly.p-select.p-disabled {
+  opacity: 1;
+}
+.flat-readonly.p-select .p-select-dropdown {
+  display: none;
+}

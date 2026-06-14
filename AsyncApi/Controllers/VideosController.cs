@@ -119,12 +119,14 @@ public sealed class VideosController(
 
             return new
             {
-                id          = v.Id,
-                title       = v.Title,
-                duration    = v.DurationSeconds,
-                publishedAt = v.PublishedAt,
-                statusId    = v.StatusId,
-                status      = v.Status.Title,
+                id           = v.Id,
+                title        = v.Title,
+                description  = v.Description,
+                duration     = v.DurationSeconds,
+                publishedAt  = v.PublishedAt,
+                statusId     = v.StatusId,
+                status       = v.Status.Title,
+                visibilityId = v.VisibilityId,
                 media = new
                 {
                     thumbnails = hasThumbnails
@@ -133,12 +135,52 @@ public sealed class VideosController(
                             width = w,
                             url   = storageService.GetPublicUrl($"{v.Id}/{v.Id}_thumb_w{w}.jpg", StorageBucket.Images)
                         })
-                        : null
+                        : null,
+                    hoverStream = isCompleted
+                        ? storageService.GetPublicUrl($"{v.Id}/480p/index.m3u8", StorageBucket.Videos)
+                        : null,
+                    preview = isCompleted
+                        ? storageService.GetPublicUrl($"{v.Id}/sprite.vtt", StorageBucket.Videos)
+                        : null,
                 }
             };
         });
 
         return Ok(result);
+    }
+
+    // PUT /videos/{id} — cím / leírás / láthatóság szerkesztése (csak a tulajdonos)
+    [HttpPut("{id:guid}")]
+    [Authorize]
+    public async Task<IActionResult> UpdateVideo(Guid id, [FromBody] UpdateVideoRequest request)
+    {
+        if (CurrentUserId is not { } userId) return Unauthorized();
+
+        var title = request.Title?.Trim();
+        if (string.IsNullOrWhiteSpace(title))
+            return BadRequest("Title is required.");
+
+        if (!Enum.IsDefined(typeof(Visibility), request.VisibilityId))
+            return BadRequest("Invalid visibility.");
+
+        var description = string.IsNullOrWhiteSpace(request.Description)
+            ? null
+            : request.Description.Trim();
+
+        var video = await videoRepository.UpdateDetailsAsync(
+            id, userId, title, description, request.VisibilityId);
+
+        if (video is null) return NotFound();
+
+        return Ok(new
+        {
+            id           = video.Id,
+            title        = video.Title,
+            description  = video.Description,
+            statusId     = video.StatusId,
+            status       = video.Status.Title,
+            visibilityId = video.VisibilityId
+        });
     }
 
     // GET /videos/{id} — egy videó adatai; csak a ténylegesen elérhető médiát adja vissza

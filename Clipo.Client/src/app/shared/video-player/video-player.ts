@@ -77,6 +77,17 @@ export class VideoPlayer implements OnDestroy {
     return this.sanitizer.bypassSecurityTrustStyle(`url("${f.url}")`);
   });
 
+  readonly spritePosition = computed(() => {
+    const f = this.spriteFrame();
+    return f ? `-${f.x}px -${f.y}px` : 'left top';
+  });
+
+  readonly tooltipLeft = computed(() => {
+    const r = this.hoverRatio() ?? 0;
+    const half = (this.spriteFrame()?.w ?? 160) / 2;
+    return `clamp(${half}px, ${r * 100}%, calc(100% - ${half}px))`;
+  });
+
   constructor() {
     effect(() => {
       const src = this.src();

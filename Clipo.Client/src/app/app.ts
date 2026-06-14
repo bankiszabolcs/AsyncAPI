@@ -1,15 +1,18 @@
-import { Component, signal, HostListener } from '@angular/core';
+import { Component, signal, HostListener, inject } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { Drawer } from 'primeng/drawer';
 import { Navbar } from './layout/navbar/navbar';
 import { Sidebar } from './layout/sidebar/sidebar';
+import { LoadingService } from './core/services/loading.service';
+import { ProgressBar } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, Drawer, Navbar, Sidebar],
+  imports: [RouterOutlet, RouterLink, Drawer, Navbar, Sidebar, ProgressBar],
   templateUrl: './app.html',
 })
 export class App {
+  readonly loading = inject(LoadingService);
   // Mobil/tablet nézet (~1280px alatt): nincs beágyazott menüsor, csak a
   // hamburgerrel előhúzható drawer. Asztali nézetben a menü helyben marad,
   // a hamburger csak összecsukja/kinyitja.

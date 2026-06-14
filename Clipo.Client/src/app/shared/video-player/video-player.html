@@ -60,17 +60,17 @@
         </div>
 
         <!-- Sprite tooltip -->
-        @if (spriteFrame(); as frame) {
+        @if (spriteFrame()) {
           <div
             class="absolute bottom-full mb-2 pointer-events-none -translate-x-1/2"
-            [style.left.%]="(hoverRatio() ?? 0) * 100"
+            [style.left]="tooltipLeft()"
           >
             <div
               class="rounded overflow-hidden border border-white/20 shadow-2xl"
-              [style.width.px]="frame.w"
-              [style.height.px]="frame.h"
+              [style.width.px]="spriteFrame()!.w"
+              [style.height.px]="spriteFrame()!.h"
               [style.background-image]="safeSpriteUrl()"
-              [style.background-position]="'-' + frame.x + 'px -' + frame.y + 'px'"
+              [style.background-position]="spritePosition()"
               [style.background-size]="'auto'"
             ></div>
             <p class="text-center text-xs text-white mt-1 font-medium drop-shadow">{{ hoverTime() }}</p>

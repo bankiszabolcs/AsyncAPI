@@ -104,6 +104,8 @@ services:
       - KC_HTTP_RELATIVE_PATH=/auth
       # A publikus URL-t (issuer, redirect) az nginx X-Forwarded-* headereiből vezeti le
       - KC_PROXY_HEADERS=xforwarded
+    volumes:
+      - ./keycloak-themes/clipo:/opt/keycloak/themes/clipo:ro
     depends_on:
       postgres:
         condition: service_healthy

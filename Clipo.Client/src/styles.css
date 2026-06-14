@@ -41,6 +41,22 @@
 .flat-select.p-select.p-focus {
   border-bottom-color: var(--p-primary-color);
 }
+/* Like/dislike gombok aktív állapota */
+.reaction-like-active {
+  background: var(--p-surface-hover);
+}
+.reaction-like-active i,
+.reaction-like-active span {
+  color: var(--p-primary-color);
+}
+.reaction-dislike-active {
+  background: var(--p-surface-hover);
+}
+.reaction-dislike-active i,
+.reaction-dislike-active span {
+  color: var(--p-red-500);
+}
+
 /* HTTP loading indicator: vékony piros csík az oldal tetején */
 .loading-bar {
   position: fixed;

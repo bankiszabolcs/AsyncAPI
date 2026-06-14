@@ -21,6 +21,9 @@ export interface VideoDetail {
   publishedAt: string;
   statusId: number;
   status: string;
+  likeCount: number;
+  dislikeCount: number;
+  userReaction: 1 | 2 | null;
   author: VideoAuthor;
   tags: string[];
   media: VideoDetailMedia;

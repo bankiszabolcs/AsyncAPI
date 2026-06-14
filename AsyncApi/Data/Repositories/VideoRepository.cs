@@ -1,6 +1,7 @@
 using AsyncApi.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using ProcessingStatus = AsyncApi.Enums.ProcessingStatus;
+using ReactionType = AsyncApi.Enums.ReactionType;
 using Visibility = AsyncApi.Enums.Visibility;
 
 namespace AsyncApi.Data.Repositories;
@@ -107,5 +108,86 @@ public class VideoRepository(AsyncApiDbContext db)
     {
         await db.Database.ExecuteSqlRawAsync(
             "UPDATE videos SET view_count = view_count + 1 WHERE id = {0}", id);
+    }
+
+    // Reakció hozzáadása / módosítása / visszavonása (toggle).
+    // - Nincs meglévő reakció → új sor, counter +1
+    // - Ugyanolyan aktív reakció → soft delete, counter -1
+    // - Másik típusú aktív reakció → típus csere, mindkét counter frissül
+    // - Inaktív meglévő sor → visszaaktiválás az új típussal, counter +1
+    // Visszaadja az aktuális like/dislike számot.
+    public async Task<int?> GetUserReactionAsync(Guid videoId, Guid userId)
+    {
+        var reaction = await db.VideoReactions
+            .FirstOrDefaultAsync(r => r.VideoId == videoId && r.UserId == userId && r.Active);
+        return reaction?.ReactionTypeId;
+    }
+
+    public async Task<(int likeCount, int dislikeCount, int? userReaction)> ReactAsync(Guid videoId, Guid userId, int reactionTypeId)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync();
+
+        var existing = await db.VideoReactions
+            .FirstOrDefaultAsync(r => r.VideoId == videoId && r.UserId == userId);
+
+        int? newUserReaction = reactionTypeId; // toggle-off esetén null-ra állítjuk
+
+        if (existing is null)
+        {
+            db.VideoReactions.Add(new VideoReaction
+            {
+                VideoId        = videoId,
+                UserId         = userId,
+                ReactionTypeId = reactionTypeId,
+                CreateUserId   = userId,
+                CreateDate     = DateTime.UtcNow,
+                ModifyUserId   = userId,
+                Active         = true
+            });
+#pragma warning disable EF1002 // col kizárólag hardcoded string lehet, nem user input
+            var col = reactionTypeId == (int)ReactionType.Like ? "like_count" : "dislike_count";
+            await db.Database.ExecuteSqlRawAsync(
+                $"UPDATE videos SET {col} = {col} + 1 WHERE id = {{0}}", videoId);
+        }
+        else if (existing.Active && existing.ReactionTypeId == reactionTypeId)
+        {
+            existing.Active       = false;
+            existing.ModifyUserId = userId;
+            newUserReaction       = null;
+            var col = reactionTypeId == (int)ReactionType.Like ? "like_count" : "dislike_count";
+            await db.Database.ExecuteSqlRawAsync(
+                $"UPDATE videos SET {col} = {col} - 1 WHERE id = {{0}}", videoId);
+        }
+        else if (existing.Active && existing.ReactionTypeId != reactionTypeId)
+        {
+            existing.ReactionTypeId = reactionTypeId;
+            existing.ModifyUserId   = userId;
+            if (reactionTypeId == (int)ReactionType.Like)
+                await db.Database.ExecuteSqlRawAsync(
+                    "UPDATE videos SET like_count = like_count + 1, dislike_count = dislike_count - 1 WHERE id = {0}", videoId);
+            else
+                await db.Database.ExecuteSqlRawAsync(
+                    "UPDATE videos SET like_count = like_count - 1, dislike_count = dislike_count + 1 WHERE id = {0}", videoId);
+        }
+        else
+        {
+            // Inaktív sor → visszaaktiválás
+            existing.ReactionTypeId = reactionTypeId;
+            existing.Active         = true;
+            existing.ModifyUserId   = userId;
+            var col = reactionTypeId == (int)ReactionType.Like ? "like_count" : "dislike_count";
+            await db.Database.ExecuteSqlRawAsync(
+                $"UPDATE videos SET {col} = {col} + 1 WHERE id = {{0}}", videoId);
+        }
+#pragma warning restore EF1002
+
+        await db.SaveChangesAsync();
+        await tx.CommitAsync();
+
+        var video = await db.Videos.AsNoTracking()
+            .Select(v => new { v.Id, v.LikeCount, v.DislikeCount })
+            .FirstAsync(v => v.Id == videoId);
+
+        return (video.LikeCount, video.DislikeCount, newUserReaction);
     }
 }

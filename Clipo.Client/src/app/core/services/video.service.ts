@@ -33,9 +33,14 @@ export class VideoService {
     return this.http.get<MyVideo[]>(`${this.baseUrl}/my`);
   }
 
-  // Cím / leírás / láthatóság szerkesztése (authorizált, csak a tulajdonos).
-  // Több oldalról is újrahasználható (Studio lista, dedikált szerkesztő oldal).
   updateVideo(id: string, payload: UpdateVideoRequest): Observable<UpdateVideoResponse> {
     return this.http.put<UpdateVideoResponse>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  react(videoId: string, reactionTypeId: 1 | 2): Observable<{ likeCount: number; dislikeCount: number; userReaction: 1 | 2 | null }> {
+    return this.http.post<{ likeCount: number; dislikeCount: number; userReaction: 1 | 2 | null }>(
+      `${this.baseUrl}/${videoId}/reactions`,
+      { reactionTypeId }
+    );
   }
 }

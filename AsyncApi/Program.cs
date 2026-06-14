@@ -66,6 +66,7 @@ try
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateAudience = false,
+                //ValidateIssuer   = !builder.Environment.IsDevelopment(),
                 ValidIssuer      = builder.Configuration["Keycloak:ValidIssuer"],
                 NameClaimType    = "preferred_username",
             };

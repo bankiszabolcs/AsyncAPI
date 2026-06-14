@@ -7,6 +7,7 @@ import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 import { VideoService } from '../../core/services/video.service';
 import { VideoDetail } from '../../core/models/video-detail.model';
 import { VideoPlayer } from '../../shared/video-player/video-player';
+import { AuthService } from '../../core/auth/auth.service';
 
 // Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
 const POLL_INTERVAL_MS = 4000;
@@ -25,6 +26,7 @@ interface PollResult {
 export class Watch {
   private readonly route = inject(ActivatedRoute);
   private readonly videoService = inject(VideoService);
+  readonly auth = inject(AuthService);
 
   readonly id = this.route.snapshot.paramMap.get('id')!;
 
@@ -83,6 +85,20 @@ export class Watch {
       default:           return '';
     }
   });
+
+  // Reakció számlálók — override-olja a video() értékét, ha a user éppen lájkolt
+  private readonly reactionState = signal<{ likeCount: number; dislikeCount: number; userReaction: 1 | 2 | null } | null>(null);
+  readonly likeCount    = computed(() => this.reactionState()?.likeCount    ?? this.video()?.likeCount    ?? 0);
+  readonly dislikeCount = computed(() => this.reactionState()?.dislikeCount ?? this.video()?.dislikeCount ?? 0);
+  readonly userReaction = computed(() => this.reactionState()?.userReaction ?? this.video()?.userReaction ?? null);
+
+  react(type: 1 | 2): void {
+    if (!this.auth.isLoggedIn()) {
+      this.auth.login();
+      return;
+    }
+    this.videoService.react(this.id, type).subscribe(state => this.reactionState.set(state));
+  }
 
   readonly thumbnail = computed(() => {
     const thumbs = this.video()?.media.thumbnails ?? [];

@@ -37,27 +37,6 @@
 
   <!-- Jobb: feltöltés + értesítő + avatar -->
   <div class="flex items-center gap-1 shrink-0">
-    <!-- Feltöltés: asztalin feliratos gomb, mobilon csak piros ikon -->
-    @if (isMobile()) {
-      <button
-        type="button"
-        routerLink="/upload"
-        aria-label="Feltöltés"
-        class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer
-          bg-transparent border-none hover:bg-(--p-surface-hover) transition-colors"
-      >
-        <i class="pi pi-upload text-xl text-red-500"></i>
-      </button>
-    } @else {
-      <p-button
-        routerLink="/upload"
-        label="Feltöltés"
-        icon="pi pi-upload"
-        [outlined]="true"
-        size="small"
-        severity="secondary"
-      />
-    }
     <!-- Keresés ikon: csak mobil nézetben -->
     @if (isMobile()) {
       <p-button
@@ -69,16 +48,39 @@
         (click)="searchDrawerVisible.set(true)"
       />
     }
-    <p-button
-      icon="pi pi-bell"
-      [text]="true"
-      [rounded]="true"
-      severity="secondary"
-      aria-label="Értesítések"
-      (click)="onBellClick(notifPopover, $event)"
-    />
 
     @if (auth.isLoggedIn()) {
+      <!-- Feltöltés: asztalin feliratos gomb, mobilon csak piros ikon -->
+      @if (isMobile()) {
+        <button
+          type="button"
+          routerLink="/upload"
+          aria-label="Feltöltés"
+          class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer
+            bg-transparent border-none hover:bg-(--p-surface-hover) transition-colors"
+        >
+          <i class="pi pi-upload text-xl text-red-500"></i>
+        </button>
+      } @else {
+        <p-button
+          routerLink="/upload"
+          label="Feltöltés"
+          icon="pi pi-upload"
+          [outlined]="true"
+          size="small"
+          severity="secondary"
+        />
+      }
+
+      <p-button
+        icon="pi pi-bell"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        aria-label="Értesítések"
+        (click)="onBellClick(notifPopover, $event)"
+      />
+
       <p-avatar
         [image]="auth.user()?.picture ?? undefined"
         [icon]="auth.user()?.picture ? undefined : 'pi pi-user'"
@@ -88,13 +90,25 @@
         aria-label="Profil"
       />
     } @else {
-      <p-button
-        label="Bejelentkezés"
-        icon="pi pi-sign-in"
-        [outlined]="true"
-        size="small"
-        (click)="auth.login()"
-      />
+      <!-- Bejelentkezés: mobilon csak ikon, asztalin feliratos -->
+      @if (isMobile()) {
+        <p-button
+          icon="pi pi-sign-in"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          aria-label="Bejelentkezés"
+          (click)="auth.login()"
+        />
+      } @else {
+        <p-button
+          label="Bejelentkezés"
+          icon="pi pi-sign-in"
+          [outlined]="true"
+          size="small"
+          (click)="auth.login()"
+        />
+      }
     }
 
     <!-- Asztali nézet: legördülő menü -->

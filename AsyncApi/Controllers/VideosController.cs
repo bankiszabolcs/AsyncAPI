@@ -194,15 +194,22 @@ public sealed class VideosController(
         // A thumbnail már Processing alatt elérhető (a feldolgozás legelején feltöltjük)
         var hasThumbnails = isCompleted || video.StatusId == (int)ProcessingStatus.Processing;
 
+        var userReaction = CurrentUserId.HasValue
+            ? await videoRepository.GetUserReactionAsync(id, CurrentUserId.Value)
+            : null;
+
         return Ok(new
         {
-            id          = video.Id,
-            title       = video.Title,
-            description = video.Description,
-            duration    = video.DurationSeconds,
-            publishedAt = video.PublishedAt,
-            statusId    = video.StatusId,
-            status      = video.Status.Title,
+            id           = video.Id,
+            title        = video.Title,
+            description  = video.Description,
+            duration     = video.DurationSeconds,
+            publishedAt  = video.PublishedAt,
+            statusId     = video.StatusId,
+            status       = video.Status.Title,
+            likeCount    = video.LikeCount,
+            dislikeCount = video.DislikeCount,
+            userReaction,
             author = new
             {
                 id   = video.User.Id,
@@ -230,6 +237,24 @@ public sealed class VideosController(
                     : null
             }
         });
+    }
+
+    // POST /videos/{id}/reactions — like / dislike toggle (1=like, 2=dislike)
+    [HttpPost("{id:guid}/reactions")]
+    [Authorize]
+    public async Task<IActionResult> ReactToVideo(Guid id, [FromBody] ReactToVideoRequest request)
+    {
+        if (CurrentUserId is not { } userId) return Unauthorized();
+
+        if (!Enum.IsDefined(typeof(ReactionType), request.ReactionTypeId))
+            return BadRequest("Invalid reaction type. Use 1 (like) or 2 (dislike).");
+
+        var video = await videoRepository.GetByIdAsync(id);
+        if (video is null) return NotFound();
+
+        var (likeCount, dislikeCount, userReaction) = await videoRepository.ReactAsync(id, userId, request.ReactionTypeId);
+
+        return Ok(new { likeCount, dislikeCount, userReaction });
     }
 
     // GET /videos/{id}/status — státusz lekérése Redis-ből; ha kész, MinIO URL-eket ad vissza

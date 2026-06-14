@@ -3,13 +3,14 @@
     bg-(--p-surface-section)
     shadow-[1px_0_0_rgba(255,255,255,0.05)]
     pt-2 pb-4"
-  [style.width]="collapsed() ? '72px' : '240px'"
+  [style.width]="drawerMode() ? '100%' : (collapsed() ? '72px' : '240px')"
 >
   @for (item of navItems; track item.route) {
     <a
       [routerLink]="item.route"
       routerLinkActive="bg-(--p-surface-hover) font-semibold"
       [routerLinkActiveOptions]="{ exact: !!item.exact }"
+      (click)="itemClick.emit()"
       pRipple
       [pTooltip]="collapsed() ? item.label : ''"
       tooltipPosition="right"

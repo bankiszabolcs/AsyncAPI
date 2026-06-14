@@ -1,4 +1,5 @@
 import { Component, output, signal, HostListener } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Avatar } from 'primeng/avatar';
@@ -10,15 +11,18 @@ import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, Button, Avatar, Menu, Drawer, Popover, Ripple],
+  imports: [RouterLink, NgTemplateOutlet, Button, Avatar, Menu, Drawer, Popover, Ripple],
   templateUrl: './navbar.html',
 })
 export class Navbar {
   readonly sidebarToggle = output<void>();
 
-  // Asztali nézet alatt (~1280px) a profil drawerként nyílik, fölötte legördülő menüként.
+  // Asztali nézet alatt (~1280px) a profil/értesítés/keresés drawerként nyílik,
+  // fölötte legördülő menüként / popoverként / beágyazott keresőmezőként.
   readonly isMobile = signal(this.checkMobile());
   readonly drawerVisible = signal(false);
+  readonly searchDrawerVisible = signal(false);
+  readonly notifDrawerVisible = signal(false);
 
   readonly userMenuItems: MenuItem[] = [
     { label: 'A csatornám', icon: 'pi pi-user',     routerLink: '/channel' },
@@ -32,9 +36,11 @@ export class Navbar {
   onResize(): void {
     const mobile = this.checkMobile();
     this.isMobile.set(mobile);
-    // Asztali nézetre váltva ne maradjon nyitva a drawer.
+    // Asztali nézetre váltva ne maradjanak nyitva a mobil drawerek.
     if (!mobile) {
       this.drawerVisible.set(false);
+      this.searchDrawerVisible.set(false);
+      this.notifDrawerVisible.set(false);
     }
   }
 
@@ -43,6 +49,15 @@ export class Navbar {
       this.drawerVisible.set(true);
     } else {
       menu.toggle(event);
+    }
+  }
+
+  // Értesítések: mobilon jobbról beúszó drawer, asztalin popover.
+  onBellClick(popover: Popover, event: Event): void {
+    if (this.isMobile()) {
+      this.notifDrawerVisible.set(true);
+    } else {
+      popover.toggle(event);
     }
   }
 

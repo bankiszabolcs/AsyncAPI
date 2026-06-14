@@ -21,3 +21,9 @@
   background: transparent;
   border-radius: 0;
 }
+
+/* Mobil oldalsó menü drawer: a tartalom töltse ki éltől élig (a Sidebar
+   komponens hozza a saját hátterét és térközeit). */
+.app-sidebar-drawer .p-drawer-content {
+  padding: 0;
+}

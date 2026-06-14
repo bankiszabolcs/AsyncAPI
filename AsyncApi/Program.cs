@@ -79,7 +79,13 @@ try
     app.UseExceptionHandler();
     app.UseCors("Angular");
     app.UseRequestContextLogging();
-    app.UseSerilogRequestLogging();
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+        };
+    });
     app.UseAuthorization();
     app.MapControllers();
 

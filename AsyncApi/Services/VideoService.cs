@@ -16,9 +16,10 @@ public sealed class VideoService(
 
     private static readonly (int Width, int Bitrate, string Name)[] HlsQualities =
     [
-        (1920, 5000, "1080p"),
-        (1280, 2800, "720p"),
-        (854,  1400, "480p")
+        (3840, 15000, "2160p"),
+        (1920,  5000, "1080p"),
+        (1280,  2800,  "720p"),
+        ( 854,  1400,  "480p")
     ];
 
     public static IEnumerable<string> StreamQualities => HlsQualities.Select(q => q.Name);
@@ -60,8 +61,10 @@ public sealed class VideoService(
             await storageService.UploadDirectoryAsync(thumbFolder, id, StorageBucket.Images);
 
             // Utána a lassú rész: HLS kódolás + sprite párhuzamosan
+            var sourceWidth = mediaInfo.PrimaryVideoStream?.Width ?? 0;
+
             await Task.WhenAll(
-                GenerateHlsAsync(originalFilePath, folderPath),
+                GenerateHlsAsync(originalFilePath, folderPath, sourceWidth),
                 GenerateSpriteAsync(originalFilePath, folderPath, mediaInfo.Duration)
             );
 
@@ -82,9 +85,15 @@ public sealed class VideoService(
         }
     }
 
-    private static async Task GenerateHlsAsync(string originalFilePath, string folderPath)
+    private static async Task GenerateHlsAsync(string originalFilePath, string folderPath, int sourceWidth)
     {
-        foreach (var (width, bitrate, name) in HlsQualities)
+        var qualities = HlsQualities.Where(q => q.Width <= sourceWidth).ToArray();
+
+        // Ha a forrás kisebb mint a legkisebb minőségünk (854px), akkor is generáljuk a legkisebbet
+        if (qualities.Length == 0)
+            qualities = [HlsQualities[^1]];
+
+        foreach (var (width, bitrate, name) in qualities)
         {
             var qualityFolder = Path.Combine(folderPath, name);
             Directory.CreateDirectory(qualityFolder);
@@ -107,7 +116,7 @@ public sealed class VideoService(
                 .ProcessAsynchronously();
         }
 
-        await WriteMasterPlaylistAsync(folderPath);
+        await WriteMasterPlaylistAsync(folderPath, qualities);
     }
 
     private static async Task GenerateSpriteAsync(string originalFilePath, string folderPath, TimeSpan duration)
@@ -143,13 +152,15 @@ public sealed class VideoService(
         File.Delete(sourcePath);
     }
 
-    private static async Task WriteMasterPlaylistAsync(string folderPath)
+    private static async Task WriteMasterPlaylistAsync(
+        string folderPath,
+        (int Width, int Bitrate, string Name)[] qualities)
     {
         var masterPath = Path.Combine(folderPath, "master.m3u8");
 
         var lines = new List<string> { "#EXTM3U" };
 
-        foreach (var (width, bitrate, name) in HlsQualities)
+        foreach (var (width, bitrate, name) in qualities)
         {
             var bps = bitrate * 1000;
             lines.Add($"#EXT-X-STREAM-INF:BANDWIDTH={bps},RESOLUTION={width}x{GetHeight(width)}");
@@ -188,9 +199,10 @@ public sealed class VideoService(
 
     private static int GetHeight(int width) => width switch
     {
+        3840 => 2160,
         1920 => 1080,
-        1280 => 720,
-        854  => 480,
-        _    => 0
+        1280 =>  720,
+         854 =>  480,
+        _    =>    0
     };
 }

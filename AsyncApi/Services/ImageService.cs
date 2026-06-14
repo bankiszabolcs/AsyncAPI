@@ -68,7 +68,7 @@ public sealed class ImageService(
         using var image = await Image.LoadAsync(originalFilePath);
         var (width, height) = (image.Width, image.Height);
 
-        foreach (var w in ThumbnailWidths)
+        foreach (var w in ThumbnailWidths.Where(w => w <= width))
         {
             var thumbnailPath = Path.Combine(folderPath, $"{id}_w{w}{extension}");
             using var resized = image.Clone(x => x.Resize(w, 0));
@@ -81,7 +81,7 @@ public sealed class ImageService(
     // Átméretezi a megadott képet az összes standard szélességre; videó thumbnail-ek is használják
     public static async Task GenerateResizedCopiesAsync(Image image, string folderPath, string baseName)
     {
-        foreach (var width in ThumbnailWidths)
+        foreach (var width in ThumbnailWidths.Where(w => w <= image.Width))
         {
             var path = Path.Combine(folderPath, $"{baseName}_w{width}.jpg");
             using var resized = image.Clone(x => x.Resize(width, 0));

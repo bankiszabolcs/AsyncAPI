@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Ripple } from 'primeng/ripple';
 import { Tooltip } from 'primeng/tooltip';
@@ -17,6 +17,10 @@ interface NavItem {
 })
 export class Sidebar {
   readonly collapsed = input(false);
+  // Drawerben (mobil) teljes szélességgel, saját háttér/árnyék nélkül jelenik meg.
+  readonly drawerMode = input(false);
+  // Menüpontra kattintva a szülő bezárhatja a mobil drawert.
+  readonly itemClick = output<void>();
 
   readonly navItems: NavItem[] = [
     { label: 'Főoldal',        icon: 'pi-home',      route: '/',              exact: true },

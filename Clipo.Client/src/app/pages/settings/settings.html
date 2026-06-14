@@ -1,0 +1,31 @@
+<div class="max-w-3xl mx-auto p-6">
+
+  <h1 class="text-2xl font-bold text-(--p-text-color)">Settings</h1>
+  <p class="text-sm text-(--p-text-muted-color) mt-1">Manage your account and preferences.</p>
+
+  @for (group of groups; track group.title) {
+    <section class="mt-8">
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-3">
+        {{ group.title }}
+      </h2>
+      <div class="rounded-xl bg-(--p-surface-card) overflow-hidden divide-y divide-(--p-surface-border)">
+        @for (item of group.items; track item.label) {
+          <button
+            type="button"
+            class="flex items-center gap-4 w-full text-left px-4 py-3.5 cursor-pointer
+              bg-transparent border-none text-(--p-text-color)
+              hover:bg-(--p-surface-hover) transition-colors duration-150"
+          >
+            <i class="pi {{ item.icon }} text-lg text-(--p-text-muted-color) shrink-0"></i>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium">{{ item.label }}</p>
+              <p class="text-xs text-(--p-text-muted-color)">{{ item.description }}</p>
+            </div>
+            <i class="pi pi-angle-right text-(--p-text-muted-color) shrink-0"></i>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+</div>

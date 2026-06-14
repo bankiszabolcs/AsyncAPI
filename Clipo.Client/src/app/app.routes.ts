@@ -28,6 +28,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/history/history').then(m => m.History),
   },
   {
+    path: 'channel',
+    loadComponent: () => import('./pages/channel/channel').then(m => m.Channel),
+  },
+  {
+    path: 'studio',
+    loadComponent: () => import('./pages/studio/studio').then(m => m.Studio),
+  },
+  {
+    path: 'settings',
+    loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
+  },
+  {
     path: 'watch/:id',
     loadComponent: () => import('./pages/watch/watch').then(m => m.Watch),
     providers: [VideoService],

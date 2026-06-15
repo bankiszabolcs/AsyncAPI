@@ -54,7 +54,7 @@ public sealed class ThumbnailsController(
         var statusUrl = linkGenerator.GetUriByAction(HttpContext, nameof(GetStatus), "Thumbnails", new { id })
             ?? throw new InvalidOperationException("Failed to generate URL.");
 
-        return Accepted(statusUrl, new { id, status = ThumbnailGenerationStatus.Queued });
+        return Accepted(statusUrl, new { id, status = ThumbnailGenerationStatus.Queued.ToString() });
     }
 
     // GET /thumbnails/{id}/status — státusz lekérése Redis-ből; ha kész, MinIO linkeket ad vissza
@@ -65,7 +65,7 @@ public sealed class ThumbnailsController(
         var status = await statusService.GetStatusAsync<ThumbnailGenerationStatus>(id);
         if (status is null) return NotFound();
 
-        object response = new { id, status, links = new Dictionary<string, string>() };
+        object response = new { id, status = status.ToString(), links = new Dictionary<string, string>() };
 
         if (status == ThumbnailGenerationStatus.Completed)
         {
@@ -78,7 +78,7 @@ public sealed class ThumbnailsController(
 
                 links["original"] = storageService.GetPublicUrl($"{id}/{id}{ext}", StorageBucket.Images);
 
-                response = new { id, status, links };
+                response = new { id, status = status.ToString(), links };
             }
         }
 

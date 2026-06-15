@@ -30,12 +30,28 @@ public class UserRepository(AsyncApiDbContext db)
         }
         else
         {
-            user.Email       = email;
-            user.DisplayName = displayName ?? user.DisplayName;
-            user.ModifyUserId = id;
+            //user.Email       = email;
+            //user.DisplayName = displayName ?? user.DisplayName;
+            //user.ModifyUserId = id;
         }
 
         await db.SaveChangesAsync();
+        await db.Entry(user).Reference(u => u.AvatarImage).LoadAsync();
+        return user;
+    }
+
+    public async Task<User?> UpdateProfileAsync(Guid userId, string? displayName, Guid? avatarImageId)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.Active);
+        if (user is null) return null;
+
+        if (displayName is not null) user.DisplayName = displayName;
+        if (avatarImageId.HasValue)  user.AvatarImageId = avatarImageId;
+        user.ModifyUserId = userId;
+        user.ModifyDate   = DateTime.UtcNow;
+
+        await db.SaveChangesAsync();
+        await db.Entry(user).Reference(u => u.AvatarImage).LoadAsync();
         return user;
     }
 }

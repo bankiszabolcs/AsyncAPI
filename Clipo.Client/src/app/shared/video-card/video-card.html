@@ -108,8 +108,12 @@
 
   <!-- Meta -->
   <div class="flex gap-3 px-1">
-    <div class="shrink-0 w-9 h-9 rounded-full bg-(--p-surface-card) flex items-center justify-center text-(--p-text-muted-color) text-sm">
-      <i class="pi pi-user"></i>
+    <div class="shrink-0 w-9 h-9 rounded-full bg-(--p-surface-card) overflow-hidden flex items-center justify-center text-(--p-text-muted-color) text-sm">
+      @if (video().author?.avatarUrl; as url) {
+        <img [src]="url" [alt]="video().author!.name" class="w-full h-full object-cover" />
+      } @else {
+        <i class="pi pi-user"></i>
+      }
     </div>
     <div class="flex flex-col gap-0.5 min-w-0">
       <h3 class="text-sm font-semibold text-(--p-text-color) line-clamp-2 leading-snug">

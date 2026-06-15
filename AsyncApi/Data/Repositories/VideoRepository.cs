@@ -62,6 +62,9 @@ public class VideoRepository(AsyncApiDbContext db)
         video.Title        = title;
         video.Description  = description;
         video.VisibilityId = visibilityId;
+        video.PublishedAt = video.PublishedAt is null && visibilityId == (int)Visibility.Public
+            ? DateTime.UtcNow
+            : video.PublishedAt;
         video.ModifyUserId = userId;
 
         await db.SaveChangesAsync();
@@ -83,7 +86,7 @@ public class VideoRepository(AsyncApiDbContext db)
     public async Task<List<Video>> GetListAsync(int page = 1, int pageSize = 20)
     {
         return await db.Videos
-            .Include(v => v.User)
+            .Include(v => v.User).ThenInclude(u => u.AvatarImage)
             .Include(v => v.ThumbnailImage)
             .Where(v => v.Active
                      && v.StatusId     == (int)ProcessingStatus.Completed

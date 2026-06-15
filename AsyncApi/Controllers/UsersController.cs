@@ -1,5 +1,8 @@
 using System.Security.Claims;
+using AsyncApi.Data.Entities;
 using AsyncApi.Data.Repositories;
+using AsyncApi.Models;
+using AsyncApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,32 +10,66 @@ namespace AsyncApi.Controllers;
 
 [ApiController]
 [Route("users")]
-public sealed class UsersController(UserRepository userRepository) : ControllerBase
+public sealed class UsersController(
+    UserRepository userRepository,
+    StorageService storageService) : ControllerBase
 {
     // GET /users/me — provisioning + profil visszaadás
-    // Első hívásnál létrehozza a usert a JWT claimek alapján, utána upserteli.
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> GetMe()
     {
-        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                  ?? User.FindFirstValue("sub");
+        if (!TryGetUserId(out var userId)) return Unauthorized();
 
-        if (sub is null || !Guid.TryParse(sub, out var userId))
-            return Unauthorized();
-
-        var username    = User.FindFirstValue("preferred_username") ?? sub;
+        var username    = User.FindFirstValue("preferred_username") ?? userId.ToString();
         var email       = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email") ?? "";
         var displayName = User.FindFirstValue("name");
 
         var user = await userRepository.UpsertAsync(userId, username, email, displayName);
 
-        return Ok(new
+        return Ok(MapUser(user));
+    }
+
+    // PATCH /users/me — megjelenített név és avatar frissítése
+    [HttpPatch("me")]
+    [Authorize]
+    public async Task<IActionResult> UpdateMe([FromBody] UpdateProfileRequest request)
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var displayName = request.DisplayName?.Trim();
+        if (displayName == string.Empty)
+            return BadRequest("Display name cannot be empty.");
+
+        var user = await userRepository.UpdateProfileAsync(userId, displayName, request.AvatarImageId);
+        if (user is null) return NotFound();
+
+        return Ok(MapUser(user));
+    }
+
+    private bool TryGetUserId(out Guid userId)
+    {
+        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(sub, out userId);
+    }
+
+    private object MapUser(User user)
+    {
+        string? avatarUrl = null;
+        if (user.AvatarImage is { Extension: var ext })
+        {
+            avatarUrl = storageService.GetPublicUrl(
+                $"{user.AvatarImageId}/{user.AvatarImageId}_w128{ext}",
+                StorageBucket.Images);
+        }
+
+        return new
         {
             id          = user.Id,
             username    = user.Username,
             email       = user.Email,
             displayName = user.DisplayName,
-        });
+            avatarUrl,
+        };
     }
 }

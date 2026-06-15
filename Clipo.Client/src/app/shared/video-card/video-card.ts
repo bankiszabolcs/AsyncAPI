@@ -13,7 +13,7 @@ export interface CardVideo {
   duration: number;
   publishedAt: string | null;
   statusId?: number;
-  author?: { id: string; name: string };
+  author?: { id: string; name: string; avatarUrl?: string | null };
   media: {
     thumbnails: VideoThumbnail[] | null;
     hoverStream?: string | null;

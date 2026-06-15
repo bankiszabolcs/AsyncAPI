@@ -83,8 +83,11 @@ public sealed class VideosController(
             publishedAt = v.PublishedAt,
             author = new
             {
-                id   = v.User.Id,
-                name = v.User.DisplayName ?? v.User.Username
+                id        = v.User.Id,
+                name      = v.User.DisplayName ?? v.User.Username,
+                avatarUrl = v.User.AvatarImage is { Extension: var ext }
+                    ? storageService.GetPublicUrl($"{v.User.AvatarImageId}/{v.User.AvatarImageId}_w128{ext}", StorageBucket.Images)
+                    : null
             },
             media = new
             {

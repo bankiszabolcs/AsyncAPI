@@ -1,0 +1,132 @@
+<!-- Rejtett file input -->
+<input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
+
+<div class="max-w-2xl mx-auto p-6">
+
+  <h1 class="text-2xl font-bold text-(--p-text-color)">Profil szerkesztése</h1>
+  <p class="text-sm text-(--p-text-muted-color) mt-1">Állítsd be a megjelenített nevedet és profilképedet.</p>
+
+  <!-- Profilkép -->
+  <section class="mt-8">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Profilkép</h2>
+    <div class="flex items-center gap-6">
+
+      <!-- Avatar kör -->
+      <div class="relative w-24 h-24 shrink-0">
+        <div class="w-24 h-24 rounded-full overflow-hidden bg-(--p-surface-card) flex items-center justify-center">
+          @if (avatarPreviewUrl() ?? auth.profile()?.avatarUrl; as url) {
+            <img [src]="url" alt="Profilkép" class="w-full h-full object-cover" />
+          } @else {
+            <i class="pi pi-user text-4xl text-(--p-text-muted-color)"></i>
+          }
+        </div>
+        @if (avatarState() === 'uploading' || avatarState() === 'processing') {
+          <div class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+            <i class="pi pi-spin pi-spinner text-white text-xl"></i>
+          </div>
+        }
+      </div>
+
+      <!-- Gomb + státusz -->
+      <div class="space-y-2">
+        <p-button
+          label="Kép kiválasztása"
+          icon="pi pi-camera"
+          severity="secondary"
+          [disabled]="avatarState() === 'uploading' || avatarState() === 'processing'"
+          (onClick)="openFilePicker()"
+        />
+        @if (avatarState() === 'uploading') {
+          <p class="text-sm text-(--p-text-muted-color)">Feltöltés...</p>
+        } @else if (avatarState() === 'processing') {
+          <p class="text-sm text-(--p-text-muted-color)">Feldolgozás...</p>
+        } @else if (avatarState() === 'done') {
+          <p class="text-sm text-green-500">Profilkép frissítve!</p>
+        } @else if (avatarState() === 'error') {
+          <p class="text-sm text-red-500">Hiba történt a feltöltés során.</p>
+        } @else {
+          <p class="text-xs text-(--p-text-muted-color)">JPG, PNG vagy GIF — max. 5 MB</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Megjelenített név -->
+  <section class="mt-8">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Megjelenített név</h2>
+    <div class="flex gap-3 items-start">
+      <input
+        pInputText
+        class="flex-1"
+        placeholder="Írj be egy nevet..."
+        [ngModel]="displayName()"
+        (ngModelChange)="displayName.set($event)"
+        (keydown.enter)="saveDisplayName()"
+      />
+      <p-button
+        label="Mentés"
+        [loading]="saveState() === 'saving'"
+        [disabled]="!displayName().trim() || saveState() === 'saving'"
+        (onClick)="saveDisplayName()"
+      />
+    </div>
+    <div class="mt-2 h-5">
+      @if (saveState() === 'saved') {
+        <p class="text-sm text-green-500">Sikeresen mentve!</p>
+      } @else if (saveState() === 'error') {
+        <p class="text-sm text-red-500">Hiba történt a mentés során.</p>
+      }
+    </div>
+  </section>
+
+</div>
+
+<!-- Cropper dialog -->
+<p-dialog
+  header="Profilkép kivágása"
+  [visible]="cropperVisible()"
+  (visibleChange)="cropperVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  appendTo="body"
+  styleClass="crop-dialog w-full max-w-lg"
+>
+  @if (cropperFile()) {
+    <div class="p-4 flex flex-col gap-4">
+
+      <image-cropper
+        [imageFile]="cropperFile()!"
+        [aspectRatio]="1"
+        [roundCropper]="true"
+        [maintainAspectRatio]="true"
+        [autoCrop]="false"
+        [transform]="transform()"
+        format="jpeg"
+        style="display: block; height: 380px;"
+        (imageCropped)="onImageCropped($event.objectUrl)"
+      />
+
+      <!-- Zoom csúszka -->
+      <div class="flex items-center gap-3">
+        <i class="pi pi-search-minus text-sm text-(--p-text-muted-color)"></i>
+        <p-slider
+          class="flex-1"
+          [min]="-0.9"
+          [max]="2"
+          [step]="0.05"
+          [ngModel]="zoom()"
+          (ngModelChange)="zoom.set($event)"
+        />
+        <i class="pi pi-search-plus text-sm text-(--p-text-muted-color)"></i>
+      </div>
+
+      <!-- Gombok -->
+      <div class="flex justify-end gap-2">
+        <p-button label="Mégse" severity="secondary" (onClick)="cancelCrop()" />
+        <p-button label="Kész" (onClick)="confirmCrop()" />
+      </div>
+
+    </div>
+  }
+</p-dialog>

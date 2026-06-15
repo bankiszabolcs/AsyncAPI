@@ -95,12 +95,18 @@
           </div>
         </div>
 
-        @if (v.description) {
-          <div class="mt-4 p-4 bg-(--p-surface-card) rounded-xl">
-            <p class="text-sm text-(--p-text-muted-color) whitespace-pre-wrap">{{ v.description }}</p>
-          </div>
-        }
+        <div class="mt-4 p-4 bg-(--p-surface-card) rounded-xl text-sm text-(--p-text-muted-color)">
+          @if (v.description) {
+            <p class="whitespace-pre-wrap">{{ v.description }}</p>
+          } @else {
+            <p class="italic">Nincs leírás</p>
+          }
+        </div>
       </div>
+    }
+
+    @if (!isNotFound()) {
+      <app-comments [videoId]="id" />
     }
   </div>
 

@@ -6,6 +6,7 @@ export interface VideoThumbnail {
 export interface VideoAuthor {
   id: string;
   name: string;
+  avatarUrl: string | null;
 }
 
 export interface VideoMedia {

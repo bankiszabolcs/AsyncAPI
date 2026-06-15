@@ -8,6 +8,7 @@ import { VideoService } from '../../core/services/video.service';
 import { VideoDetail } from '../../core/models/video-detail.model';
 import { VideoPlayer } from '../../shared/video-player/video-player';
 import { AuthService } from '../../core/auth/auth.service';
+import { Comments } from '../../shared/comments/comments';
 
 // Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
 const POLL_INTERVAL_MS = 4000;
@@ -20,7 +21,7 @@ interface PollResult {
 
 @Component({
   selector: 'app-watch',
-  imports: [VideoPlayer, TimeAgoPipe],
+  imports: [VideoPlayer, TimeAgoPipe, Comments],
   templateUrl: './watch.html',
 })
 export class Watch {

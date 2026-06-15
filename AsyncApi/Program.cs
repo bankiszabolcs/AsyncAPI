@@ -56,6 +56,7 @@ try
     builder.Services.AddScoped<VideoRepository>();
     builder.Services.AddScoped<ImageRepository>();
     builder.Services.AddScoped<UserRepository>();
+    builder.Services.AddScoped<CommentRepository>();
 
     // --- Keycloak JWT autentikáció ---
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

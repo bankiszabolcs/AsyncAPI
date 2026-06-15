@@ -21,6 +21,7 @@
     "@primeng/themes": "^21.0.4",
     "angular-oauth2-oidc": "^22.0.0",
     "hls.js": "^1.6.16",
+    "ngx-image-cropper": "^9.1.6",
     "primeicons": "^7.0.0",
     "primeng": "^21.1.9",
     "rxjs": "~7.8.0",

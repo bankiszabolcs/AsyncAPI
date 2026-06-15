@@ -57,6 +57,13 @@
   color: var(--p-red-500);
 }
 
+/* Avatar crop dialog: a p-dialog-content overflow:auto-ja levágná a kerek
+   cropper box-shadow overlay-ét; overflow:hidden + padding:0 megoldja. */
+.crop-dialog .p-dialog-content {
+  overflow: hidden;
+  padding: 0;
+}
+
 /* HTTP loading indicator: vékony piros csík az oldal tetején */
 .loading-bar {
   position: fixed;

@@ -9,6 +9,7 @@ export interface UserProfile {
   username: string;
   email: string;
   displayName: string | null;
+  avatarUrl: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,7 +22,7 @@ export class AuthService {
 
   readonly user = computed(() => {
     const p = this.profile();
-    if (p) return { name: p.displayName ?? p.username, email: p.email, picture: null };
+    if (p) return { name: p.displayName ?? p.username, email: p.email, picture: p.avatarUrl };
 
     // Fallback: ha az API hívás még nem tért vissza, a JWT claimekből vesszük
     if (!this.isLoggedIn()) return null;

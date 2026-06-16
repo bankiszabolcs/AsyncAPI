@@ -110,6 +110,29 @@ services:
       postgres:
         condition: service_healthy
 
+  postfix:
+    image: boky/postfix:v5.1.0-alpine    # rögzített verzió, ne latest
+    environment:
+      # Brevo relay — credentialök .env-ből jönnek, soha nem kerülnek gitbe
+      - RELAYHOST=smtp-relay.brevo.com:587
+      - RELAYHOST_USERNAME=${SMTP_USERNAME}
+      - RELAYHOST_PASSWORD=${SMTP_PASSWORD}
+      # Csak a Docker belső hálózatról fogad el levelet (172.18.0.0/16)
+      - POSTFIX_mynetworks=127.0.0.0/8 172.18.0.0/16
+      # Bármely Docker-belső feladótól elfogad — a POSTFIX_mynetworks védi
+      - ALLOW_EMPTY_SENDER_DOMAINS=1
+      # permit_mynetworks ELŐRE kell, különben a check_sender_access blokkolja a relay-t
+      - POSTFIX_smtpd_recipient_restrictions=permit_mynetworks,reject_non_fqdn_recipient,reject_unknown_recipient_domain,reject
+      # Brevo link tracking kikapcsolása — különben a Keycloak linkek nem működnek
+      - POSTFIX_smtp_header_checks=regexp:/etc/postfix/header_checks
+      # Postfix csak belső interfészeken hallgat — kívülről nem elérhető
+      - INET_INTERFACES=all
+    volumes:
+      - ./postfix/header_checks:/etc/postfix/header_checks:ro
+    # Szándékosan nincs ports: — kívülről teljesen elérhetetlen,
+    # csak a Docker hálózaton belüli service-ek érik el (postfix:25)
+    restart: unless-stopped
+
   seq:
     image: datalust/seq:latest
     environment:

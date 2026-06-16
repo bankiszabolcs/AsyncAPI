@@ -1,0 +1,2 @@
+/^Subject:/  PREPEND X-Mailin-Track-Clicks: 0
+/^Subject:/  PREPEND X-Mailin-Track-Opens: 0

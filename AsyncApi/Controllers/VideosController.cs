@@ -68,11 +68,27 @@ public sealed class VideosController(
         return Accepted(statusUrl, new { id, status = VideoProcessingStatus.Queued });
     }
 
-    // GET /videos — kész és publikus videók listája lapozással
-    [HttpGet]
-    public async Task<IActionResult> GetVideos([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    // GET /videos/suggestions?q= — gyors cím-autocomplete (csak szöveg, max 8 találat)
+    [HttpGet("suggestions")]
+    public async Task<IActionResult> GetSuggestions([FromQuery] string? q)
     {
-        var videos = await videoRepository.GetListAsync(page, pageSize);
+        if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+            return Ok(Array.Empty<string>());
+
+        var titles = await videoRepository.GetTitleSuggestionsAsync(q.Trim());
+        return Ok(titles);
+    }
+
+    // GET /videos — kész és publikus videók listája lapozással; ?q= esetén cím/leírás szerinti szűréssel
+    [HttpGet]
+    public async Task<IActionResult> GetVideos(
+        [FromQuery] string? q = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var videos = string.IsNullOrWhiteSpace(q)
+            ? await videoRepository.GetListAsync(page, pageSize)
+            : await videoRepository.SearchAsync(q.Trim(), page, pageSize);
 
         var result = videos.Select(v => new
         {

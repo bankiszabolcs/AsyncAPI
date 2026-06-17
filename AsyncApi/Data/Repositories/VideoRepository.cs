@@ -97,6 +97,37 @@ public class VideoRepository(AsyncApiDbContext db)
             .ToListAsync();
     }
 
+    public async Task<List<string>> GetTitleSuggestionsAsync(string query, int limit = 8)
+    {
+        var pattern = $"%{query}%";
+        return await db.Videos
+            .Where(v => v.Active
+                     && v.StatusId     == (int)ProcessingStatus.Completed
+                     && v.VisibilityId == (int)Visibility.Public
+                     && EF.Functions.ILike(v.Title, pattern))
+            .OrderByDescending(v => v.PublishedAt)
+            .Take(limit)
+            .Select(v => v.Title)
+            .ToListAsync();
+    }
+
+    public async Task<List<Video>> SearchAsync(string query, int page = 1, int pageSize = 20)
+    {
+        var pattern = $"%{query}%";
+        return await db.Videos
+            .Include(v => v.User).ThenInclude(u => u.AvatarImage)
+            .Include(v => v.ThumbnailImage)
+            .Where(v => v.Active
+                     && v.StatusId     == (int)ProcessingStatus.Completed
+                     && v.VisibilityId == (int)Visibility.Public
+                     && (EF.Functions.ILike(v.Title, pattern)
+                         || (v.Description != null && EF.Functions.ILike(v.Description, pattern))))
+            .OrderByDescending(v => v.PublishedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
     // Saját videók — minden státusz, csak a user saját videói
     public async Task<List<Video>> GetAllByUserIdAsync(Guid userId)
     {

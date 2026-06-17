@@ -1,0 +1,46 @@
+<div class="p-4">
+
+  @if (searchQuery()) {
+    <h2 class="text-base font-semibold text-(--p-text-muted-color) mb-4">
+      Találatok: <span class="text-(--p-text-color)">„{{ searchQuery() }}"</span>
+    </h2>
+  }
+
+  @if (videosResource.isLoading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (_ of [1,2,3,4,5,6]; track $index) {
+        <div class="flex flex-col gap-3">
+          <p-skeleton height="160px" class="rounded-xl" />
+          <div class="flex gap-3 px-1">
+            <p-skeleton shape="circle" size="2.25rem" />
+            <div class="flex flex-col gap-2 flex-1">
+              <p-skeleton height="14px" />
+              <p-skeleton height="14px" width="60%" />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (videosResource.error()) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
+      <i class="pi pi-exclamation-circle text-4xl"></i>
+      <p>Nem sikerült betölteni a találatokat.</p>
+    </div>
+  } @else if (!videosResource.value()?.length) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
+      <i class="pi pi-search text-4xl"></i>
+      <p>Nincs találat erre: <strong class="text-(--p-text-color)">„{{ searchQuery() }}"</strong></p>
+    </div>
+  } @else {
+    <p-dataview [value]="videosResource.value()!" layout="grid">
+      <ng-template #grid let-items>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-1">
+          @for (video of items; track video.id) {
+            <app-video-card [video]="video" />
+          }
+        </div>
+      </ng-template>
+    </p-dataview>
+  }
+
+</div>

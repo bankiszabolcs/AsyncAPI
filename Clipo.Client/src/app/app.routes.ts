@@ -13,6 +13,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/explore/explore').then(m => m.Explore),
   },
   {
+    path: 'search',
+    loadComponent: () => import('./pages/search/search').then(m => m.Search),
+    providers: [VideoService],
+  },
+  {
     path: 'watch/:id',
     loadComponent: () => import('./pages/watch/watch').then(m => m.Watch),
     providers: [VideoService],

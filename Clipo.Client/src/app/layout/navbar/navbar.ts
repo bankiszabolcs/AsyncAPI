@@ -9,10 +9,13 @@ import { Popover } from 'primeng/popover';
 import { Ripple } from 'primeng/ripple';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../core/auth/auth.service';
+import { SearchBar } from '../../shared/search-bar/search-bar';
+import { VideoService } from '../../core/services/video.service';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, NgTemplateOutlet, Button, Avatar, Menu, Drawer, Popover, Ripple],
+  imports: [RouterLink, NgTemplateOutlet, Button, Avatar, Menu, Drawer, Popover, Ripple, SearchBar],
+  providers: [VideoService],
   templateUrl: './navbar.html',
 })
 export class Navbar {

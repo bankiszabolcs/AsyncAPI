@@ -21,16 +21,8 @@
   <!-- Közép: keresés (csak asztali nézet) -->
   <div class="flex-1 flex justify-center">
     @if (!isMobile()) {
-      <div class="flex items-center w-full max-w-xl gap-3 px-4 py-1.5 rounded-full
-        bg-(--p-surface-card) border border-(--p-surface-border)
-        focus-within:border-(--p-primary-color) transition-colors duration-150">
-        <i class="pi pi-search shrink-0 text-(--p-text-muted-color) text-sm"></i>
-        <input
-          type="search"
-          placeholder="Keresés..."
-          class="flex-1 bg-transparent outline-none border-none text-sm
-            text-(--p-text-color) placeholder:text-(--p-text-muted-color)"
-        />
+      <div class="w-full max-w-xl">
+        <app-search-bar />
       </div>
     }
   </div>
@@ -217,16 +209,8 @@
     <span class="font-semibold text-(--p-text-color)">Keresés</span>
   </ng-template>
 
-  <div class="flex items-center gap-3 px-4 py-2 rounded-full
-    bg-(--p-surface-card) border border-(--p-surface-border)
-    focus-within:border-(--p-primary-color) transition-colors duration-150">
-    <i class="pi pi-search shrink-0 text-(--p-text-muted-color) text-sm"></i>
-    <input
-      type="search"
-      placeholder="Keresés..."
-      class="flex-1 bg-transparent outline-none border-none text-sm
-        text-(--p-text-color) placeholder:text-(--p-text-muted-color)"
-    />
+  <div class="px-2 pt-1">
+    <app-search-bar (searched)="searchDrawerVisible.set(false)" />
   </div>
 </p-drawer>
 

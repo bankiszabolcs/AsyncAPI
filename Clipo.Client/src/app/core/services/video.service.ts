@@ -21,6 +21,20 @@ export class VideoService {
     return this.http.get<Video[]>(this.baseUrl, { params });
   }
 
+  search(q: string, page = 1, pageSize = 20): Observable<Video[]> {
+    const params = new HttpParams()
+      .set('q', q)
+      .set('page', page)
+      .set('pageSize', pageSize);
+
+    return this.http.get<Video[]>(this.baseUrl, { params });
+  }
+
+  getSuggestions(q: string): Observable<string[]> {
+    const params = new HttpParams().set('q', q);
+    return this.http.get<string[]>(`${this.baseUrl}/suggestions`, { params });
+  }
+
   getById(id: string): Observable<VideoDetail> {
     return this.http.get<VideoDetail>(`${this.baseUrl}/${id}`);
   }

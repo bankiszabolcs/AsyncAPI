@@ -1,4 +1,30 @@
-<div class="p-6">
-  <h2 class="text-2xl font-bold mb-2 text-(--p-text-color)">Előzmények</h2>
-  <p class="text-(--p-text-muted-color)">Hamarosan: megnézett videók listája...</p>
+<div class="p-4">
+
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-xl font-bold text-(--p-text-color)">Előzmények</h2>
+    @if (videos().length) {
+      <p-button
+        label="Összes törlése"
+        icon="pi pi-trash"
+        severity="secondary"
+        [text]="true"
+        size="small"
+        (click)="clearAll()"
+      />
+    }
+  </div>
+
+  @if (!videos().length) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
+      <i class="pi pi-history text-4xl"></i>
+      <p>Még nem nézett meg egyetlen videót sem.</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (video of videos(); track video.id) {
+        <app-video-card [video]="video" />
+      }
+    </div>
+  }
+
 </div>

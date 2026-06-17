@@ -1,9 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { WatchHistoryService } from '../../core/services/watch-history.service';
+import { VideoCard } from '../../shared/video-card/video-card';
+import { Button } from 'primeng/button';
 
 @Component({
   selector: 'app-history',
-  imports: [],
+  imports: [VideoCard, Button],
   templateUrl: './history.html',
-  styles: ``,
 })
-export class History {}
+export class History {
+  private readonly watchHistory = inject(WatchHistoryService);
+
+  readonly videos = signal(this.watchHistory.getHistory());
+
+  clearAll(): void {
+    this.watchHistory.clear();
+    this.videos.set([]);
+  }
+}

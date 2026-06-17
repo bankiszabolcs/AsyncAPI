@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -9,6 +9,7 @@ import { VideoDetail } from '../../core/models/video-detail.model';
 import { VideoPlayer } from '../../shared/video-player/video-player';
 import { AuthService } from '../../core/auth/auth.service';
 import { Comments } from '../../shared/comments/comments';
+import { WatchHistoryService } from '../../core/services/watch-history.service';
 
 // Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
 const POLL_INTERVAL_MS = 4000;
@@ -27,6 +28,7 @@ interface PollResult {
 export class Watch {
   private readonly route = inject(ActivatedRoute);
   private readonly videoService = inject(VideoService);
+  private readonly watchHistory = inject(WatchHistoryService);
   readonly auth = inject(AuthService);
 
   readonly id = this.route.snapshot.paramMap.get('id')!;
@@ -84,6 +86,15 @@ export class Watch {
       case 'processing': return 'Feldolgozás folyamatban';
       case 'failed':     return 'A feldolgozás sikertelen';
       default:           return '';
+    }
+  });
+
+  private historyRecorded = false;
+  private readonly recordEffect = effect(() => {
+    const v = this.video();
+    if (v && this.isReady() && !this.historyRecorded) {
+      this.historyRecorded = true;
+      this.watchHistory.record(v);
     }
   });
 

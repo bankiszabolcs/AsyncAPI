@@ -88,6 +88,10 @@ try
     builder.Services.AddSingleton<VideoService>();
     builder.Services.AddHostedService<VideoProcessingService>();
 
+    // --- AI tag generálás ---
+    builder.Services.AddHttpClient();
+    builder.Services.AddScoped<VideoTagService>();
+
     // --- Megtekintés rögzítés ---
     builder.Services.AddHostedService<ViewWorkerService>();
 

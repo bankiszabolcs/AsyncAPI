@@ -15,6 +15,9 @@ public sealed class VideoTagService(
     private const string GeminiEndpoint =
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
+    private Guid? TechnicalUserId =>
+        Guid.TryParse(configuration["TechnicalUser:Id"], out var id) ? id : null;
+
     public async Task GenerateAndSaveTagsAsync(
         Guid videoId, string? audioPath, IReadOnlyList<string> keyframePaths)
     {
@@ -28,19 +31,40 @@ public sealed class VideoTagService(
         var video = await db.Videos.FindAsync(videoId);
         if (video is null) return;
 
-        try
-        {
-            var tags = await CallGeminiAsync(apiKey, video.Title ?? "", audioPath, keyframePaths);
-            if (tags.Count > 0)
-                await SaveTagsAsync(videoId, tags);
+        // Ingyenes tier: 15 kérés/perc — 429 esetén exponenciális visszalépéssel újrapróbálunk
+        int[] retryDelaysSeconds = [5, 15, 30];
 
-            logger.LogInformation("Generated {Count} tags for {VideoId}: {Tags}",
-                tags.Count, videoId, string.Join(", ", tags));
-        }
-        catch (Exception ex)
+        for (var attempt = 0; attempt <= retryDelaysSeconds.Length; attempt++)
         {
-            logger.LogError(ex, "Tag generation failed for {VideoId}", videoId);
+            try
+            {
+                var tags = await CallGeminiAsync(apiKey, video.Title ?? "", audioPath, keyframePaths);
+                if (tags.Count > 0)
+                    await SaveTagsAsync(videoId, tags);
+
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Generated {Count} tags for {VideoId}: {@Tags}",
+                        tags.Count, videoId, tags);
+                return;
+            }
+            catch (HttpRequestException ex) when (
+                ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests &&
+                attempt < retryDelaysSeconds.Length)
+            {
+                var delay = retryDelaysSeconds[attempt];
+                logger.LogWarning(
+                    "Gemini rate limit hit for {VideoId}, waiting {Delay}s (attempt {Attempt}/{Max})",
+                    videoId, delay, attempt + 1, retryDelaysSeconds.Length);
+                await Task.Delay(TimeSpan.FromSeconds(delay));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Tag generation failed for {VideoId}", videoId);
+                return;
+            }
         }
+
+        logger.LogWarning("Tag generation skipped for {VideoId}: rate limit retries exhausted", videoId);
     }
 
     private async Task<List<string>> CallGeminiAsync(
@@ -78,7 +102,9 @@ public sealed class VideoTagService(
         var payload = JsonSerializer.Serialize(new { contents = new[] { new { parts } } });
 
         var client = httpClientFactory.CreateClient();
-        using var req = new HttpRequestMessage(HttpMethod.Post, $"{GeminiEndpoint}?key={apiKey}");
+        // API kulcs header-ben, NEM query paraméterben — így nem kerül be a Seq logokba
+        using var req = new HttpRequestMessage(HttpMethod.Post, GeminiEndpoint);
+        req.Headers.Add("x-goog-api-key", apiKey);
         req.Content = new StringContent(payload, Encoding.UTF8, "application/json");
 
         using var resp = await client.SendAsync(req);
@@ -103,6 +129,8 @@ public sealed class VideoTagService(
 
     private async Task SaveTagsAsync(Guid videoId, List<string> tagNames)
     {
+        var systemUserId = TechnicalUserId;
+
         var normalized = tagNames
             .Select(t => t.Trim().ToLowerInvariant())
             .Where(t => t is { Length: > 0 and <= 50 })
@@ -116,10 +144,11 @@ public sealed class VideoTagService(
             {
                 tag = new Tag
                 {
-                    Id         = Guid.NewGuid(),
-                    Name       = name,
-                    Active     = true,
-                    CreateDate = DateTime.UtcNow,
+                    Id           = Guid.NewGuid(),
+                    Name         = name,
+                    Active       = true,
+                    CreateDate   = DateTime.UtcNow,
+                    CreateUserId = systemUserId,
                 };
                 db.Tags.Add(tag);
                 await db.SaveChangesAsync();
@@ -130,10 +159,11 @@ public sealed class VideoTagService(
             {
                 db.VideoTags.Add(new VideoTag
                 {
-                    VideoId    = videoId,
-                    TagId      = tag.Id,
-                    Active     = true,
-                    CreateDate = DateTime.UtcNow,
+                    VideoId      = videoId,
+                    TagId        = tag.Id,
+                    Active       = true,
+                    CreateDate   = DateTime.UtcNow,
+                    CreateUserId = systemUserId,
                 });
             }
         }

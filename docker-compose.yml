@@ -32,6 +32,8 @@ services:
       - Keycloak__Authority=http://keycloak:8180/auth/realms/clipo
       # JWT iss claim: a publikus URL (nginx forwarded headerei alapján)
       - Keycloak__ValidIssuer=http://192.168.0.241/auth/realms/clipo
+      # Gemini API kulcs — ha üres, a tag generálás ki van kapcsolva
+      - AI__GeminiApiKey=${AI__GeminiApiKey}
     depends_on:
       minio:
         condition: service_started

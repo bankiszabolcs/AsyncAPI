@@ -12,6 +12,7 @@ export interface MyVideo {
   description: string | null;
   duration: number;
   publishedAt: string | null;
+  viewCount: number;
   statusId: number;
   status: string;
   visibilityId: number;

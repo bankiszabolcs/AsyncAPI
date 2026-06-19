@@ -5,6 +5,7 @@ using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 namespace AsyncApi.Controllers;
 
@@ -15,9 +16,10 @@ public sealed class VideosController(
     LinkGenerator linkGenerator,
     VideoService videoService,
     StorageService storageService,
-    QueueService queueService,      // korábban Channel<VideoProcessingJob> volt
+    QueueService queueService,
     StatusService statusService,
-    VideoRepository videoRepository)    // korábban ConcurrentDictionary<string, VideoProcessingStatus> volt
+    VideoRepository videoRepository,
+    IConnectionMultiplexer redis)
     : ControllerBase
 {
     private readonly string _uploadDirectory = configuration["UploadDirectory"] ?? "uploads";
@@ -97,6 +99,7 @@ public sealed class VideosController(
             description = v.Description,
             duration    = v.DurationSeconds,
             publishedAt = v.PublishedAt,
+            viewCount   = v.ViewCount,
             author = new
             {
                 id        = v.User.Id,
@@ -143,6 +146,7 @@ public sealed class VideosController(
                 description  = v.Description,
                 duration     = v.DurationSeconds,
                 publishedAt  = v.PublishedAt,
+                viewCount    = v.ViewCount,
                 statusId     = v.StatusId,
                 status       = v.Status.Title,
                 visibilityId = v.VisibilityId,
@@ -226,6 +230,7 @@ public sealed class VideosController(
             publishedAt  = video.PublishedAt,
             statusId     = video.StatusId,
             status       = video.Status.Title,
+            viewCount    = video.ViewCount,
             likeCount    = video.LikeCount,
             dislikeCount = video.DislikeCount,
             userReaction,
@@ -256,6 +261,27 @@ public sealed class VideosController(
                     : null
             }
         });
+    }
+
+    // POST /videos/{id}/views — megtekintés rögzítése; Redis NX+EX deduplikáció, majd Stream-be kerül
+    // Azonosító: bejelentkezett usernél userId, anonimnak X-Session-Id header (frontend generálja)
+    [HttpPost("{id:guid}/views")]
+    public async Task<IActionResult> RecordView(
+        Guid id,
+        [FromHeader(Name = "X-Session-Id")] string? sessionId)
+    {
+        var identifier = CurrentUserId?.ToString() ?? sessionId;
+        if (string.IsNullOrWhiteSpace(identifier))
+            return BadRequest("X-Session-Id header is required for anonymous views.");
+
+        var db = redis.GetDatabase();
+        var key = $"view:{id}:{identifier}";
+        var isNew = await db.StringSetAsync(key, "1", TimeSpan.FromDays(1), When.NotExists);
+
+        if (isNew)
+            await queueService.EnqueueAsync(QueueService.ViewStreamKey, new ViewRecord(id));
+
+        return NoContent();
     }
 
     // POST /videos/{id}/reactions — like / dislike toggle (1=like, 2=dislike)

@@ -127,7 +127,12 @@
           {{ statusLabelText() }}
         </span>
       } @else {
-        <span class="text-xs text-(--p-text-muted-color)">{{ video().publishedAt | timeAgo }}</span>
+        <span class="text-xs text-(--p-text-muted-color)">
+          @if (video().viewCount !== undefined) {
+            {{ video().viewCount | viewCount }} megtekintés &middot;
+          }
+          {{ video().publishedAt | timeAgo }}
+        </span>
       }
     </div>
   </div>

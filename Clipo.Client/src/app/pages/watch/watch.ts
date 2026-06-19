@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { timer, switchMap, map, catchError, of, takeWhile, tap } from 'rxjs';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
+import { ViewCountPipe } from '../../shared/pipes/view-count.pipe';
 import { VideoService } from '../../core/services/video.service';
 import { VideoDetail } from '../../core/models/video-detail.model';
 import { VideoPlayer } from '../../shared/video-player/video-player';
@@ -22,7 +23,7 @@ interface PollResult {
 
 @Component({
   selector: 'app-watch',
-  imports: [VideoPlayer, TimeAgoPipe, Comments],
+  imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments],
   templateUrl: './watch.html',
 })
 export class Watch {
@@ -88,6 +89,19 @@ export class Watch {
       default:           return '';
     }
   });
+
+  private viewRecorded = false;
+
+  onTimePlayed(seconds: number): void {
+    if (this.viewRecorded) return;
+    const duration = this.video()?.duration ?? 0;
+    if (!duration) return;
+    const threshold = Math.min(30, duration * 0.5);
+    if (seconds >= threshold) {
+      this.viewRecorded = true;
+      this.videoService.recordView(this.id).subscribe();
+    }
+  }
 
   private historyRecorded = false;
   private readonly recordEffect = effect(() => {

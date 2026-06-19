@@ -1,6 +1,6 @@
 import {
   Component, computed, effect, ElementRef, inject,
-  input, OnDestroy, signal, viewChild,
+  input, OnDestroy, output, signal, viewChild,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -21,11 +21,15 @@ export class VideoPlayer implements OnDestroy {
   readonly poster = input('');
   readonly autoplay = input(true);
 
+  readonly timePlayed = output<number>();
+
   private readonly sanitizer = inject(DomSanitizer);
   private readonly http = inject(HttpClient);
   private readonly videoEl = viewChild<ElementRef<HTMLVideoElement>>('videoEl');
   private hls: Hls | null = null;
   private hideControlsTimer: ReturnType<typeof setTimeout> | null = null;
+  private playInterval: ReturnType<typeof setInterval> | null = null;
+  private cumulativePlayed = 0;
 
   readonly isPlaying = signal(false);
   readonly currentTime = signal(0);
@@ -182,9 +186,27 @@ export class VideoPlayer implements OnDestroy {
     }
   }
 
-  onPlay(): void { this.isPlaying.set(true); }
-  onPause(): void { this.isPlaying.set(false); }
-  onEnded(): void { this.isPlaying.set(false); }
+  onPlay(): void {
+    this.isPlaying.set(true);
+    this.playInterval = setInterval(() => {
+      this.cumulativePlayed++;
+      this.timePlayed.emit(this.cumulativePlayed);
+    }, 1000);
+  }
+
+  onPause(): void {
+    this.isPlaying.set(false);
+    this.clearPlayInterval();
+  }
+
+  onEnded(): void {
+    this.isPlaying.set(false);
+    this.clearPlayInterval();
+  }
+
+  private clearPlayInterval(): void {
+    if (this.playInterval) { clearInterval(this.playInterval); this.playInterval = null; }
+  }
 
   togglePlay(): void {
     const el = this.videoEl()?.nativeElement;
@@ -259,5 +281,6 @@ export class VideoPlayer implements OnDestroy {
   ngOnDestroy(): void {
     this.hls?.destroy();
     if (this.hideControlsTimer) clearTimeout(this.hideControlsTimer);
+    this.clearPlayInterval();
   }
 }

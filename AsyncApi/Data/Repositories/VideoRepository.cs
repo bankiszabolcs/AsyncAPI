@@ -6,8 +6,11 @@ using Visibility = AsyncApi.Enums.Visibility;
 
 namespace AsyncApi.Data.Repositories;
 
-public class VideoRepository(AsyncApiDbContext db)
+public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
 {
+    private readonly Guid _technicalUserId =
+        Guid.Parse(configuration["TechnicalUser:Id"]
+            ?? throw new InvalidOperationException("TechnicalUser:Id is not configured."));
     public async Task<Video> CreateAsync(Guid id, string originalFileName, Guid userId)
     {
         var video = new Video
@@ -141,7 +144,8 @@ public class VideoRepository(AsyncApiDbContext db)
     public async Task IncrementViewCountAsync(Guid id)
     {
         await db.Database.ExecuteSqlRawAsync(
-            "UPDATE videos SET view_count = view_count + 1 WHERE id = {0}", id);
+            "UPDATE videos SET view_count = view_count + 1, modify_user_id = {1} WHERE id = {0}",
+            id, _technicalUserId);
     }
 
     // Reakció hozzáadása / módosítása / visszavonása (toggle).

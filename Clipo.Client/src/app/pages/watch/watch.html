@@ -41,6 +41,7 @@
         [thumbnailsUrl]="vttUrl()"
         [poster]="thumbnail() ?? ''"
         [title]="v?.title ?? ''"
+        (timePlayed)="onTimePlayed($event)"
       />
 
     } @else {
@@ -69,7 +70,9 @@
             </div>
             <div>
               <p class="font-medium text-sm text-(--p-text-color)">{{ v.author.name }}</p>
-              <p class="text-xs text-(--p-text-muted-color)">{{ v.publishedAt | timeAgo }}</p>
+              <p class="text-xs text-(--p-text-muted-color)">
+                {{ v.viewCount | viewCount }} megtekintés &middot; {{ v.publishedAt | timeAgo }}
+              </p>
             </div>
           </div>
 

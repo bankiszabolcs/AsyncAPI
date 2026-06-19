@@ -21,6 +21,7 @@ export interface VideoDetail {
   publishedAt: string;
   statusId: number;
   status: string;
+  viewCount: number;
   likeCount: number;
   dislikeCount: number;
   userReaction: 1 | 2 | null;

@@ -9,11 +9,13 @@ public sealed class QueueService(IConnectionMultiplexer redis)
     // Stream kulcsok — ezek alatt tárolódnak a job-ok a Redis-ben
     public const string ThumbnailStreamKey = "queue:thumbnails";
     public const string VideoStreamKey     = "queue:videos";
+    public const string ViewStreamKey      = "queue:views";
 
     // Consumer group nevek — a Redis Streams consumer group mechanizmusa biztosítja,
     // hogy minden job-ot pontosan egy worker dolgozzon fel
     public const string ThumbnailGroupName = "thumbnail-workers";
     public const string VideoGroupName     = "video-workers";
+    public const string ViewGroupName      = "view-workers";
 
     // Job berakása a Redis Stream-be; JSON-ná szerializálja az objektumot
     // A stream automatikusan létrejön ha még nem létezik (MKSTREAM flag)

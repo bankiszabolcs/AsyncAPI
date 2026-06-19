@@ -22,6 +22,7 @@ export interface Video {
   description: string | null;
   duration: number;
   publishedAt: string;
+  viewCount: number;
   author: VideoAuthor;
   media: VideoMedia;
 }

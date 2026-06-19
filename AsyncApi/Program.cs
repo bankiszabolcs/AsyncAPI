@@ -88,6 +88,9 @@ try
     builder.Services.AddSingleton<VideoService>();
     builder.Services.AddHostedService<VideoProcessingService>();
 
+    // --- Megtekintés rögzítés ---
+    builder.Services.AddHostedService<ViewWorkerService>();
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())

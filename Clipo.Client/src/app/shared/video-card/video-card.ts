@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, OnDestroy, signal, viewChild, ElementRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TimeAgoPipe } from '../pipes/time-ago.pipe';
+import { ViewCountPipe } from '../pipes/view-count.pipe';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import Hls from 'hls.js';
@@ -12,6 +13,7 @@ export interface CardVideo {
   title: string;
   duration: number;
   publishedAt: string | null;
+  viewCount?: number;
   statusId?: number;
   author?: { id: string; name: string; avatarUrl?: string | null };
   media: {
@@ -23,7 +25,7 @@ export interface CardVideo {
 
 @Component({
   selector: 'app-video-card',
-  imports: [RouterLink, TimeAgoPipe],
+  imports: [RouterLink, TimeAgoPipe, ViewCountPipe],
   templateUrl: './video-card.html',
 })
 export class VideoCard implements OnDestroy {

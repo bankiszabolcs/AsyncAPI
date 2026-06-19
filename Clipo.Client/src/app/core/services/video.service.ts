@@ -57,4 +57,24 @@ export class VideoService {
       { reactionTypeId }
     );
   }
+
+  recordView(videoId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${videoId}/views`, null, {
+      headers: { 'X-Session-Id': this.getOrCreateSessionId() },
+    });
+  }
+
+  private getOrCreateSessionId(): string {
+    let id = localStorage.getItem('clipo_session_id');
+    if (!id) {
+      id = typeof crypto?.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+          });
+      localStorage.setItem('clipo_session_id', id);
+    }
+    return id;
+  }
 }

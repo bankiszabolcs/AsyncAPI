@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
+import { Chip } from 'primeng/chip';
 import { VideoService } from '../../core/services/video.service';
 import { MyVideo } from '../../core/models/my-video.model';
 import { Visibility, visibilityOption, VISIBILITY_OPTIONS } from '../../core/models/visibility.model';
@@ -17,7 +18,7 @@ interface Stat {
 
 @Component({
   selector: 'app-studio',
-  imports: [RouterLink, FormsModule, Button, Select],
+  imports: [RouterLink, FormsModule, Button, Select, Chip],
   templateUrl: './studio.html',
   styles: ``,
 })
@@ -35,6 +36,7 @@ export class Studio {
   readonly editTitle = signal('');
   readonly editDescription = signal('');
   readonly editVisibilityId = signal<number>(Visibility.Private);
+  readonly editTags = signal<string[]>([]);
   readonly saving = signal(false);
 
   readonly stats = computed<Stat[]>(() => {
@@ -81,6 +83,7 @@ export class Studio {
     this.editTitle.set(v.title);
     this.editDescription.set(v.description ?? '');
     this.editVisibilityId.set(v.visibilityId);
+    this.editTags.set([...v.tags]);
   }
 
   cancelEdit(): void {
@@ -97,12 +100,13 @@ export class Studio {
       title,
       description: this.editDescription().trim() || null,
       visibilityId: this.editVisibilityId(),
+      tags: this.editTags(),
     }).subscribe({
       next: res => {
         this.videos.update(list =>
           (list ?? []).map(x =>
             x.id === res.id
-              ? { ...x, title: res.title, description: res.description, visibilityId: res.visibilityId }
+              ? { ...x, title: res.title, description: res.description, visibilityId: res.visibilityId, tags: res.tags }
               : x,
           ),
         );
@@ -113,5 +117,32 @@ export class Studio {
         this.saving.set(false);
       },
     });
+  }
+
+  // --- Tag kezelés ---
+
+  removeTag(tag: string): void {
+    this.editTags.update(tags => tags.filter(t => t !== tag));
+  }
+
+  onTagKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      this.commitTagInput(input);
+    } else if (event.key === 'Backspace' && input.value === '' && this.editTags().length > 0) {
+      this.editTags.update(tags => tags.slice(0, -1));
+    }
+  }
+
+  onTagBlur(input: HTMLInputElement): void {
+    this.commitTagInput(input);
+  }
+
+  private commitTagInput(input: HTMLInputElement): void {
+    const value = input.value.trim().toLowerCase();
+    if (value && value.length <= 20 && !this.editTags().includes(value) && this.editTags().length < 10) {
+      this.editTags.update(tags => [...tags, value]);
+    }
+    input.value = '';
   }
 }

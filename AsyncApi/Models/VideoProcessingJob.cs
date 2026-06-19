@@ -1,3 +1,3 @@
 namespace AsyncApi.Models;
 
-public record VideoProcessingJob(string Id, string OriginalFilePath, string FolderPath);
+public record VideoProcessingJob(string Id, string OriginalFilePath, string FolderPath, string Language = "en");

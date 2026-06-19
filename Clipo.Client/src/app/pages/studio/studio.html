@@ -71,7 +71,7 @@
             }
           </div>
 
-          <!-- Main column — ugyanazok az elemek nézet és szerkesztés alatt, így nem ugrik -->
+          <!-- Main column -->
           <div class="flex-1 min-w-0">
             <input
               type="text"
@@ -93,6 +93,37 @@
               [ngModel]="editingId() === v.id ? editDescription() : (v.description || '')"
               (ngModelChange)="editDescription.set($event)"
             ></textarea>
+
+            <!-- Tags -->
+            <div class="flex flex-wrap items-center gap-1.5 mt-2 min-h-6">
+              @if (editingId() === v.id) {
+                @for (tag of editTags(); track tag) {
+                  <p-chip
+                    [label]="tag"
+                    [removable]="true"
+                    (onRemove)="removeTag(tag)"
+                    class="text-xs"
+                  />
+                }
+                @if (editTags().length < 10) {
+                  <input
+                    #tagInput
+                    type="text"
+                    maxlength="20"
+                    placeholder="tag hozzáadása..."
+                    class="h-6 min-w-24 max-w-36 bg-transparent border-0 border-b border-(--p-orange-500)
+                           outline-none text-xs text-(--p-text-color) placeholder:text-(--p-text-muted-color)"
+                    (keydown)="onTagKeydown($event, tagInput)"
+                    (blur)="onTagBlur(tagInput)"
+                  />
+                }
+              } @else {
+                @for (tag of v.tags; track tag) {
+                  <p-chip [label]="tag" class="text-xs" />
+                }
+              }
+            </div>
+
             @if (!isCompleted(v)) {
               <span class="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full bg-(--p-surface-ground) text-(--p-text-muted-color)">
                 {{ v.status }}
@@ -100,7 +131,7 @@
             }
           </div>
 
-          <!-- Visibility — ugyanaz a select nézet és szerkesztés alatt (nézetben letiltva), így nem ugrik -->
+          <!-- Visibility -->
           <div class="hidden sm:block w-36 shrink-0 text-sm text-(--p-text-muted-color)">
             <p-select
               [options]="visibilityOptions"
@@ -126,7 +157,7 @@
             </p-select>
           </div>
 
-          <!-- Actions — fix szélesség, hogy a Public ne ugráljon szerkesztéskor -->
+          <!-- Actions -->
           <div class="flex items-center justify-end gap-2 shrink-0 w-32 pl-2">
             @if (editingId() === v.id) {
               <p-button

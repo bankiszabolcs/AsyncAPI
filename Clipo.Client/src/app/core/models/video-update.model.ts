@@ -3,6 +3,7 @@ export interface UpdateVideoRequest {
   title: string;
   description: string | null;
   visibilityId: number;
+  tags: string[];
 }
 
 export interface UpdateVideoResponse {
@@ -12,4 +13,5 @@ export interface UpdateVideoResponse {
   statusId: number;
   status: string;
   visibilityId: number;
+  tags: string[];
 }

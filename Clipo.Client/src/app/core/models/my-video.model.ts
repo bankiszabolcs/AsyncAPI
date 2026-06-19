@@ -16,5 +16,6 @@ export interface MyVideo {
   statusId: number;
   status: string;
   visibilityId: number;
+  tags: string[];
   media: MyVideoMedia;
 }

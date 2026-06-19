@@ -150,6 +150,7 @@ public sealed class VideosController(
                 statusId     = v.StatusId,
                 status       = v.Status.Title,
                 visibilityId = v.VisibilityId,
+                tags         = v.VideoTags.Where(vt => vt.Active).Select(vt => vt.Tag.Name).ToList(),
                 media = new
                 {
                     thumbnails = hasThumbnails
@@ -172,7 +173,7 @@ public sealed class VideosController(
         return Ok(result);
     }
 
-    // PUT /videos/{id} — cím / leírás / láthatóság szerkesztése (csak a tulajdonos)
+    // PUT /videos/{id} — cím / leírás / láthatóság / tagek szerkesztése (csak a tulajdonos)
     [HttpPut("{id:guid}")]
     [Authorize]
     public async Task<IActionResult> UpdateVideo(Guid id, [FromBody] UpdateVideoRequest request)
@@ -195,6 +196,17 @@ public sealed class VideosController(
 
         if (video is null) return NotFound();
 
+        if (request.Tags is not null)
+            await videoRepository.UpdateTagsAsync(id, userId, request.Tags);
+
+        // A mentett (normalizált) tagek kiszámítása a válaszhoz
+        var savedTags = (request.Tags ?? [])
+            .Select(t => t.Trim().ToLowerInvariant())
+            .Where(t => t.Length > 0 && t.Length <= 20 && !t.Contains(' '))
+            .Distinct()
+            .Take(10)
+            .ToList();
+
         return Ok(new
         {
             id           = video.Id,
@@ -202,7 +214,8 @@ public sealed class VideosController(
             description  = video.Description,
             statusId     = video.StatusId,
             status       = video.Status.Title,
-            visibilityId = video.VisibilityId
+            visibilityId = video.VisibilityId,
+            tags         = savedTags
         });
     }
 

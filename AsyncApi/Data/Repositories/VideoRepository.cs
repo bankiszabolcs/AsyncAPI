@@ -136,9 +136,72 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
     {
         return await db.Videos
             .Include(v => v.Status)
+            .Include(v => v.VideoTags).ThenInclude(vt => vt.Tag)
             .Where(v => v.UserId == userId && v.Active)
             .OrderByDescending(v => v.CreateDate)
             .ToListAsync();
+    }
+
+    // Tag teljes csere egy videóhoz (csak a tulajdonos hívhatja).
+    // Stratégia: meglévő VideoTag sorok soft-delete / reaktiválás, hiányzók insert.
+    public async Task UpdateTagsAsync(Guid videoId, Guid userId, List<string> tagNames)
+    {
+        var normalized = tagNames
+            .Select(t => t.Trim().ToLowerInvariant())
+            .Where(t => t.Length > 0 && t.Length <= 20 && !t.Contains(' '))
+            .Distinct()
+            .Take(10)
+            .ToList();
+
+        var existingVts = await db.VideoTags
+            .Where(vt => vt.VideoId == videoId)
+            .ToListAsync();
+
+        // Upsert Tag rekordok az új névlistához
+        var tagsForVideo = new List<Tag>();
+        foreach (var name in normalized)
+        {
+            var tag = await db.Tags.FirstOrDefaultAsync(t => t.Name == name);
+            if (tag is null)
+            {
+                tag = new Tag { Id = Guid.NewGuid(), Name = name, Active = true, CreateDate = DateTime.UtcNow, CreateUserId = userId };
+                db.Tags.Add(tag);
+                await db.SaveChangesAsync();
+            }
+            tagsForVideo.Add(tag);
+        }
+
+        var newTagIds = tagsForVideo.Select(t => t.Id).ToHashSet();
+
+        // Soft-delete a kivezetett tagekhez
+        foreach (var vt in existingVts.Where(vt => !newTagIds.Contains(vt.TagId)))
+        {
+            vt.Active = false;
+            vt.ModifyDate = DateTime.UtcNow;
+            vt.ModifyUserId = userId;
+        }
+
+        // Reaktiválás vagy új sor
+        foreach (var tag in tagsForVideo)
+        {
+            var existing = existingVts.FirstOrDefault(vt => vt.TagId == tag.Id);
+            if (existing is not null)
+            {
+                existing.Active = true;
+                existing.ModifyDate = DateTime.UtcNow;
+                existing.ModifyUserId = userId;
+            }
+            else
+            {
+                db.VideoTags.Add(new VideoTag
+                {
+                    VideoId = videoId, TagId = tag.Id, Active = true,
+                    CreateDate = DateTime.UtcNow, CreateUserId = userId
+                });
+            }
+        }
+
+        await db.SaveChangesAsync();
     }
 
     public async Task IncrementViewCountAsync(Guid id)

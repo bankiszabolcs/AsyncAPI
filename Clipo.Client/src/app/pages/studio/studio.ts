@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
-import { Chip } from 'primeng/chip';
+import { BadgeModule } from 'primeng/badge';
 import { VideoService } from '../../core/services/video.service';
 import { MyVideo } from '../../core/models/my-video.model';
 import { Visibility, visibilityOption, VISIBILITY_OPTIONS } from '../../core/models/visibility.model';
@@ -18,7 +18,7 @@ interface Stat {
 
 @Component({
   selector: 'app-studio',
-  imports: [RouterLink, FormsModule, Button, Select, Chip],
+  imports: [RouterLink, FormsModule, Button, Select, BadgeModule],
   templateUrl: './studio.html',
   styles: ``,
 })
@@ -37,7 +37,10 @@ export class Studio {
   readonly editDescription = signal('');
   readonly editVisibilityId = signal<number>(Visibility.Private);
   readonly editTags = signal<string[]>([]);
+  readonly showTagInput = signal(false);
   readonly saving = signal(false);
+
+  readonly tagBadgeStyle = { padding: '0.35rem 1rem' };
 
   readonly stats = computed<Stat[]>(() => {
     const list = this.videos() ?? [];
@@ -84,6 +87,12 @@ export class Studio {
     this.editDescription.set(v.description ?? '');
     this.editVisibilityId.set(v.visibilityId);
     this.editTags.set([...v.tags]);
+    this.showTagInput.set(false);
+  }
+
+  openTagInput(): void {
+    this.showTagInput.set(true);
+    setTimeout(() => (document.querySelector('[data-tag-input]') as HTMLInputElement)?.focus());
   }
 
   cancelEdit(): void {
@@ -128,17 +137,21 @@ export class Studio {
   onTagKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
     if (event.key === ' ' || event.key === 'Enter') {
       event.preventDefault();
-      this.commitTagInput(input);
+      this.addTagValue(input); // Space/Enter: hozzáad, input nyitva marad
+    } else if (event.key === 'Escape') {
+      input.value = '';
+      this.showTagInput.set(false);
     } else if (event.key === 'Backspace' && input.value === '' && this.editTags().length > 0) {
       this.editTags.update(tags => tags.slice(0, -1));
     }
   }
 
   onTagBlur(input: HTMLInputElement): void {
-    this.commitTagInput(input);
+    this.addTagValue(input);
+    this.showTagInput.set(false); // blur: hozzáad és elrejti az inputot
   }
 
-  private commitTagInput(input: HTMLInputElement): void {
+  private addTagValue(input: HTMLInputElement): void {
     const value = input.value.trim().toLowerCase();
     if (value && value.length <= 20 && !this.editTags().includes(value) && this.editTags().length < 10) {
       this.editTags.update(tags => [...tags, value]);

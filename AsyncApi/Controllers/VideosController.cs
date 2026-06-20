@@ -57,8 +57,14 @@ public sealed class VideosController(
         // DB rekord létrehozása — a tulajdonos a bejelentkezett user
         await videoRepository.CreateAsync(id, file.FileName, userId);
 
+        // Accept-Language alapján határozzuk meg a tagek nyelvét (pl. "hu", "en", "de")
+        var language = Request.GetTypedHeaders().AcceptLanguage
+            .OrderByDescending(l => l.Quality ?? 1.0)
+            .Select(l => l.Value.ToString().Split('-')[0].ToLowerInvariant())
+            .FirstOrDefault(l => l.Length == 2) ?? "en";
+
         // Job Redis Stream-be írva — korábban channel.Writer.WriteAsync(job) volt
-        var job = new VideoProcessingJob(id.ToString(), originalFilePath, folderPath);
+        var job = new VideoProcessingJob(id.ToString(), originalFilePath, folderPath, language);
         await queueService.EnqueueAsync(QueueService.VideoStreamKey, job);
 
         // Státusz Redis-be írva — korábban statusDictionary[id] = ... volt

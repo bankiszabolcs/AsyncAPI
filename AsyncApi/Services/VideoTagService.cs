@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using AsyncApi.Data;
@@ -12,14 +13,18 @@ public sealed class VideoTagService(
     IConfiguration configuration,
     ILogger<VideoTagService> logger)
 {
-    private const string GeminiEndpoint =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    private const string GeminiBase = "https://generativelanguage.googleapis.com/v1beta/models";
+
+    // Elsődleges → fallback sorrend. Ha az első 503/429 után is elszáll, a következővel próbál.
+    private static readonly string[] Models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+
+    private static readonly int[] RetryDelaysSeconds = [5, 15];
 
     private Guid? TechnicalUserId =>
         Guid.TryParse(configuration["TechnicalUser:Id"], out var id) ? id : null;
 
     public async Task GenerateAndSaveTagsAsync(
-        Guid videoId, string? audioPath, IReadOnlyList<string> keyframePaths)
+        Guid videoId, string language, string? audioPath, IReadOnlyList<string> keyframePaths)
     {
         var apiKey = configuration["AI:GeminiApiKey"];
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -31,58 +36,82 @@ public sealed class VideoTagService(
         var video = await db.Videos.FindAsync(videoId);
         if (video is null) return;
 
-        // Ingyenes tier: 15 kérés/perc — 429 esetén exponenciális visszalépéssel újrapróbálunk
-        int[] retryDelaysSeconds = [5, 15, 30];
+        foreach (var model in Models)
+        {
+            var succeeded = await TryGenerateWithModelAsync(videoId, apiKey, model, language, audioPath, keyframePaths);
+            if (succeeded) return;
 
-        for (var attempt = 0; attempt <= retryDelaysSeconds.Length; attempt++)
+            logger.LogWarning("Model {Model} failed for {VideoId}, trying next fallback", model, videoId);
+        }
+
+        logger.LogWarning("Tag generation skipped for {VideoId}: all models exhausted", videoId);
+    }
+
+    private async Task<bool> TryGenerateWithModelAsync(
+        Guid videoId, string apiKey, string model, string language,
+        string? audioPath, IReadOnlyList<string> keyframePaths)
+    {
+        for (var attempt = 0; attempt <= RetryDelaysSeconds.Length; attempt++)
         {
             try
             {
-                var tags = await CallGeminiAsync(apiKey, video.Title ?? "", audioPath, keyframePaths);
+                var tags = await CallGeminiAsync(apiKey, model, language, audioPath, keyframePaths);
                 if (tags.Count > 0)
                     await SaveTagsAsync(videoId, tags);
 
                 if (logger.IsEnabled(LogLevel.Information))
-                    logger.LogInformation("Generated {Count} tags for {VideoId}: {@Tags}",
-                        tags.Count, videoId, tags);
-                return;
+                    logger.LogInformation("Generated {Count} tags via {Model} for {VideoId}: {@Tags}",
+                        tags.Count, model, videoId, tags);
+
+                return true;
             }
-            catch (HttpRequestException ex) when (
-                ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests &&
-                attempt < retryDelaysSeconds.Length)
+            catch (HttpRequestException ex) when (IsRetryable(ex.StatusCode))
             {
-                var delay = retryDelaysSeconds[attempt];
-                logger.LogWarning(
-                    "Gemini rate limit hit for {VideoId}, waiting {Delay}s (attempt {Attempt}/{Max})",
-                    videoId, delay, attempt + 1, retryDelaysSeconds.Length);
-                await Task.Delay(TimeSpan.FromSeconds(delay));
+                if (attempt < RetryDelaysSeconds.Length)
+                {
+                    var delay = RetryDelaysSeconds[attempt];
+                    logger.LogWarning(
+                        "{Status} from {Model} for {VideoId}, waiting {Delay}s (attempt {Attempt}/{Max})",
+                        ex.StatusCode, model, videoId, delay, attempt + 1, RetryDelaysSeconds.Length);
+                    await Task.Delay(TimeSpan.FromSeconds(delay));
+                }
+                else
+                {
+                    // Retryk elfogytak ennél a modellnél → lépjünk a következőre
+                    return false;
+                }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Tag generation failed for {VideoId}", videoId);
-                return;
+                logger.LogError(ex, "Tag generation error with {Model} for {VideoId}", model, videoId);
+                return false;
             }
         }
 
-        logger.LogWarning("Tag generation skipped for {VideoId}: rate limit retries exhausted", videoId);
+        return false;
     }
 
+    private static bool IsRetryable(HttpStatusCode? statusCode) =>
+        statusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable;
+
     private async Task<List<string>> CallGeminiAsync(
-        string apiKey, string title, string? audioPath, IReadOnlyList<string> keyframePaths)
+        string apiKey, string model, string language,
+        string? audioPath, IReadOnlyList<string> keyframePaths)
     {
         var parts = new List<object>
         {
             new
             {
                 text = $"""
-                    Analyze this video and generate exactly 4 short, relevant tags.
-                    Title: "{title}"
+                    Analyze this video's audio and visuals, then generate exactly 4 relevant tags.
                     Rules:
-                    - Use the same language as the title
-                    - Each tag: 1-3 words max
+                    - Generate the tags in this language (BCP 47 code): {language}
+                    - Each tag must be a SINGLE word only — no spaces, no hyphens
+                    - Base tags on the actual audio/visual content, not any filename
                     - Tags should be useful for search and discovery
                     - Return ONLY a valid JSON array of strings, nothing else
-                    Example: ["cooking","italian pasta","beginner","recipe"]
+                    Example for "hu": ["főzés","recept","kezdők","tészta"]
+                    Example for "en": ["cooking","recipe","beginner","pasta"]
                     """
             }
         };
@@ -102,8 +131,7 @@ public sealed class VideoTagService(
         var payload = JsonSerializer.Serialize(new { contents = new[] { new { parts } } });
 
         var client = httpClientFactory.CreateClient();
-        // API kulcs header-ben, NEM query paraméterben — így nem kerül be a Seq logokba
-        using var req = new HttpRequestMessage(HttpMethod.Post, GeminiEndpoint);
+        using var req = new HttpRequestMessage(HttpMethod.Post, $"{GeminiBase}/{model}:generateContent");
         req.Headers.Add("x-goog-api-key", apiKey);
         req.Content = new StringContent(payload, Encoding.UTF8, "application/json");
 

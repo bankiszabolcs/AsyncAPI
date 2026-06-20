@@ -71,8 +71,8 @@
             }
           </div>
 
-          <!-- Main column -->
-          <div class="flex-1 min-w-0">
+          <!-- Cím + leírás (fix szélesség) -->
+          <div class="w-56 shrink-0 min-w-0">
             <input
               type="text"
               maxlength="200"
@@ -93,52 +93,70 @@
               [ngModel]="editingId() === v.id ? editDescription() : (v.description || '')"
               (ngModelChange)="editDescription.set($event)"
             ></textarea>
-
-            <!-- Tags -->
-            <div class="flex flex-wrap items-center gap-1.5 mt-2 min-h-6">
-              @if (editingId() === v.id) {
-                @for (tag of editTags(); track tag) {
-                  <p-chip
-                    [label]="tag"
-                    [removable]="true"
-                    (onRemove)="removeTag(tag)"
-                    class="text-xs"
-                  />
-                }
-                @if (editTags().length < 10) {
-                  <input
-                    #tagInput
-                    type="text"
-                    maxlength="20"
-                    placeholder="tag hozzáadása..."
-                    class="h-6 min-w-24 max-w-36 bg-transparent border-0 border-b border-(--p-orange-500)
-                           outline-none text-xs text-(--p-text-color) placeholder:text-(--p-text-muted-color)"
-                    (keydown)="onTagKeydown($event, tagInput)"
-                    (blur)="onTagBlur(tagInput)"
-                  />
-                }
-              } @else {
-                @for (tag of v.tags; track tag) {
-                  <p-chip [label]="tag" class="text-xs" />
-                }
-              }
-            </div>
-
             @if (!isCompleted(v)) {
-              <span class="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full bg-(--p-surface-ground) text-(--p-text-muted-color)">
+              <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-(--p-surface-ground) text-(--p-text-muted-color)">
                 {{ v.status }}
               </span>
             }
           </div>
 
-          <!-- Visibility -->
+          <!-- Tagek — kitölti a fennmaradó helyet a kártya szélességéig -->
+          <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1.5">
+            @for (tag of (editingId() === v.id ? editTags() : v.tags); track tag) {
+              <span class="inline-flex items-center gap-0.5">
+                <p-badge [value]="tag" [style]="tagBadgeStyle" />
+                <!-- X gomb mindig helyet foglal, nézetben láthatatlan -->
+                <button
+                  type="button"
+                  (click)="removeTag(tag)"
+                  class="w-3.5 h-3.5 flex items-center justify-center rounded-full
+                         text-(--p-text-muted-color) hover:text-(--p-text-color)
+                         hover:bg-(--p-surface-ground) transition-colors"
+                  [class.invisible]="editingId() !== v.id"
+                  [class.pointer-events-none]="editingId() !== v.id"
+                  [class.cursor-pointer]="editingId() === v.id"
+                >
+                  <i class="pi pi-times" style="font-size: 0.55rem"></i>
+                </button>
+              </span>
+            }
+            @if (editingId() === v.id && editTags().length < 10) {
+              @if (showTagInput()) {
+                <input
+                  #tagInput
+                  data-tag-input
+                  type="text"
+                  maxlength="20"
+                  placeholder="tag neve..."
+                  class="h-5 min-w-20 max-w-32 bg-transparent border-0 border-b border-dashed
+                         border-(--p-text-muted-color) outline-none text-xs
+                         text-(--p-text-color) placeholder:text-(--p-text-muted-color)"
+                  (keydown)="onTagKeydown($event, tagInput)"
+                  (blur)="onTagBlur(tagInput)"
+                />
+              } @else {
+                <button
+                  type="button"
+                  (click)="openTagInput()"
+                  class="inline-flex items-center justify-center w-5 h-5 rounded-full
+                         border border-(--p-text-muted-color) text-(--p-text-muted-color)
+                         hover:border-(--p-primary-color) hover:text-(--p-primary-color)
+                         transition-colors cursor-pointer"
+                >
+                  <i class="pi pi-plus" style="font-size: 0.6rem"></i>
+                </button>
+              }
+            }
+          </div>
+
+          <!-- Láthatóság -->
           <div class="hidden sm:block w-36 shrink-0 text-sm text-(--p-text-muted-color)">
             <p-select
               [options]="visibilityOptions"
               optionLabel="label"
               optionValue="value"
               [disabled]="editingId() !== v.id"
-              [styleClass]="editingId() === v.id ? 'flat-select w-full' : 'flat-select flat-readonly w-full'"
+              [class]="editingId() === v.id ? 'flat-select w-full' : 'flat-select flat-readonly w-full'"
               [ngModel]="editingId() === v.id ? editVisibilityId() : v.visibilityId"
               (ngModelChange)="editVisibilityId.set($event)"
             >
@@ -157,7 +175,7 @@
             </p-select>
           </div>
 
-          <!-- Actions -->
+          <!-- Műveletek -->
           <div class="flex items-center justify-end gap-2 shrink-0 w-32 pl-2">
             @if (editingId() === v.id) {
               <p-button

@@ -63,7 +63,7 @@ public class VideoProcessingService(
             await statusService.SetVideoCompletedAsync(id, (int)duration.TotalSeconds);
 
             // Tag generálás háttérben — nem blokkolja a sort
-            _ = GenerateTagsInBackgroundAsync(id, audioPath, keyframePaths, tempDir);
+            _ = GenerateTagsInBackgroundAsync(id, job.Language, audioPath, keyframePaths, tempDir);
         }
         catch (Exception)
         {
@@ -73,13 +73,13 @@ public class VideoProcessingService(
     }
 
     private async Task GenerateTagsInBackgroundAsync(
-        Guid videoId, string? audioPath, List<string> keyframePaths, string tempDir)
+        Guid videoId, string language, string? audioPath, List<string> keyframePaths, string tempDir)
     {
         try
         {
             using var scope      = scopeFactory.CreateScope();
             var tagService       = scope.ServiceProvider.GetRequiredService<VideoTagService>();
-            await tagService.GenerateAndSaveTagsAsync(videoId, audioPath, keyframePaths);
+            await tagService.GenerateAndSaveTagsAsync(videoId, language, audioPath, keyframePaths);
         }
         catch (Exception ex)
         {

@@ -11,11 +11,11 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         Exception exception,
         CancellationToken ct)
     {
-        var (status, title) = exception switch
+        var (status, title, detail) = exception switch
         {
-            NotFoundException        => (StatusCodes.Status404NotFound,            "Not Found"),
-            AppValidationException   => (StatusCodes.Status400BadRequest,          "Validation Error"),
-            _                        => (StatusCodes.Status500InternalServerError,  "Internal Server Error")
+            NotFoundException      => (StatusCodes.Status404NotFound,           "Not Found",            exception.Message),
+            AppValidationException => (StatusCodes.Status400BadRequest,         "Validation Error",     exception.Message),
+            _                      => (StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.")
         };
 
         logger.LogError(exception, "Unhandled exception: {Title}", title);
@@ -26,7 +26,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             Type   = $"https://httpstatuses.com/{status}",
             Title  = title,
             Status = status,
-            Detail = exception.Message
+            Detail = detail
         }, ct);
 
         return true;

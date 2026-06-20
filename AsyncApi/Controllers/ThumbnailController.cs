@@ -1,7 +1,9 @@
 using AsyncApi.Data.Repositories;
 using AsyncApi.Models;
 using AsyncApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AsyncApi.Controllers;
 
@@ -19,13 +21,22 @@ public sealed class ThumbnailsController(
     : ControllerBase
 {
     private readonly string _uploadDirectory = configuration["UploadDirectory"] ?? "uploads";
-    private readonly Guid _technicalUserId = Guid.Parse(configuration["TechnicalUser:Id"]
-        ?? throw new InvalidOperationException("TechnicalUser:Id nincs beállítva az appsettings-ben."));
+
+    private Guid? CurrentUserId
+    {
+        get
+        {
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            return Guid.TryParse(sub, out var id) ? id : null;
+        }
+    }
 
     // POST /thumbnails — feltölti a képet, sorba állítja a thumbnail generálást, visszaadja a státusz URL-t
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> UploadImage(IFormFile? file)
     {
+        if (CurrentUserId is not { } userId) return Unauthorized();
         if (file is null) return BadRequest("No file uploaded.");
 
         if (!imageService.IsValidImage(file))
@@ -42,7 +53,7 @@ public sealed class ThumbnailsController(
         await statusService.SetExtensionAsync(id.ToString(), extension);
 
         // DB rekord létrehozása — kiterjesztés is mentve, hogy a status endpoint össze tudja rakni a URL-t
-        await imageRepository.CreateAsync(id, file.FileName, extension, _technicalUserId);
+        await imageRepository.CreateAsync(id, file.FileName, extension, userId);
 
         // Job Redis Stream-be írva — korábban channel.Writer.WriteAsync(job) volt
         var job = new ThumbnailGenerationJob(id.ToString(), originalFilePath, folderPath);

@@ -66,8 +66,9 @@ try
             options.RequireHttpsMetadata = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateAudience = false,
-                //ValidateIssuer   = !builder.Environment.IsDevelopment(),
+                ValidateAudience = true,
+                ValidAudience    = builder.Configuration["Keycloak:ValidAudience"],
+                ValidateIssuer   = true,
                 ValidIssuer      = builder.Configuration["Keycloak:ValidIssuer"],
                 NameClaimType    = "preferred_username",
             };

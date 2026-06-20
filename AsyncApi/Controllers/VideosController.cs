@@ -5,6 +5,7 @@ using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using StackExchange.Redis;
 
 namespace AsyncApi.Controllers;
@@ -37,6 +38,7 @@ public sealed class VideosController(
     // POST /videos — feltölti a videót, sorba állítja a feldolgozást, visszaadja a státusz URL-t
     [HttpPost]
     [Authorize]
+    [EnableRateLimiting("upload")]
     [RequestSizeLimit(2_000_000_000)]
     [RequestFormLimits(MultipartBodyLengthLimit = 2_000_000_000)]
     public async Task<IActionResult> UploadVideo(IFormFile? file)
@@ -78,6 +80,7 @@ public sealed class VideosController(
 
     // GET /videos/suggestions?q= — gyors cím-autocomplete (csak szöveg, max 8 találat)
     [HttpGet("suggestions")]
+    [EnableRateLimiting("search")]
     public async Task<IActionResult> GetSuggestions([FromQuery] string? q)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
@@ -89,6 +92,7 @@ public sealed class VideosController(
 
     // GET /videos — kész és publikus videók listája lapozással; ?q= esetén cím/leírás szerinti szűréssel
     [HttpGet]
+    [EnableRateLimiting("search")]
     public async Task<IActionResult> GetVideos(
         [FromQuery] string? q = null,
         [FromQuery] int page = 1,

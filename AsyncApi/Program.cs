@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 using StackExchange.Redis;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -75,6 +77,56 @@ try
         });
     builder.Services.AddAuthorization();
 
+    // --- Rate limiting ---
+    builder.Services.AddRateLimiter(rl =>
+    {
+        rl.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        // Globális alap: minden IP-re 200 req/perc — brutális flood ellen
+        rl.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+        {
+            var ip = ctx.Request.Headers["X-Real-IP"].FirstOrDefault()
+                     ?? ctx.Connection.RemoteIpAddress?.ToString()
+                     ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 200,
+                Window      = TimeSpan.FromMinutes(1),
+                QueueLimit  = 0
+            });
+        });
+
+        // Feltöltés: 5 db / 10 perc userenként — tárhely, FFmpeg CPU, Gemini kvóta védelme
+        rl.AddPolicy("upload", ctx =>
+        {
+            var key = ctx.User.FindFirstValue("sub")
+                      ?? ctx.Request.Headers["X-Real-IP"].FirstOrDefault()
+                      ?? ctx.Connection.RemoteIpAddress?.ToString()
+                      ?? "unknown";
+            return RateLimitPartition.GetSlidingWindowLimiter($"upload:{key}", _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit      = 5,
+                Window           = TimeSpan.FromMinutes(10),
+                SegmentsPerWindow = 5,
+                QueueLimit       = 0
+            });
+        });
+
+        // Keresés: 60 req/perc IP-nként — DB lekérdezések ellen
+        rl.AddPolicy("search", ctx =>
+        {
+            var ip = ctx.Request.Headers["X-Real-IP"].FirstOrDefault()
+                     ?? ctx.Connection.RemoteIpAddress?.ToString()
+                     ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter($"search:{ip}", _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
+                Window      = TimeSpan.FromMinutes(1),
+                QueueLimit  = 0
+            });
+        });
+    });
+
     builder.Services.AddSingleton<QueueService>();
     builder.Services.AddSingleton<StatusService>();
 
@@ -116,6 +168,7 @@ try
     });
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseRateLimiter();
     app.MapControllers();
 
     app.Run();

@@ -3,6 +3,7 @@ using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace AsyncApi.Controllers;
@@ -34,6 +35,7 @@ public sealed class ThumbnailsController(
     // POST /thumbnails — feltölti a képet, sorba állítja a thumbnail generálást, visszaadja a státusz URL-t
     [Authorize]
     [HttpPost]
+    [EnableRateLimiting("upload")]
     public async Task<IActionResult> UploadImage(IFormFile? file)
     {
         if (CurrentUserId is not { } userId) return Unauthorized();

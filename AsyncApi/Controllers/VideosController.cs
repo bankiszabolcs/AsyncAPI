@@ -282,6 +282,45 @@ public sealed class VideosController(
         });
     }
 
+    // GET /videos/{id}/related — kapcsolódó videók score-alapú rangsorban
+    [HttpGet("{id:guid}/related")]
+    public async Task<IActionResult> GetRelatedVideos(Guid id, [FromQuery] int limit = 8)
+    {
+        var related = await videoRepository.GetRelatedAsync(id, CurrentUserId, Math.Clamp(limit, 1, 20));
+        var videos  = await videoRepository.GetByIdsAsync(related.Select(r => r.VideoId).ToList());
+
+        var result = videos.Select(v => new
+        {
+            id          = v.Id,
+            title       = v.Title,
+            description = v.Description,
+            duration    = v.DurationSeconds,
+            publishedAt = v.PublishedAt,
+            viewCount   = v.ViewCount,
+            author = new
+            {
+                id        = v.User.Id,
+                name      = v.User.DisplayName ?? v.User.Username,
+                avatarUrl = v.User.AvatarImage is { Extension: var ext }
+                    ? storageService.GetPublicUrl($"{v.User.AvatarImageId}/{v.User.AvatarImageId}_w128{ext}", StorageBucket.Images)
+                    : null
+            },
+            media = new
+            {
+                sprite      = storageService.GetPublicUrl($"{v.Id}/sprite.jpg",         StorageBucket.Videos),
+                preview     = storageService.GetPublicUrl($"{v.Id}/sprite.vtt",         StorageBucket.Videos),
+                hoverStream = storageService.GetPublicUrl($"{v.Id}/480p/index.m3u8",    StorageBucket.Videos),
+                thumbnails  = ImageService.ThumbnailWidths.Select(w => new
+                {
+                    width = w,
+                    url   = storageService.GetPublicUrl($"{v.Id}/{v.Id}_thumb_w{w}.jpg", StorageBucket.Images)
+                })
+            }
+        });
+
+        return Ok(result);
+    }
+
     // POST /videos/{id}/views — megtekintés rögzítése; Redis NX+EX deduplikáció, majd Stream-be kerül
     // Azonosító: bejelentkezett usernél userId, anonimnak X-Session-Id header (frontend generálja)
     [HttpPost("{id:guid}/views")]

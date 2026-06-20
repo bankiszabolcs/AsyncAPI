@@ -113,18 +113,27 @@
     }
   </div>
 
-  <!-- Jobb oszlop: kapcsolódó (placeholder) -->
+  <!-- Jobb oszlop: kapcsolódó videók -->
   <aside class="w-full lg:w-80 shrink-0 space-y-4">
     <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider">Kapcsolódó videók</h2>
-    @for (_ of [1,2,3,4,5]; track $index) {
-      <div class="flex gap-3 animate-pulse">
-        <div class="w-40 aspect-video bg-(--p-surface-card) rounded-lg shrink-0"></div>
-        <div class="flex-1 space-y-2 pt-1">
-          <div class="h-4 bg-(--p-surface-card) rounded w-full"></div>
-          <div class="h-3 bg-(--p-surface-card) rounded w-2/3"></div>
-          <div class="h-3 bg-(--p-surface-card) rounded w-1/2"></div>
+
+    @if (relatedVideos() === undefined) {
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="flex gap-3 animate-pulse">
+          <div class="w-40 aspect-video bg-(--p-surface-card) rounded-lg shrink-0"></div>
+          <div class="flex-1 space-y-2 pt-1">
+            <div class="h-4 bg-(--p-surface-card) rounded w-full"></div>
+            <div class="h-3 bg-(--p-surface-card) rounded w-2/3"></div>
+            <div class="h-3 bg-(--p-surface-card) rounded w-1/2"></div>
+          </div>
         </div>
-      </div>
+      }
+    } @else if (relatedVideos()!.length === 0) {
+      <p class="text-sm text-(--p-text-muted-color) italic">Nincs kapcsolódó videó</p>
+    } @else {
+      @for (v of relatedVideos()!; track v.id) {
+        <app-video-card [video]="v" [compact]="true" />
+      }
     }
   </aside>
 

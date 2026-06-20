@@ -7,10 +7,12 @@ import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 import { ViewCountPipe } from '../../shared/pipes/view-count.pipe';
 import { VideoService } from '../../core/services/video.service';
 import { VideoDetail } from '../../core/models/video-detail.model';
+import { Video } from '../../core/models/video.model';
 import { VideoPlayer } from '../../shared/video-player/video-player';
 import { AuthService } from '../../core/auth/auth.service';
 import { Comments } from '../../shared/comments/comments';
 import { WatchHistoryService } from '../../core/services/watch-history.service';
+import { VideoCard } from '../../shared/video-card/video-card';
 
 // Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
 const POLL_INTERVAL_MS = 4000;
@@ -23,7 +25,7 @@ interface PollResult {
 
 @Component({
   selector: 'app-watch',
-  imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments],
+  imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments, VideoCard],
   templateUrl: './watch.html',
 })
 export class Watch {
@@ -33,6 +35,8 @@ export class Watch {
   readonly auth = inject(AuthService);
 
   readonly id = this.route.snapshot.paramMap.get('id')!;
+
+  readonly relatedVideos = toSignal(this.videoService.getRelated(this.id));;
 
   // Az utolsó sikeres válasz — átmeneti hálózati hibánál ezt tartjuk meg
   private readonly lastVideo = signal<VideoDetail | null>(null);

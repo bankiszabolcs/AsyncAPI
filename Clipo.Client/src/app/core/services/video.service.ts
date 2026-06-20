@@ -51,6 +51,11 @@ export class VideoService {
     return this.http.put<UpdateVideoResponse>(`${this.baseUrl}/${id}`, payload);
   }
 
+  getRelated(videoId: string, limit = 8): Observable<Video[]> {
+    const params = new HttpParams().set('limit', limit);
+    return this.http.get<Video[]>(`${this.baseUrl}/${videoId}/related`, { params });
+  }
+
   react(videoId: string, reactionTypeId: 1 | 2): Observable<{ likeCount: number; dislikeCount: number; userReaction: 1 | 2 | null }> {
     return this.http.post<{ likeCount: number; dislikeCount: number; userReaction: 1 | 2 | null }>(
       `${this.baseUrl}/${videoId}/reactions`,

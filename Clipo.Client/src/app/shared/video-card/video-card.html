@@ -1,140 +1,188 @@
-<a
-  class="flex flex-col gap-3 group no-underline text-inherit"
-  [class.cursor-pointer]="isCompleted()"
-  [class.cursor-default]="!isCompleted()"
-  [routerLink]="isCompleted() ? ['/watch', video().id] : null"
-  (mouseenter)="onMouseEnter()"
-  (mouseleave)="onMouseLeave()"
->
+@if (compact()) {
 
-  <!-- Outer wrapper: relative, nincs overflow-hidden, hogy a sprite tooltip ne legyen levágva -->
-  <div class="relative w-full aspect-video rounded-xl">
-
-    <!-- Inner clip: rounded + overflow-hidden csak az img/video számára -->
-    <div class="absolute inset-0 rounded-xl overflow-hidden bg-(--p-surface-card)">
+  <!-- Kompakt (horizontális) elrendezés — sidebar, listák -->
+  <a
+    class="flex gap-3 no-underline text-inherit group"
+    [routerLink]="['/watch', video().id]"
+  >
+    <div class="w-40 shrink-0 aspect-video rounded-lg overflow-hidden bg-(--p-surface-card) relative">
       @if (fallback()) {
         <img
           [srcset]="srcset()"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes="160px"
           [src]="fallback()!"
           [alt]="video().title"
           loading="lazy"
-          class="w-full h-full object-cover transition-[transform,opacity] duration-300"
-          [class.scale-105]="isHovering()"
-          [class.opacity-0]="isHovering()"
-          [class.opacity-60]="!isCompleted()"
+          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       } @else {
         <div class="w-full h-full flex items-center justify-center text-(--p-text-muted-color)">
-          <i class="pi pi-video text-4xl"></i>
+          <i class="pi pi-video text-2xl"></i>
         </div>
       }
-
-      <video
-        #videoPreview
-        muted
-        playsinline
-        (timeupdate)="onTimeUpdate($event)"
-        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
-        [class.opacity-100]="isHovering()"
-        [class.opacity-0]="!isHovering()"
-      ></video>
-    </div>
-
-    <!-- Status overlay — feldolgozás / sorban áll / sikertelen esetén -->
-    @if (!isCompleted()) {
-      <div class="absolute inset-0 flex items-center justify-center rounded-xl z-10">
-        @switch (video().statusId) {
-          @case (2) {
-            <i class="pi pi-spin pi-spinner text-white text-2xl drop-shadow"></i>
-          }
-          @case (4) {
-            <i class="pi pi-times-circle text-red-400 text-2xl drop-shadow"></i>
-          }
-          @default {
-            <i class="pi pi-clock text-white/70 text-2xl drop-shadow"></i>
-          }
-        }
-      </div>
-    }
-
-    <!-- Duration badge — csak befejezett, nem hoverolés alatt -->
-    @if (isCompleted() && !isHovering()) {
-      <span class="absolute bottom-2 right-1.5 bg-black/80 text-white text-xs font-medium px-1.5 py-0.5 rounded leading-none z-10">
+      <span class="absolute bottom-1 right-1 bg-black/80 text-white text-xs font-medium px-1 py-0.5 rounded leading-none">
         {{ displayDuration() }}
       </span>
-    }
-
-    <!-- Seek bar + sprite tooltip — csak hover alatt, overflow-hidden-en kívül -->
-    @if (isHovering()) {
-      <div
-        class="absolute bottom-1 left-2 right-2 group/seek z-20"
-        (mousemove)="onThumbnailMove($event)"
-        (mouseleave)="onSeekBarLeave()"
-      >
-        <!-- Sprite tooltip -->
-        @if (spriteFrame()) {
-          <div
-            class="absolute bottom-full mb-2 pointer-events-none -translate-x-1/2"
-            [style.left]="tooltipLeft()"
-          >
-            <div
-              class="rounded overflow-hidden border border-white/20 shadow-xl"
-              [style.width.px]="spriteFrame()!.w"
-              [style.height.px]="spriteFrame()!.h"
-              [style.background-image]="safeSpriteStyle()"
-              [style.background-position]="spritePosition()"
-              [style.background-size]="'auto'"
-            ></div>
-            <p class="text-center text-xs text-white mt-1 font-medium drop-shadow">
-              {{ hoverTime() }}
-            </p>
-          </div>
-        }
-
-        <!-- Seek sáv -->
-        <div class="py-1.5 cursor-pointer" (click)="seekPreview($event)">
-          <div class="relative h-1 group-hover/seek:h-1.5 transition-all duration-150 bg-white/30 rounded-full">
-            <div
-              class="absolute inset-y-0 left-0 bg-red-500 rounded-full transition-none"
-              [style.width.%]="thumbnailHoverRatio() !== null ? (thumbnailHoverRatio()! * 100) : progress()"
-            ></div>
-          </div>
-        </div>
-      </div>
-    }
-
-  </div>
-
-  <!-- Meta -->
-  <div class="flex gap-3 px-1">
-    <div class="shrink-0 w-9 h-9 rounded-full bg-(--p-surface-card) overflow-hidden flex items-center justify-center text-(--p-text-muted-color) text-sm">
-      @if (video().author?.avatarUrl; as url) {
-        <img [src]="url" [alt]="video().author!.name" class="w-full h-full object-cover" />
-      } @else {
-        <i class="pi pi-user"></i>
-      }
     </div>
-    <div class="flex flex-col gap-0.5 min-w-0">
+
+    <div class="flex flex-col gap-0.5 min-w-0 pt-0.5">
       <h3 class="text-sm font-semibold text-(--p-text-color) line-clamp-2 leading-snug">
         {{ video().title }}
       </h3>
       @if (video().author?.name) {
         <span class="text-xs text-(--p-text-muted-color) truncate">{{ video().author!.name }}</span>
       }
+      <span class="text-xs text-(--p-text-muted-color)">
+        @if (video().viewCount !== undefined) {
+          {{ video().viewCount | viewCount }} megtekintés &middot;
+        }
+        {{ video().publishedAt | timeAgo }}
+      </span>
+    </div>
+  </a>
+
+} @else {
+
+  <!-- Teljes (vertikális rács) elrendezés — főoldal, keresés -->
+  <a
+    class="flex flex-col gap-3 group no-underline text-inherit"
+    [class.cursor-pointer]="isCompleted()"
+    [class.cursor-default]="!isCompleted()"
+    [routerLink]="isCompleted() ? ['/watch', video().id] : null"
+    (mouseenter)="onMouseEnter()"
+    (mouseleave)="onMouseLeave()"
+  >
+
+    <!-- Outer wrapper: relative, nincs overflow-hidden, hogy a sprite tooltip ne legyen levágva -->
+    <div class="relative w-full aspect-video rounded-xl">
+
+      <!-- Inner clip: rounded + overflow-hidden csak az img/video számára -->
+      <div class="absolute inset-0 rounded-xl overflow-hidden bg-(--p-surface-card)">
+        @if (fallback()) {
+          <img
+            [srcset]="srcset()"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            [src]="fallback()!"
+            [alt]="video().title"
+            loading="lazy"
+            class="w-full h-full object-cover transition-[transform,opacity] duration-300"
+            [class.scale-105]="isHovering()"
+            [class.opacity-0]="isHovering()"
+            [class.opacity-60]="!isCompleted()"
+          />
+        } @else {
+          <div class="w-full h-full flex items-center justify-center text-(--p-text-muted-color)">
+            <i class="pi pi-video text-4xl"></i>
+          </div>
+        }
+
+        <video
+          #videoPreview
+          muted
+          playsinline
+          (timeupdate)="onTimeUpdate($event)"
+          class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+          [class.opacity-100]="isHovering()"
+          [class.opacity-0]="!isHovering()"
+        ></video>
+      </div>
+
+      <!-- Status overlay — feldolgozás / sorban áll / sikertelen esetén -->
       @if (!isCompleted()) {
-        <span class="text-xs px-2 py-0.5 rounded-full font-medium w-fit mt-0.5" [class]="statusBadgeClass()">
-          {{ statusLabelText() }}
-        </span>
-      } @else {
-        <span class="text-xs text-(--p-text-muted-color)">
-          @if (video().viewCount !== undefined) {
-            {{ video().viewCount | viewCount }} megtekintés &middot;
+        <div class="absolute inset-0 flex items-center justify-center rounded-xl z-10">
+          @switch (video().statusId) {
+            @case (2) {
+              <i class="pi pi-spin pi-spinner text-white text-2xl drop-shadow"></i>
+            }
+            @case (4) {
+              <i class="pi pi-times-circle text-red-400 text-2xl drop-shadow"></i>
+            }
+            @default {
+              <i class="pi pi-clock text-white/70 text-2xl drop-shadow"></i>
+            }
           }
-          {{ video().publishedAt | timeAgo }}
+        </div>
+      }
+
+      <!-- Duration badge — csak befejezett, nem hoverolés alatt -->
+      @if (isCompleted() && !isHovering()) {
+        <span class="absolute bottom-2 right-1.5 bg-black/80 text-white text-xs font-medium px-1.5 py-0.5 rounded leading-none z-10">
+          {{ displayDuration() }}
         </span>
       }
-    </div>
-  </div>
 
-</a>
+      <!-- Seek bar + sprite tooltip — csak hover alatt, overflow-hidden-en kívül -->
+      @if (isHovering()) {
+        <div
+          class="absolute bottom-1 left-2 right-2 group/seek z-20"
+          (mousemove)="onThumbnailMove($event)"
+          (mouseleave)="onSeekBarLeave()"
+        >
+          <!-- Sprite tooltip -->
+          @if (spriteFrame()) {
+            <div
+              class="absolute bottom-full mb-2 pointer-events-none -translate-x-1/2"
+              [style.left]="tooltipLeft()"
+            >
+              <div
+                class="rounded overflow-hidden border border-white/20 shadow-xl"
+                [style.width.px]="spriteFrame()!.w"
+                [style.height.px]="spriteFrame()!.h"
+                [style.background-image]="safeSpriteStyle()"
+                [style.background-position]="spritePosition()"
+                [style.background-size]="'auto'"
+              ></div>
+              <p class="text-center text-xs text-white mt-1 font-medium drop-shadow">
+                {{ hoverTime() }}
+              </p>
+            </div>
+          }
+
+          <!-- Seek sáv -->
+          <div class="py-1.5 cursor-pointer" (click)="seekPreview($event)">
+            <div class="relative h-1 group-hover/seek:h-1.5 transition-all duration-150 bg-white/30 rounded-full">
+              <div
+                class="absolute inset-y-0 left-0 bg-red-500 rounded-full transition-none"
+                [style.width.%]="thumbnailHoverRatio() !== null ? (thumbnailHoverRatio()! * 100) : progress()"
+              ></div>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- Meta -->
+    <div class="flex gap-3 px-1">
+      <div class="shrink-0 w-9 h-9 rounded-full bg-(--p-surface-card) overflow-hidden flex items-center justify-center text-(--p-text-muted-color) text-sm">
+        @if (video().author?.avatarUrl; as url) {
+          <img [src]="url" [alt]="video().author!.name" class="w-full h-full object-cover" />
+        } @else {
+          <i class="pi pi-user"></i>
+        }
+      </div>
+      <div class="flex flex-col gap-0.5 min-w-0">
+        <h3 class="text-sm font-semibold text-(--p-text-color) line-clamp-2 leading-snug">
+          {{ video().title }}
+        </h3>
+        @if (video().author?.name) {
+          <span class="text-xs text-(--p-text-muted-color) truncate">{{ video().author!.name }}</span>
+        }
+        @if (!isCompleted()) {
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium w-fit mt-0.5" [class]="statusBadgeClass()">
+            {{ statusLabelText() }}
+          </span>
+        } @else {
+          <span class="text-xs text-(--p-text-muted-color)">
+            @if (video().viewCount !== undefined) {
+              {{ video().viewCount | viewCount }} megtekintés &middot;
+            }
+            {{ video().publishedAt | timeAgo }}
+          </span>
+        }
+      </div>
+    </div>
+
+  </a>
+
+}

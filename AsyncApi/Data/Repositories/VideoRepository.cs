@@ -1,4 +1,5 @@
 using AsyncApi.Data.Entities;
+using AsyncApi.Models;
 using Microsoft.EntityFrameworkCore;
 using ProcessingStatus = AsyncApi.Enums.ProcessingStatus;
 using ReactionType = AsyncApi.Enums.ReactionType;
@@ -202,6 +203,25 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
         }
 
         await db.SaveChangesAsync();
+    }
+
+    public async Task<List<RelatedVideoResult>> GetRelatedAsync(Guid videoId, Guid? userId, int limit = 10)
+    {
+        return await db.GetRelatedVideos(videoId, userId, limit).ToListAsync();
+    }
+
+    public async Task<List<Video>> GetByIdsAsync(List<Guid> ids)
+    {
+        var videos = await db.Videos
+            .Include(v => v.User).ThenInclude(u => u.AvatarImage)
+            .Include(v => v.ThumbnailImage)
+            .Where(v => ids.Contains(v.Id) && v.Active)
+            .ToListAsync();
+
+        return ids
+            .Select(id => videos.FirstOrDefault(v => v.Id == id))
+            .OfType<Video>()
+            .ToList();
     }
 
     public async Task IncrementViewCountAsync(Guid id)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AsyncApi.Data.Entities;
+using AsyncApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AsyncApi.Data;
@@ -55,6 +56,11 @@ public partial class AsyncApiDbContext : DbContext
     public virtual DbSet<VideoView> VideoViews { get; set; }
 
     public virtual DbSet<Visibility> Visibilities { get; set; }
+
+    public virtual DbSet<RelatedVideoResult> RelatedVideoResults { get; set; }
+
+    public IQueryable<RelatedVideoResult> GetRelatedVideos(Guid videoId, Guid? userId, int limit)
+        => FromExpression(() => GetRelatedVideos(videoId, userId, limit));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -948,6 +954,19 @@ public partial class AsyncApiDbContext : DbContext
                 .HasDefaultValue(1)
                 .HasColumnName("version");
         });
+        modelBuilder.Entity<RelatedVideoResult>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.VideoId).HasColumnName("video_id");
+            entity.Property(e => e.Score).HasColumnName("score");
+        });
+
+        modelBuilder.HasDbFunction(typeof(AsyncApiDbContext)
+                .GetMethod(nameof(GetRelatedVideos), [typeof(Guid), typeof(Guid?), typeof(int)])!)
+            .HasName("get_related_videos")
+            .HasSchema("public");
+
+
         modelBuilder.HasSequence("audit_id_seq", "pgmemento")
             .HasMin(0L)
             .HasMax(2147483647L);

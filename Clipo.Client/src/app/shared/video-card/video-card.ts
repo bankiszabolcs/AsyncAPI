@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, OnDestroy, signal, viewChild, ElementRef } from '@angular/core';
+import { Component, computed, inject, input, OnDestroy, signal, viewChild, ElementRef, booleanAttribute } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TimeAgoPipe } from '../pipes/time-ago.pipe';
 import { ViewCountPipe } from '../pipes/view-count.pipe';
@@ -29,7 +29,8 @@ export interface CardVideo {
   templateUrl: './video-card.html',
 })
 export class VideoCard implements OnDestroy {
-  readonly video = input.required<CardVideo>();
+  readonly video   = input.required<CardVideo>();
+  readonly compact = input(false, { transform: booleanAttribute });
 
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);

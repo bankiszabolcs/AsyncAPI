@@ -67,7 +67,7 @@ try
         .AddJwtBearer(options =>
         {
             options.Authority            = builder.Configuration["Keycloak:Authority"];
-            options.RequireHttpsMetadata = false;
+            options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateAudience = true,

@@ -45,7 +45,8 @@ public sealed class ThumbnailsController(
             return BadRequest("Invalid image file. Only JPG, PNG, and GIF formats are allowed.");
 
         var id = Guid.NewGuid();
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var safeFileName = Path.GetFileName(file.FileName);
+        var extension = Path.GetExtension(safeFileName).ToLowerInvariant();
         var folderPath = Path.Combine(_uploadDirectory, "images", id.ToString());
         var fileName = $"{id}{extension}";
 
@@ -55,7 +56,7 @@ public sealed class ThumbnailsController(
         await statusService.SetExtensionAsync(id.ToString(), extension);
 
         // DB rekord létrehozása — kiterjesztés is mentve, hogy a status endpoint össze tudja rakni a URL-t
-        await imageRepository.CreateAsync(id, file.FileName, extension, userId);
+        await imageRepository.CreateAsync(id, safeFileName, extension, userId);
 
         // Job Redis Stream-be írva — korábban channel.Writer.WriteAsync(job) volt
         var job = new ThumbnailGenerationJob(id.ToString(), originalFilePath, folderPath);

@@ -28,7 +28,7 @@ public sealed class VideoService(
     {
         if (file.Length == 0) return false;
 
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var extension = Path.GetExtension(Path.GetFileName(file.FileName)).ToLowerInvariant();
         return AllowedExtensions.Contains(extension) && AllowedMimeTypes.Contains(file.ContentType);
     }
 

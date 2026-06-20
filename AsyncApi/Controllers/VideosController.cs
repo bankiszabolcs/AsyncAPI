@@ -51,13 +51,15 @@ public sealed class VideosController(
             return BadRequest("Invalid video file. Allowed formats: mp4, mov, mkv, avi, webm.");
 
         var id = Guid.NewGuid();
+        var safeFileName = Path.GetFileName(file.FileName);
+        var extension = Path.GetExtension(safeFileName).ToLowerInvariant();
         var folderPath = Path.Combine(_uploadDirectory, "videos", id.ToString());
-        var fileName = $"{id}{Path.GetExtension(file.FileName)}";
+        var fileName = $"{id}{extension}";
 
         var originalFilePath = await videoService.SaveOriginalVideoAsync(file, folderPath, fileName);
 
         // DB rekord létrehozása — a tulajdonos a bejelentkezett user
-        await videoRepository.CreateAsync(id, file.FileName, userId);
+        await videoRepository.CreateAsync(id, safeFileName, userId);
 
         // Accept-Language alapján határozzuk meg a tagek nyelvét (pl. "hu", "en", "de")
         var language = Request.GetTypedHeaders().AcceptLanguage
@@ -86,6 +88,9 @@ public sealed class VideosController(
         if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
             return Ok(Array.Empty<string>());
 
+        if (q.Length > 100)
+            return BadRequest("Search query too long.");
+
         var titles = await videoRepository.GetTitleSuggestionsAsync(q.Trim());
         return Ok(titles);
     }
@@ -98,6 +103,9 @@ public sealed class VideosController(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
+        if (q is { Length: > 100 })
+            return BadRequest("Search query too long.");
+
         var videos = string.IsNullOrWhiteSpace(q)
             ? await videoRepository.GetListAsync(page, pageSize)
             : await videoRepository.SearchAsync(q.Trim(), page, pageSize);
@@ -341,13 +349,20 @@ public sealed class VideosController(
         Guid id,
         [FromHeader(Name = "X-Session-Id")] string? sessionId)
     {
-        var identifier = CurrentUserId?.ToString() ?? sessionId;
-        if (string.IsNullOrWhiteSpace(identifier))
-            return BadRequest("X-Session-Id header is required for anonymous views.");
+        if (CurrentUserId is null && !Guid.TryParse(sessionId, out _))
+            return BadRequest("X-Session-Id header is required and must be a valid UUID for anonymous views.");
+
+        var clientIp = HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault()
+                       ?? HttpContext.Connection.RemoteIpAddress?.ToString()
+                       ?? "unknown";
+
+        var identifier = CurrentUserId.HasValue
+            ? CurrentUserId.Value.ToString()
+            : $"{clientIp}:{sessionId}";
 
         var db = redis.GetDatabase();
         var key = $"view:{id}:{identifier}";
-        var isNew = await db.StringSetAsync(key, "1", TimeSpan.FromDays(1), When.NotExists);
+        var isNew = await db.StringSetAsync(key, "1", TimeSpan.FromHours(1), When.NotExists);
 
         if (isNew)
             await queueService.EnqueueAsync(QueueService.ViewStreamKey, new ViewRecord(id));

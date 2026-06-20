@@ -31,11 +31,13 @@ try
                 {
                     var host = new Uri(origin).Host;
                     return host == "localhost" || host.StartsWith("192.168.");
-                }).AllowAnyHeader().AllowAnyMethod();
+                });
             else
                 policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"]
-                    ?? throw new InvalidOperationException("Cors:AllowedOrigin nincs beállítva."))
-                    .AllowAnyHeader().AllowAnyMethod();
+                    ?? throw new InvalidOperationException("Cors:AllowedOrigin nincs beállítva."));
+
+            policy.AllowAnyHeader()
+                  .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE");
         });
     });
 

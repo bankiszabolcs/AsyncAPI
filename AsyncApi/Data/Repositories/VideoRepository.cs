@@ -101,9 +101,16 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
             .ToListAsync();
     }
 
+    // % és _ karakterek escape-elése LIKE/ILIKE pattern előtt — ezek wildcard karakterek,
+    // felhasználói bemenetből értelmezve lassú DB lekérdezést okozhatnak
+    private static string EscapeLikePattern(string query) =>
+        query.Replace("\\", "\\\\")
+             .Replace("%",  "\\%")
+             .Replace("_",  "\\_");
+
     public async Task<List<string>> GetTitleSuggestionsAsync(string query, int limit = 8)
     {
-        var pattern = $"%{query}%";
+        var pattern = $"%{EscapeLikePattern(query)}%";
         return await db.Videos
             .Where(v => v.Active
                      && v.StatusId     == (int)ProcessingStatus.Completed
@@ -117,7 +124,7 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
 
     public async Task<List<Video>> SearchAsync(string query, int page = 1, int pageSize = 20)
     {
-        var pattern = $"%{query}%";
+        var pattern = $"%{EscapeLikePattern(query)}%";
         return await db.Videos
             .Include(v => v.User).ThenInclude(u => u.AvatarImage)
             .Include(v => v.ThumbnailImage)

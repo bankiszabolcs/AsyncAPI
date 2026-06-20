@@ -232,6 +232,9 @@ public sealed class VideosController(
         var video = await videoRepository.GetByIdAsync(id);
         if (video is null) return NotFound();
 
+        if (video.VisibilityId == (int)Visibility.Private && video.UserId != CurrentUserId)
+            return NotFound();
+
         var isCompleted = video.StatusId == (int)ProcessingStatus.Completed;
         // A thumbnail már Processing alatt elérhető (a feldolgozás legelején feltöltjük)
         var hasThumbnails = isCompleted || video.StatusId == (int)ProcessingStatus.Processing;
@@ -286,6 +289,12 @@ public sealed class VideosController(
     [HttpGet("{id:guid}/related")]
     public async Task<IActionResult> GetRelatedVideos(Guid id, [FromQuery] int limit = 8)
     {
+        var video = await videoRepository.GetByIdAsync(id);
+        if (video is null) return NotFound();
+
+        if (video.VisibilityId == (int)Visibility.Private && video.UserId != CurrentUserId)
+            return Ok(Array.Empty<object>());
+
         var related = await videoRepository.GetRelatedAsync(id, CurrentUserId, Math.Clamp(limit, 1, 20));
         var videos  = await videoRepository.GetByIdsAsync(related.Select(r => r.VideoId).ToList());
 

@@ -13,6 +13,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { Comments } from '../../shared/comments/comments';
 import { WatchHistoryService } from '../../core/services/watch-history.service';
 import { VideoCard } from '../../shared/video-card/video-card';
+import { SavedVideoService } from '../../core/services/saved-video.service';
 
 // Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
 const POLL_INTERVAL_MS = 4000;
@@ -26,12 +27,14 @@ interface PollResult {
 @Component({
   selector: 'app-watch',
   imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments, VideoCard],
+  providers: [SavedVideoService],
   templateUrl: './watch.html',
 })
 export class Watch {
-  private readonly route = inject(ActivatedRoute);
-  private readonly videoService = inject(VideoService);
-  private readonly watchHistory = inject(WatchHistoryService);
+  private readonly route            = inject(ActivatedRoute);
+  private readonly videoService     = inject(VideoService);
+  private readonly watchHistory     = inject(WatchHistoryService);
+  private readonly savedVideoService = inject(SavedVideoService);
   readonly auth = inject(AuthService);
 
   readonly id = this.route.snapshot.paramMap.get('id')!;
@@ -128,6 +131,26 @@ export class Watch {
       return;
     }
     this.videoService.react(this.id, type).subscribe(state => this.reactionState.set(state));
+  }
+
+  readonly isSaved = signal<boolean>(false);
+
+  private readonly savedEffect = effect(() => {
+    const v = this.video();
+    if (v && this.auth.isLoggedIn()) {
+      this.savedVideoService.getStatus(this.id).subscribe(r => this.isSaved.set(r.isSaved));
+    }
+  }, { allowSignalWrites: true });
+
+  toggleSave(): void {
+    if (!this.auth.isLoggedIn()) {
+      this.auth.login();
+      return;
+    }
+    const op = this.isSaved()
+      ? this.savedVideoService.unsave(this.id)
+      : this.savedVideoService.save(this.id);
+    op.subscribe(r => this.isSaved.set(r.isSaved));
   }
 
   readonly thumbnail = computed(() => {

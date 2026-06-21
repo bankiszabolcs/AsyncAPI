@@ -73,4 +73,6 @@ public partial class Video
     public virtual ICollection<VideoView> VideoViews { get; set; } = new List<VideoView>();
 
     public virtual Visibility Visibility { get; set; } = null!;
+
+    public virtual ICollection<SavedVideo> SavedVideos { get; set; } = new List<SavedVideo>();
 }

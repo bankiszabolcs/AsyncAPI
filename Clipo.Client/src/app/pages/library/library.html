@@ -1,8 +1,8 @@
 <div class="p-6">
   <h2 class="text-2xl font-bold mb-6 text-(--p-text-color)">Könyvtár</h2>
 
-  <div class="p-4 rounded-xl bg-(--p-surface-card) border border-(--p-surface-border)">
-  <p-tabs value="playlists">
+  <div class="p-4 rounded-xl bg-(--p-surface-card)">
+    <p-tabs value="playlists">
     <p-tablist>
       <p-tab value="playlists" class="mr-4">
         <i class="pi pi-list mr-2"></i>Lejátszási listák
@@ -21,11 +21,7 @@
       </p-tabpanel>
 
       <p-tabpanel value="saved">
-        <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
-          <i class="pi pi-bookmark text-5xl text-(--p-text-muted-color)"></i>
-          <p class="text-(--p-text-color) font-medium">Hamarosan</p>
-          <p class="text-sm text-(--p-text-muted-color)">A mentett videók funkció még fejlesztés alatt áll.</p>
-        </div>
+        <app-library-saved-videos />
       </p-tabpanel>
 
       <p-tabpanel value="watchlater">
@@ -36,6 +32,6 @@
         </div>
       </p-tabpanel>
     </p-tabpanels>
-  </p-tabs>
+    </p-tabs>
   </div>
 </div>

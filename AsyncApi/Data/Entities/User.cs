@@ -46,4 +46,6 @@ public partial class User
     public virtual ICollection<VideoView> VideoViews { get; set; } = new List<VideoView>();
 
     public virtual ICollection<Video> Videos { get; set; } = new List<Video>();
+
+    public virtual ICollection<SavedVideo> SavedVideos { get; set; } = new List<SavedVideo>();
 }

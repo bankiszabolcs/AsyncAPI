@@ -175,6 +175,19 @@
             </p-select>
           </div>
 
+          <!-- Kategória -->
+          <div class="hidden lg:block w-36 shrink-0 text-sm text-(--p-text-muted-color)">
+            <p-select
+              [options]="categoryOptions()"
+              optionLabel="label"
+              optionValue="value"
+              [disabled]="editingId() !== v.id"
+              [class]="editingId() === v.id ? 'flat-select w-full' : 'flat-select flat-readonly w-full'"
+              [ngModel]="editingId() === v.id ? editCategoryId() : v.categoryId"
+              (ngModelChange)="editCategoryId.set($event)"
+            />
+          </div>
+
           <!-- Műveletek -->
           <div class="flex items-center justify-end gap-2 shrink-0 w-32 pl-2">
             @if (editingId() === v.id) {

@@ -62,7 +62,7 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
     // null visszatérés: a videó nem létezik, vagy nem a megadott useré.
     // ModifyDate-et DB trigger állítja, itt nem írjuk.
     public async Task<Video?> UpdateDetailsAsync(
-        Guid id, Guid userId, string title, string? description, int visibilityId)
+        Guid id, Guid userId, string title, string? description, int visibilityId, Guid? categoryId)
     {
         var video = await db.Videos
             .Include(v => v.Status)
@@ -72,6 +72,7 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
         video.Title        = title;
         video.Description  = description;
         video.VisibilityId = visibilityId;
+        video.CategoryId   = categoryId;
         video.PublishedAt = video.PublishedAt is null && visibilityId == (int)Visibility.Public
             ? DateTime.UtcNow
             : video.PublishedAt;
@@ -92,15 +93,16 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
             .FirstOrDefaultAsync(v => v.Id == id && v.Active);
     }
 
-    // Csak kész és publikus videók, legújabb elöl
-    public async Task<List<Video>> GetListAsync(int page = 1, int pageSize = 20)
+    // Csak kész és publikus videók, legújabb elöl; opcionálisan kategória szerint szűrve
+    public async Task<List<Video>> GetListAsync(int page = 1, int pageSize = 20, Guid? categoryId = null)
     {
         return await db.Videos
             .Include(v => v.User).ThenInclude(u => u.AvatarImage)
             .Include(v => v.ThumbnailImage)
             .Where(v => v.Active
                      && v.StatusId     == (int)ProcessingStatus.Completed
-                     && v.VisibilityId == (int)Visibility.Public)
+                     && v.VisibilityId == (int)Visibility.Public
+                     && (categoryId == null || v.CategoryId == categoryId))
             .OrderByDescending(v => v.PublishedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

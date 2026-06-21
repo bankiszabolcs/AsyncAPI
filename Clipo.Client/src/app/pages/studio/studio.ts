@@ -6,9 +6,11 @@ import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { BadgeModule } from 'primeng/badge';
 import { VideoService } from '../../core/services/video.service';
+import { CategoryService } from '../../core/services/category.service';
 import { MyVideo } from '../../core/models/my-video.model';
 import { Visibility, visibilityOption, VISIBILITY_OPTIONS } from '../../core/models/visibility.model';
 import { ProcessingStatus } from '../../core/models/processing-status.model';
+import { Category } from '../../core/models/category.model';
 
 interface Stat {
   label: string;
@@ -23,20 +25,27 @@ interface Stat {
   styles: ``,
 })
 export class Studio {
-  private readonly videoService = inject(VideoService);
+  private readonly videoService    = inject(VideoService);
+  private readonly categoryService = inject(CategoryService);
 
   // null = még tölt
   readonly videos = signal<MyVideo[] | null>(null);
   readonly isLoading = computed(() => this.videos() === null);
 
   readonly visibilityOptions = [...VISIBILITY_OPTIONS];
+  readonly categories = signal<Category[]>([]);
+  readonly categoryOptions = computed(() => [
+    { value: null, label: 'Nincs megadva' },
+    ...this.categories().map(c => ({ value: c.id, label: c.title })),
+  ]);
 
   // Inline szerkesztés állapota
-  readonly editingId = signal<string | null>(null);
-  readonly editTitle = signal('');
+  readonly editingId       = signal<string | null>(null);
+  readonly editTitle       = signal('');
   readonly editDescription = signal('');
-  readonly editVisibilityId = signal<number>(Visibility.Private);
-  readonly editTags = signal<string[]>([]);
+  readonly editVisibilityId  = signal<number>(Visibility.Private);
+  readonly editCategoryId  = signal<string | null>(null);
+  readonly editTags        = signal<string[]>([]);
   readonly showTagInput = signal(false);
   readonly saving = signal(false);
 
@@ -58,6 +67,10 @@ export class Studio {
     this.videoService.getMyVideos()
       .pipe(catchError(() => of([] as MyVideo[])))
       .subscribe(list => this.videos.set(list));
+
+    this.categoryService.getAll()
+      .pipe(catchError(() => of([] as Category[])))
+      .subscribe(list => this.categories.set(list));
   }
 
   thumbnail(v: MyVideo): string | null {
@@ -86,6 +99,7 @@ export class Studio {
     this.editTitle.set(v.title);
     this.editDescription.set(v.description ?? '');
     this.editVisibilityId.set(v.visibilityId);
+    this.editCategoryId.set(v.categoryId);
     this.editTags.set([...v.tags]);
     this.showTagInput.set(false);
   }
@@ -109,13 +123,14 @@ export class Studio {
       title,
       description: this.editDescription().trim() || null,
       visibilityId: this.editVisibilityId(),
+      categoryId: this.editCategoryId(),
       tags: this.editTags(),
     }).subscribe({
       next: res => {
         this.videos.update(list =>
           (list ?? []).map(x =>
             x.id === res.id
-              ? { ...x, title: res.title, description: res.description, visibilityId: res.visibilityId, tags: res.tags }
+              ? { ...x, title: res.title, description: res.description, visibilityId: res.visibilityId, categoryId: res.categoryId, tags: res.tags }
               : x,
           ),
         );

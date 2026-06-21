@@ -7,4 +7,5 @@ public sealed record UpdateVideoRequest(
     [MaxLength(100)] string Title,
     [MaxLength(5000)] string? Description,
     int VisibilityId,
-    List<string>? Tags = null);
+    List<string>? Tags = null,
+    Guid? CategoryId = null);

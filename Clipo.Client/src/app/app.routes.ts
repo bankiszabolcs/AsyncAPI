@@ -12,6 +12,7 @@ export const routes: Routes = [
   {
     path: 'explore',
     loadComponent: () => import('./pages/explore/explore').then(m => m.Explore),
+    providers: [VideoService],
   },
   {
     path: 'search',

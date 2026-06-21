@@ -106,6 +106,7 @@ public sealed class VideosController(
     [EnableRateLimiting("search")]
     public async Task<IActionResult> GetVideos(
         [FromQuery] string? q = null,
+        [FromQuery] Guid? categoryId = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -113,7 +114,7 @@ public sealed class VideosController(
             return BadRequest("Search query too long.");
 
         var videos = string.IsNullOrWhiteSpace(q)
-            ? await videoRepository.GetListAsync(page, pageSize)
+            ? await videoRepository.GetListAsync(page, pageSize, categoryId)
             : await videoRepository.SearchAsync(q.Trim(), page, pageSize);
 
         var result = videos.Select(v => new
@@ -174,6 +175,7 @@ public sealed class VideosController(
                 statusId     = v.StatusId,
                 status       = v.Status.Title,
                 visibilityId = v.VisibilityId,
+                categoryId   = v.CategoryId,
                 tags         = v.VideoTags.Where(vt => vt.Active).Select(vt => vt.Tag.Name).ToList(),
                 media = new
                 {
@@ -216,7 +218,7 @@ public sealed class VideosController(
             : request.Description.Trim();
 
         var video = await videoRepository.UpdateDetailsAsync(
-            id, userId, title, description, request.VisibilityId);
+            id, userId, title, description, request.VisibilityId, request.CategoryId);
 
         if (video is null) return NotFound();
 
@@ -239,6 +241,7 @@ public sealed class VideosController(
             statusId     = video.StatusId,
             status       = video.Status.Title,
             visibilityId = video.VisibilityId,
+            categoryId   = video.CategoryId,
             tags         = savedTags
         });
     }

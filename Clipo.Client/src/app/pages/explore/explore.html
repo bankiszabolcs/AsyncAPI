@@ -1,4 +1,88 @@
-<div class="p-6">
-  <h2 class="text-2xl font-bold mb-2 text-(--p-text-color)">Felfedezés</h2>
-  <p class="text-(--p-text-muted-color)">Hamarosan: trendek, kategóriák...</p>
+<div class="p-4">
+
+  <!-- Kategória pill bar -->
+  <div class="flex flex-wrap items-center gap-2 mb-6">
+
+    @if (categoriesResource.isLoading()) {
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <p-skeleton height="2rem" width="5rem" borderRadius="9999px" />
+      }
+    } @else {
+
+      <!-- Mind pill -->
+      <button
+        type="button"
+        (click)="selectCategory(null)"
+        class="px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer"
+        [class]="selectedId() === null
+          ? 'bg-(--p-primary-color) text-(--p-primary-contrast-color) border-(--p-primary-color)'
+          : 'bg-transparent text-(--p-text-color) border-(--p-surface-border) hover:border-(--p-primary-color) hover:text-(--p-primary-color)'"
+      >
+        Mind
+      </button>
+
+      <!-- Látható kategóriák -->
+      @for (cat of visibleCategories(); track cat.id) {
+        <button
+          type="button"
+          (click)="selectCategory(cat.id)"
+          class="px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer"
+          [class]="selectedId() === cat.id
+            ? 'bg-(--p-primary-color) text-(--p-primary-contrast-color) border-(--p-primary-color)'
+            : 'bg-transparent text-(--p-text-color) border-(--p-surface-border) hover:border-(--p-primary-color) hover:text-(--p-primary-color)'"
+        >
+          {{ cat.title }}
+        </button>
+      }
+
+      <!-- Több mutató gomb -->
+      @if (hasMore()) {
+        <button
+          type="button"
+          (click)="showMore()"
+          class="px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer
+                 bg-transparent text-(--p-text-muted-color) border-(--p-surface-border)
+                 hover:border-(--p-primary-color) hover:text-(--p-primary-color)"
+        >
+          ...
+        </button>
+      }
+
+    }
+  </div>
+
+  <!-- Videó grid -->
+  @if (videosResource.isLoading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (_ of [1,2,3,4,5,6]; track $index) {
+        <div class="flex flex-col gap-3">
+          <p-skeleton height="160px" borderRadius="0.75rem" />
+          <div class="flex gap-3 px-1">
+            <p-skeleton shape="circle" size="2.25rem" />
+            <div class="flex flex-col gap-2 flex-1">
+              <p-skeleton height="14px" />
+              <p-skeleton height="14px" width="60%" />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (videosResource.error()) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
+      <i class="pi pi-exclamation-circle text-4xl"></i>
+      <p>Nem sikerült betölteni a videókat.</p>
+    </div>
+  } @else if (!videosResource.value()?.length) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
+      <i class="pi pi-video text-4xl"></i>
+      <p>Ebben a kategóriában még nincsenek videók.</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (video of videosResource.value()!; track video.id) {
+        <app-video-card [video]="video" />
+      }
+    </div>
+  }
+
 </div>

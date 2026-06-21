@@ -14,6 +14,7 @@ import { Comments } from '../../shared/comments/comments';
 import { WatchHistoryService } from '../../core/services/watch-history.service';
 import { VideoCard } from '../../shared/video-card/video-card';
 import { SavedVideoService } from '../../core/services/saved-video.service';
+import { WatchLaterService } from '../../core/services/watch-later.service';
 import { SubscriptionService } from '../../core/services/subscription.service';
 
 // Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
@@ -28,14 +29,15 @@ interface PollResult {
 @Component({
   selector: 'app-watch',
   imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments, VideoCard, RouterLink],
-  providers: [SavedVideoService],
+  providers: [SavedVideoService, WatchLaterService],
   templateUrl: './watch.html',
 })
 export class Watch {
   private readonly route            = inject(ActivatedRoute);
   private readonly videoService     = inject(VideoService);
   private readonly watchHistory     = inject(WatchHistoryService);
-  private readonly savedVideoService = inject(SavedVideoService);
+  private readonly savedVideoService  = inject(SavedVideoService);
+  private readonly watchLaterService  = inject(WatchLaterService);
   private readonly subscriptionSvc  = inject(SubscriptionService);
   readonly auth = inject(AuthService);
 
@@ -179,14 +181,28 @@ export class Watch {
   }
 
   toggleSave(): void {
-    if (!this.auth.isLoggedIn()) {
-      this.auth.login();
-      return;
-    }
+    if (!this.auth.isLoggedIn()) { this.auth.login(); return; }
     const op = this.isSaved()
       ? this.savedVideoService.unsave(this.id)
       : this.savedVideoService.save(this.id);
     op.subscribe(r => this.isSaved.set(r.isSaved));
+  }
+
+  readonly isWatchLater = signal<boolean>(false);
+
+  private readonly watchLaterEffect = effect(() => {
+    const v = this.video();
+    if (v && this.auth.isLoggedIn()) {
+      this.watchLaterService.getStatus(this.id).subscribe(r => this.isWatchLater.set(r.isAdded));
+    }
+  }, { allowSignalWrites: true });
+
+  toggleWatchLater(): void {
+    if (!this.auth.isLoggedIn()) { this.auth.login(); return; }
+    const op = this.isWatchLater()
+      ? this.watchLaterService.remove(this.id)
+      : this.watchLaterService.add(this.id);
+    op.subscribe(r => this.isWatchLater.set(r.isAdded));
   }
 
   readonly thumbnail = computed(() => {

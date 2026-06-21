@@ -49,5 +49,7 @@ public partial class User
 
     public virtual ICollection<SavedVideo> SavedVideos { get; set; } = new List<SavedVideo>();
 
+    public virtual ICollection<WatchLater> WatchLaterVideos { get; set; } = new List<WatchLater>();
+
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

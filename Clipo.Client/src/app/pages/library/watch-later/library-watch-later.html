@@ -1,0 +1,27 @@
+@if (isLoading()) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+    @for (_ of [1,2,3,4,5,6]; track $index) {
+      <div class="animate-pulse rounded-xl bg-(--p-surface-card) overflow-hidden">
+        <div class="w-full aspect-video bg-(--p-surface-ground)"></div>
+        <div class="p-3 space-y-2">
+          <div class="h-4 bg-(--p-surface-ground) rounded w-3/4"></div>
+          <div class="h-3 bg-(--p-surface-ground) rounded w-1/2"></div>
+        </div>
+      </div>
+    }
+  </div>
+
+} @else if (videos().length === 0) {
+  <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
+    <i class="pi pi-clock text-5xl text-(--p-text-muted-color)"></i>
+    <p class="text-(--p-text-color) font-medium">Még nincs megnézendő videód</p>
+    <p class="text-sm text-(--p-text-muted-color)">Az óra ikonra kattintva tudsz videókat hozzáadni.</p>
+  </div>
+
+} @else {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+    @for (item of videos(); track item.videoId) {
+      <app-video-card [video]="item.video" />
+    }
+  </div>
+}

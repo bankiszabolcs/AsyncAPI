@@ -63,6 +63,7 @@ try
     builder.Services.AddScoped<CommentRepository>();
     builder.Services.AddScoped<PlaylistRepository>();
     builder.Services.AddScoped<SavedVideoRepository>();
+    builder.Services.AddScoped<WatchLaterRepository>();
     builder.Services.AddScoped<SubscriptionRepository>();
     builder.Services.AddScoped<NotificationRepository>();
     builder.Services.AddScoped<NotificationService>();

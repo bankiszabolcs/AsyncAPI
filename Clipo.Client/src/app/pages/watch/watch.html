@@ -119,6 +119,20 @@
             <span class="text-sm font-medium">{{ isSaved() ? 'Mentve' : 'Mentés' }}</span>
           </button>
 
+          <!-- Megnézendő -->
+          <button
+            (click)="toggleWatchLater()"
+            class="flex items-center gap-2 px-4 py-2 rounded-full bg-(--p-surface-card)
+                   transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
+            [title]="isWatchLater() ? 'Eltávolítás a megnézendőkből' : 'Hozzáadás a megnézendőkhöz'"
+          >
+            <i class="pi text-sm transition-colors"
+               [class.pi-clock]="!isWatchLater()"
+               [class.pi-check-circle]="isWatchLater()"
+               [class.text-(--p-primary-color)]="isWatchLater()"></i>
+            <span class="text-sm font-medium">{{ isWatchLater() ? 'Megnézendő ✓' : 'Megnézendő' }}</span>
+          </button>
+
           <!-- Like / Dislike -->
           <div class="flex items-center rounded-full overflow-hidden bg-(--p-surface-card)">
             <button

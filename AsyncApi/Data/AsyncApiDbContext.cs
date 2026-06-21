@@ -43,6 +43,8 @@ public partial class AsyncApiDbContext : DbContext
 
     public virtual DbSet<SavedVideo> SavedVideos { get; set; }
 
+    public virtual DbSet<WatchLater> WatchLaterVideos { get; set; }
+
     public virtual DbSet<RowLog> RowLogs { get; set; }
 
     public virtual DbSet<Subscription> Subscriptions { get; set; }
@@ -987,6 +989,39 @@ public partial class AsyncApiDbContext : DbContext
             entity.HasOne(d => d.Video).WithMany(p => p.SavedVideos)
                 .HasForeignKey(d => d.VideoId)
                 .HasConstraintName("saved_videos_video_id_fkey");
+        });
+
+        modelBuilder.Entity<WatchLater>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.VideoId }).HasName("watch_later_pkey");
+
+            entity.ToTable("watch_later");
+
+            entity.HasIndex(e => e.VideoId, "idx_watch_later_video_id");
+
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.VideoId).HasColumnName("video_id");
+            entity.Property(e => e.Active)
+                .HasDefaultValue(true)
+                .HasColumnName("active");
+            entity.Property(e => e.CreateDate)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("create_date");
+            entity.Property(e => e.CreateUserId).HasColumnName("create_user_id");
+            entity.Property(e => e.ModifyDate).HasColumnName("modify_date");
+            entity.Property(e => e.ModifyUserId).HasColumnName("modify_user_id");
+            entity.Property(e => e.Version)
+                .HasDefaultValue(1)
+                .HasColumnName("version");
+
+            entity.HasOne(d => d.User).WithMany(p => p.WatchLaterVideos)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("watch_later_user_id_fkey");
+
+            entity.HasOne(d => d.Video).WithMany(p => p.WatchLaterVideos)
+                .HasForeignKey(d => d.VideoId)
+                .HasConstraintName("watch_later_video_id_fkey");
         });
 
         modelBuilder.Entity<VideoTag>(entity =>

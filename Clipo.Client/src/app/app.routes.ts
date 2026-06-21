@@ -72,4 +72,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/playlists/playlist-detail').then(m => m.PlaylistDetail),
     providers: [PlaylistService, VideoService],
   },
+  {
+    path: 'library/playlists/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/library/playlist-detail/library-playlist-detail').then(m => m.LibraryPlaylistDetail),
+  },
 ];

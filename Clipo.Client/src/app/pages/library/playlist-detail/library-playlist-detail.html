@@ -1,0 +1,86 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+
+  @if (isLoading()) {
+    <div class="animate-pulse space-y-4">
+      <div class="h-8 bg-(--p-surface-card) rounded w-1/2"></div>
+      <div class="h-4 bg-(--p-surface-card) rounded w-1/3"></div>
+    </div>
+
+  } @else if (!playlist()) {
+    <div class="flex flex-col items-center justify-center text-center gap-3 py-24">
+      <i class="pi pi-exclamation-circle text-5xl text-(--p-text-muted-color)"></i>
+      <p class="text-(--p-text-color) font-medium">Lista nem található</p>
+      <a routerLink="/library"
+         class="mt-2 px-4 py-2 rounded-lg bg-(--p-primary-color) text-white text-sm font-medium no-underline hover:opacity-90">
+        Vissza a könyvtárba
+      </a>
+    </div>
+
+  } @else {
+    <!-- Header -->
+    <div class="mb-8">
+      <a routerLink="/library"
+         class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) no-underline flex items-center gap-1 mb-3 w-fit">
+        <i class="pi pi-arrow-left text-xs"></i> Könyvtár
+      </a>
+      <div class="flex items-center gap-2">
+        <i class="pi pi-list text-(--p-primary-color)"></i>
+        <h1 class="text-2xl font-bold text-(--p-text-color) truncate">{{ playlist()!.title }}</h1>
+      </div>
+      @if (playlist()!.description) {
+        <p class="text-sm text-(--p-text-muted-color) mt-1.5 max-w-lg">{{ playlist()!.description }}</p>
+      }
+      <p class="text-xs text-(--p-text-muted-color) mt-2">{{ playlist()!.items.length }} videó</p>
+    </div>
+
+    <!-- Video list -->
+    @if (playlist()!.items.length === 0) {
+      <div class="flex flex-col items-center justify-center text-center gap-3 py-16
+                  rounded-xl border border-dashed border-(--p-surface-border)">
+        <i class="pi pi-video text-4xl text-(--p-text-muted-color)"></i>
+        <p class="text-(--p-text-color) font-medium">Nincs videó ebben a listában</p>
+      </div>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (item of playlist()!.items; track item.videoId; let i = $index) {
+          <a [routerLink]="['/watch', item.videoId]"
+             class="flex items-center gap-3 p-3 rounded-xl bg-(--p-surface-card)
+                    border border-(--p-surface-border) hover:border-(--p-primary-color)/30
+                    transition-all no-underline group">
+
+            <!-- Position -->
+            <span class="text-sm font-mono text-(--p-text-muted-color) w-6 text-center shrink-0">
+              {{ i + 1 }}
+            </span>
+
+            <!-- Thumbnail -->
+            <div class="relative w-28 aspect-video rounded-lg overflow-hidden bg-(--p-surface-ground) shrink-0">
+              @if (thumbnail(item.video); as url) {
+                <img [src]="url" alt="" class="w-full h-full object-cover" />
+              } @else {
+                <div class="w-full h-full flex items-center justify-center">
+                  <i class="pi pi-video text-(--p-text-muted-color)"></i>
+                </div>
+              }
+              @if (item.video.duration) {
+                <span class="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] font-medium
+                             px-1 py-0.5 rounded leading-none">
+                  {{ formatDuration(item.video.duration) }}
+                </span>
+              }
+            </div>
+
+            <!-- Info -->
+            <p class="flex-1 min-w-0 text-sm font-medium text-(--p-text-color)
+                      group-hover:text-(--p-primary-color) transition-colors line-clamp-2">
+              {{ item.video.title }}
+            </p>
+
+            <i class="pi pi-play-circle text-(--p-text-muted-color) group-hover:text-(--p-primary-color)
+                      transition-colors shrink-0 text-lg"></i>
+          </a>
+        }
+      </div>
+    }
+  }
+</div>

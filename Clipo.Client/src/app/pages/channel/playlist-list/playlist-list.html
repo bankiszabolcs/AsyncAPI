@@ -3,13 +3,15 @@
 <!-- Header -->
 <div class="flex items-center justify-between mt-6 mb-4">
   <span class="text-sm text-(--p-text-muted-color)">{{ playlists().length }} lista</span>
-  <p-button
-    label="Új lista"
-    icon="pi pi-plus"
-    [rounded]="true"
-    size="small"
-    (onClick)="openCreate()"
-  />
+  <button
+    type="button"
+    (click)="openCreate()"
+    class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer
+           bg-(--p-primary-color) text-(--p-primary-contrast-color) hover:opacity-90 transition-opacity"
+  >
+    <i class="pi pi-plus text-xs"></i>
+    Új lista
+  </button>
 </div>
 
 <!-- Loading -->
@@ -32,13 +34,15 @@
     <i class="pi pi-list text-5xl text-(--p-text-muted-color)"></i>
     <p class="text-(--p-text-color) font-medium">Még nincs lejátszási listád</p>
     <p class="text-sm text-(--p-text-muted-color)">Hozz létre egyet a videóid rendezéséhez.</p>
-    <p-button
-      label="Első lista létrehozása"
-      icon="pi pi-plus"
-      [rounded]="true"
-      [outlined]="true"
-      (onClick)="openCreate()"
-    />
+    <button
+      type="button"
+      (click)="openCreate()"
+      class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer
+             border border-(--p-primary-color) text-(--p-primary-color) hover:bg-(--p-primary-color)/10 transition-colors"
+    >
+      <i class="pi pi-plus text-xs"></i>
+      Első lista létrehozása
+    </button>
   </div>
 
 <!-- Grid -->
@@ -50,7 +54,6 @@
                cursor-pointer hover:border-(--p-primary-color)/40 transition-all duration-200"
         (click)="navigateToDetail(p.id)"
       >
-        <!-- Thumbnail placeholder -->
         <div class="relative w-full aspect-video bg-gradient-to-br from-(--p-primary-color)/20 to-(--p-surface-ground)
                     flex items-center justify-center overflow-hidden">
           <i class="pi pi-list text-4xl text-(--p-primary-color)/40"></i>
@@ -59,8 +62,6 @@
             {{ formatVideoCount(p.videoCount) }}
           </span>
         </div>
-
-        <!-- Info -->
         <div class="p-4">
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
@@ -69,8 +70,6 @@
                 <p class="text-xs text-(--p-text-muted-color) mt-0.5 line-clamp-2">{{ p.description }}</p>
               }
             </div>
-
-            <!-- Actions -->
             <div class="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 type="button"
@@ -98,106 +97,76 @@
   </div>
 }
 
-<!-- Create / Edit dialog -->
-<p-dialog
-  [header]="isEdit() ? 'Lista szerkesztése' : 'Új lejátszási lista'"
+<app-playlist-form-dialog
   [visible]="showFormDialog()"
   (visibleChange)="showFormDialog.set($event)"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  appendTo="body"
-  styleClass="w-full max-w-md"
->
-  <div class="flex flex-col gap-4 pt-2">
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm font-medium text-(--p-text-color)">Cím <span class="text-red-400">*</span></label>
-      <input
-        pInputText
-        type="text"
-        maxlength="200"
-        placeholder="Lista neve"
-        [ngModel]="formTitle()"
-        (ngModelChange)="formTitle.set($event)"
-        class="w-full"
-      />
-    </div>
+  [mode]="isEdit() ? 'edit' : 'create'"
+  [initialTitle]="formTitle()"
+  [initialDesc]="formDesc()"
+  [initialVis]="formVis()"
+  [isSaving]="isSaving()"
+  (saved)="save($event)"
+/>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm font-medium text-(--p-text-color)">Leírás</label>
-      <textarea
-        rows="3"
-        maxlength="2000"
-        placeholder="Opcionális leírás..."
-        [ngModel]="formDesc()"
-        (ngModelChange)="formDesc.set($event)"
-        class="w-full resize-none rounded-lg border border-(--p-inputtext-border-color) bg-(--p-inputtext-background)
-               text-(--p-text-color) text-sm px-3 py-2 outline-none focus:border-(--p-primary-color)
-               transition-colors placeholder:text-(--p-text-muted-color)"
-      ></textarea>
-    </div>
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm font-medium text-(--p-text-color)">Láthatóság</label>
-      <p-select
-        [options]="visibilityOptions"
-        optionLabel="label"
-        optionValue="value"
-        [ngModel]="formVis()"
-        (ngModelChange)="formVis.set($event)"
-        styleClass="w-full"
-      />
-    </div>
-  </div>
-
-  <ng-template #footer>
-    <div class="flex justify-end gap-2 pt-2">
-      <p-button
-        label="Mégse"
-        [outlined]="true"
-        size="small"
-        (onClick)="showFormDialog.set(false)"
-      />
-      <p-button
-        [label]="isEdit() ? 'Mentés' : 'Létrehozás'"
-        size="small"
-        [loading]="isSaving()"
-        [disabled]="!formTitle().trim()"
-        (onClick)="save()"
-      />
-    </div>
-  </ng-template>
-</p-dialog>
-
-<!-- Delete confirm dialog -->
+<!-- ================================================================
+     Delete confirm dialog
+     ================================================================ -->
 <p-dialog
-  header="Lista törlése"
   [visible]="showDeleteDialog()"
   (visibleChange)="showDeleteDialog.set($event)"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
   appendTo="body"
-  styleClass="w-full max-w-sm"
+  styleClass="w-full max-w-sm overflow-hidden"
+  [showHeader]="false"
 >
-  <p class="text-sm text-(--p-text-muted-color) pt-2">
-    Biztosan törölni szeretnéd ezt a lejátszási listát? A videók nem törlődnek.
-  </p>
-
-  <ng-template #footer>
-    <div class="flex justify-end gap-2 pt-2">
-      <p-button
-        label="Mégse"
-        [outlined]="true"
-        size="small"
-        (onClick)="showDeleteDialog.set(false)"
-      />
-      <p-button
-        label="Törlés"
-        severity="danger"
-        size="small"
-        (onClick)="confirmDelete()"
-      />
+  <!-- Header -->
+  <div class="px-6 pt-6 pb-4 flex items-center gap-4 border-b border-(--p-surface-border)">
+    <div class="w-11 h-11 rounded-2xl bg-red-500/15 flex items-center justify-center shrink-0">
+      <i class="pi pi-trash text-lg text-red-400"></i>
     </div>
-  </ng-template>
+    <div class="flex-1 min-w-0">
+      <h2 class="text-base font-semibold text-(--p-text-color)">Lista törlése</h2>
+      <p class="text-xs text-red-400 mt-0.5">Ez a művelet nem vonható vissza</p>
+    </div>
+    <button
+      type="button"
+      (click)="showDeleteDialog.set(false)"
+      class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
+             text-(--p-text-muted-color) hover:bg-(--p-surface-hover) hover:text-(--p-text-color)
+             transition-colors cursor-pointer"
+    >
+      <i class="pi pi-times text-sm"></i>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="px-6 py-5">
+    <p class="text-sm text-(--p-text-muted-color) leading-relaxed">
+      Biztosan törölni szeretnéd ezt a lejátszási listát?
+      <span class="text-(--p-text-color) font-medium">A videók nem törlődnek</span>, csak a lista szűnik meg.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div class="px-6 pb-6 flex gap-3">
+    <button
+      type="button"
+      (click)="showDeleteDialog.set(false)"
+      class="flex-1 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors
+             border border-(--p-surface-border) text-(--p-text-muted-color)
+             hover:border-(--p-text-muted-color) hover:text-(--p-text-color)"
+    >
+      Mégse
+    </button>
+    <button
+      type="button"
+      (click)="confirmDelete()"
+      class="flex-1 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-opacity
+             bg-red-500 text-white hover:opacity-90"
+    >
+      Törlés
+    </button>
+  </div>
 </p-dialog>

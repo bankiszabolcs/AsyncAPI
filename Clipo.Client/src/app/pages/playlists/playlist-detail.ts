@@ -1,22 +1,19 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { catchError, of, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { InputText } from 'primeng/inputtext';
-import { Select } from 'primeng/select';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PlaylistService } from '../../core/services/playlist.service';
 import { VideoService } from '../../core/services/video.service';
 import { PlaylistDetail as PlaylistDetailData, PlaylistVideoItem } from '../../core/models/playlist.model';
 import { MyVideo } from '../../core/models/my-video.model';
-import { VISIBILITY_OPTIONS } from '../../core/models/visibility.model';
+import { PlaylistFormDialog, PlaylistFormData } from '../../shared/playlist-form-dialog/playlist-form-dialog';
 
 @Component({
   selector: 'app-playlist-detail',
-  imports: [RouterLink, FormsModule, Button, Dialog, InputText, Select, Toast],
+  imports: [RouterLink, Button, Dialog, Toast, PlaylistFormDialog],
   providers: [PlaylistService, VideoService, MessageService],
   templateUrl: './playlist-detail.html',
 })
@@ -40,8 +37,6 @@ export class PlaylistDetail implements OnInit {
   readonly editTitle = signal('');
   readonly editDesc  = signal('');
   readonly editVis   = signal(3);
-
-  readonly visibilityOptions = VISIBILITY_OPTIONS.map(o => ({ label: o.label, value: o.value }));
 
   readonly addedVideoIds = computed(() =>
     new Set((this.playlist()?.items ?? []).map(i => i.videoId))
@@ -74,15 +69,12 @@ export class PlaylistDetail implements OnInit {
     this.showEditDialog.set(true);
   }
 
-  saveEdit(): void {
-    const title = this.editTitle().trim();
-    if (!title) return;
-
+  saveEdit(data: PlaylistFormData): void {
     this.isSaving.set(true);
     this.playlistService.update(this.playlistId, {
-      title,
-      description: this.editDesc().trim() || null,
-      visibilityId: this.editVis(),
+      title: data.title,
+      description: data.description,
+      visibilityId: data.visibilityId,
     }).subscribe({
       next: updated => {
         this.playlist.update(p => p ? { ...p, title: updated.title, description: updated.description, visibilityId: updated.visibilityId } : p);

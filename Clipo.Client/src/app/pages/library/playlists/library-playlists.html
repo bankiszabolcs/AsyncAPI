@@ -1,0 +1,51 @@
+<!-- Loading -->
+@if (isLoading()) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+    @for (_ of [1,2,3]; track $index) {
+      <div class="animate-pulse rounded-xl bg-(--p-surface-card) overflow-hidden">
+        <div class="w-full aspect-video bg-(--p-surface-ground)"></div>
+        <div class="p-4 space-y-2">
+          <div class="h-4 bg-(--p-surface-ground) rounded w-3/4"></div>
+          <div class="h-3 bg-(--p-surface-ground) rounded w-1/3"></div>
+        </div>
+      </div>
+    }
+  </div>
+
+<!-- Empty -->
+} @else if (playlists().length === 0) {
+  <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
+    <i class="pi pi-list text-5xl text-(--p-text-muted-color)"></i>
+    <p class="text-(--p-text-color) font-medium">Még nincs lejátszási listád</p>
+    <p class="text-sm text-(--p-text-muted-color)">
+      A <a routerLink="/channel" class="text-(--p-primary-color) no-underline hover:underline">Csatorna</a> oldalon tudsz létrehozni egyet.
+    </p>
+  </div>
+
+<!-- Grid -->
+} @else {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+    @for (p of playlists(); track p.id) {
+      <div
+        class="rounded-xl bg-(--p-surface-card) border border-(--p-surface-border) overflow-hidden
+               cursor-pointer hover:border-(--p-primary-color)/40 transition-all duration-200"
+        (click)="openPlaylist(p.id)"
+      >
+        <div class="relative w-full aspect-video bg-gradient-to-br from-(--p-primary-color)/20 to-(--p-surface-ground)
+                    flex items-center justify-center overflow-hidden">
+          <i class="pi pi-list text-4xl text-(--p-primary-color)/40"></i>
+          <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-medium
+                       px-2 py-0.5 rounded-full">
+            {{ formatVideoCount(p.videoCount) }}
+          </span>
+        </div>
+        <div class="p-4">
+          <h3 class="font-semibold text-(--p-text-color) truncate text-sm">{{ p.title }}</h3>
+          @if (p.description) {
+            <p class="text-xs text-(--p-text-muted-color) mt-0.5 line-clamp-2">{{ p.description }}</p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

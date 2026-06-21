@@ -1,4 +1,41 @@
 <div class="p-6">
-  <h2 class="text-2xl font-bold mb-2 text-(--p-text-color)">Könyvtár</h2>
-  <p class="text-(--p-text-muted-color)">Hamarosan: mentett videók, lejátszási listák...</p>
+  <h2 class="text-2xl font-bold mb-6 text-(--p-text-color)">Könyvtár</h2>
+
+  <div class="p-4 rounded-xl bg-(--p-surface-card) border border-(--p-surface-border)">
+  <p-tabs value="playlists">
+    <p-tablist>
+      <p-tab value="playlists" class="mr-4">
+        <i class="pi pi-list mr-2"></i>Lejátszási listák
+      </p-tab>
+      <p-tab value="saved" class="mr-4">
+        <i class="pi pi-bookmark mr-2"></i>Mentett videók
+      </p-tab>
+      <p-tab value="watchlater">
+        <i class="pi pi-clock mr-2"></i>Megnézendő videók
+      </p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+      <p-tabpanel value="playlists">
+        <app-library-playlists />
+      </p-tabpanel>
+
+      <p-tabpanel value="saved">
+        <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
+          <i class="pi pi-bookmark text-5xl text-(--p-text-muted-color)"></i>
+          <p class="text-(--p-text-color) font-medium">Hamarosan</p>
+          <p class="text-sm text-(--p-text-muted-color)">A mentett videók funkció még fejlesztés alatt áll.</p>
+        </div>
+      </p-tabpanel>
+
+      <p-tabpanel value="watchlater">
+        <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
+          <i class="pi pi-clock text-5xl text-(--p-text-muted-color)"></i>
+          <p class="text-(--p-text-color) font-medium">Hamarosan</p>
+          <p class="text-sm text-(--p-text-muted-color)">A megnézendő videók funkció még fejlesztés alatt áll.</p>
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+  </div>
 </div>

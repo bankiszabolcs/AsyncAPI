@@ -1,0 +1,139 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  appendTo="body"
+  styleClass="w-full max-w-md overflow-hidden"
+  [showHeader]="false"
+>
+  <!-- Header -->
+  <div class="px-6 pt-6 pb-4 flex items-center gap-4 border-b border-(--p-surface-border)">
+    <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+         [class]="mode() === 'edit' ? 'bg-amber-500/15' : 'bg-(--p-primary-color)/15'">
+      <i class="text-lg"
+         [class]="mode() === 'edit'
+           ? 'pi pi-pencil text-amber-400'
+           : 'pi pi-list text-(--p-primary-color)'">
+      </i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <h2 class="text-base font-semibold text-(--p-text-color)">
+        {{ mode() === 'edit' ? 'Lista szerkesztése' : 'Új lejátszási lista' }}
+      </h2>
+      <p class="text-xs text-(--p-text-muted-color) mt-0.5">
+        {{ mode() === 'edit' ? 'Módosítsd a lista adatait' : 'Rendezd videóidat listákba' }}
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="close()"
+      class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
+             text-(--p-text-muted-color) hover:bg-(--p-surface-hover) hover:text-(--p-text-color)
+             transition-colors cursor-pointer"
+    >
+      <i class="pi pi-times text-sm"></i>
+    </button>
+  </div>
+
+  <!-- Form -->
+  <div class="px-6 py-5 flex flex-col gap-5">
+
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-(--p-text-color)">
+        Cím <span class="text-red-400">*</span>
+      </label>
+      <input
+        pInputText
+        type="text"
+        maxlength="200"
+        placeholder="Lista neve..."
+        [ngModel]="formTitle()"
+        (ngModelChange)="formTitle.set($event)"
+        class="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-(--p-text-color)">Leírás</label>
+      <textarea
+        rows="3"
+        maxlength="2000"
+        placeholder="Opcionális leírás..."
+        [ngModel]="formDesc()"
+        (ngModelChange)="formDesc.set($event)"
+        class="w-full resize-none rounded-lg border border-(--p-inputtext-border-color) bg-(--p-inputtext-background)
+               text-(--p-text-color) text-sm px-3 py-2 outline-none focus:border-(--p-primary-color)
+               transition-colors placeholder:text-(--p-text-muted-color)"
+      ></textarea>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-(--p-text-color)">Láthatóság</label>
+      <div class="rounded-lg ring-2 transition-colors duration-200"
+           [class]="formVis() === 1 ? 'ring-green-500/50' : formVis() === 2 ? 'ring-amber-400/50' : 'ring-(--p-surface-border)'">
+        <p-select
+          [options]="visibilityOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="formVis()"
+          (ngModelChange)="formVis.set($event)"
+          class="w-full"
+          [pt]="selectPt"
+        >
+          <ng-template #selectedItem let-opt>
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full shrink-0"
+                    [class]="opt?.value === 1 ? 'bg-green-400' : opt?.value === 2 ? 'bg-amber-400' : 'bg-slate-400'">
+              </span>
+              <i class="pi text-sm"
+                 [class]="opt?.icon + ' ' + (opt?.value === 1 ? 'text-green-400' : opt?.value === 2 ? 'text-amber-400' : 'text-slate-400')">
+              </i>
+              <span>{{ opt?.label }}</span>
+            </div>
+          </ng-template>
+          <ng-template #item let-opt>
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full shrink-0"
+                    [class]="opt.value === 1 ? 'bg-green-400' : opt.value === 2 ? 'bg-amber-400' : 'bg-slate-400'">
+              </span>
+              <i class="pi text-sm"
+                 [class]="opt.icon + ' ' + (opt.value === 1 ? 'text-green-400' : opt.value === 2 ? 'text-amber-400' : 'text-slate-400')">
+              </i>
+              <span>{{ opt.label }}</span>
+            </div>
+          </ng-template>
+        </p-select>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="px-6 pb-6 flex gap-3">
+    <button
+      type="button"
+      (click)="close()"
+      class="flex-1 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors
+             border border-(--p-surface-border) text-(--p-text-muted-color)
+             hover:border-(--p-text-muted-color) hover:text-(--p-text-color)"
+    >
+      Mégse
+    </button>
+    <button
+      type="button"
+      (click)="submit()"
+      [disabled]="!formTitle().trim() || isSaving()"
+      class="flex-1 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-opacity
+             bg-(--p-primary-color) text-(--p-primary-contrast-color)
+             hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed
+             inline-flex items-center justify-center gap-2"
+    >
+      @if (isSaving()) {
+        <i class="pi pi-spinner pi-spin text-sm"></i>
+      }
+      {{ mode() === 'edit' ? 'Mentés' : 'Létrehozás' }}
+    </button>
+  </div>
+</p-dialog>

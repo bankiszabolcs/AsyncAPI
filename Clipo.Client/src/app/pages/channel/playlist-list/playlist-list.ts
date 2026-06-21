@@ -1,20 +1,16 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
-import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { InputText } from 'primeng/inputtext';
-import { Select } from 'primeng/select';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PlaylistService } from '../../../core/services/playlist.service';
 import { Playlist } from '../../../core/models/playlist.model';
-import { VISIBILITY_OPTIONS } from '../../../core/models/visibility.model';
+import { PlaylistFormDialog, PlaylistFormData } from '../../../shared/playlist-form-dialog/playlist-form-dialog';
 
 @Component({
   selector: 'app-playlist-list',
-  imports: [FormsModule, Button, Dialog, InputText, Select, Toast],
+  imports: [Dialog, Toast, PlaylistFormDialog],
   providers: [PlaylistService, MessageService],
   templateUrl: './playlist-list.html',
 })
@@ -35,8 +31,6 @@ export class PlaylistList implements OnInit {
   readonly formDesc    = signal('');
   readonly formVis     = signal(3);
   readonly deletingId  = signal<string | null>(null);
-
-  readonly visibilityOptions = VISIBILITY_OPTIONS.map(o => ({ label: o.label, value: o.value }));
 
   readonly isEdit = computed(() => this.editingId() !== null);
 
@@ -67,12 +61,9 @@ export class PlaylistList implements OnInit {
     this.showDeleteDialog.set(true);
   }
 
-  save(): void {
-    const title = this.formTitle().trim();
-    if (!title) return;
-
+  save(data: PlaylistFormData): void {
     this.isSaving.set(true);
-    const req = { title, description: this.formDesc().trim() || null, visibilityId: this.formVis() };
+    const req = { title: data.title, description: data.description, visibilityId: data.visibilityId };
 
     const op = this.isEdit()
       ? this.playlistService.update(this.editingId()!, req)

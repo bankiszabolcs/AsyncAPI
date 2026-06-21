@@ -45,35 +45,34 @@
       @for (comment of comments(); track comment.id) {
         <div>
           <!-- Komment -->
-          <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: comment, isReply: false }"></ng-container>
+          <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: comment, isReply: false, rootId: comment.id }"></ng-container>
 
-          <!-- Válasz form -->
-          @if (replyingToId() === comment.id) {
-            <div class="flex gap-3 ml-12 mt-3">
-              <div class="w-7 h-7 rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0">
-                <i class="pi pi-user text-xs text-(--p-text-muted-color)"></i>
-              </div>
-              <div class="flex-1">
-                <textarea
-                  class="w-full bg-transparent border-b border-(--p-surface-border) focus:border-(--p-primary-color) outline-none resize-none text-sm text-(--p-text-color) pb-1 transition-colors"
-                  rows="1"
-                  placeholder="Írj választ..."
-                  [value]="replyText()"
-                  (input)="onReplyInput($event)"
-                ></textarea>
-                <div class="flex justify-end gap-2 mt-2">
-                  <button (click)="cancelReply()" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Mégse</button>
-                  <button (click)="submitReply(comment.id)" [disabled]="!replyText().trim()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40">Küldés</button>
-                </div>
-              </div>
-            </div>
-          }
-
-          <!-- Válaszok -->
-          @if (comment.replies.length) {
+          <!-- Válaszok + reply form a szál végén -->
+          @if (comment.replies.length || replyingToId() === comment.id) {
             <div class="ml-12 mt-3 space-y-4">
               @for (reply of comment.replies; track reply.id) {
-                <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: reply, isReply: true }"></ng-container>
+                <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: reply, isReply: true, rootId: comment.id }"></ng-container>
+              }
+
+              @if (replyingToId() === comment.id) {
+                <div class="flex gap-3">
+                  <div class="w-7 h-7 rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0">
+                    <i class="pi pi-user text-xs text-(--p-text-muted-color)"></i>
+                  </div>
+                  <div class="flex-1">
+                    <textarea
+                      class="w-full bg-transparent border-b border-(--p-surface-border) focus:border-(--p-primary-color) outline-none resize-none text-sm text-(--p-text-color) pb-1 transition-colors"
+                      rows="1"
+                      placeholder="Írj választ..."
+                      [value]="replyText()"
+                      (input)="onReplyInput($event)"
+                    ></textarea>
+                    <div class="flex justify-end gap-2 mt-2">
+                      <button (click)="cancelReply()" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Mégse</button>
+                      <button (click)="submitReply(comment.id)" [disabled]="!replyText().trim()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40">Küldés</button>
+                    </div>
+                  </div>
+                </div>
               }
             </div>
           }
@@ -84,7 +83,7 @@
 </div>
 
 <!-- Komment sor template -->
-<ng-template #commentRow let-c let-isReply="isReply">
+<ng-template #commentRow let-c let-isReply="isReply" let-rootId="rootId">
   <div [id]="'comment-' + c.id" class="flex gap-3">
     <div
       class="rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0"
@@ -124,8 +123,8 @@
                [class.opacity-0]="deletingId() === c.id"
                [class.-translate-x-3]="deletingId() === c.id"
                [class.pointer-events-none]="deletingId() === c.id">
-            @if (auth.isLoggedIn() && !isReply) {
-              <button (click)="startReply(c.id)" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Válasz</button>
+            @if (auth.isLoggedIn()) {
+              <button (click)="startReply(rootId, isReply ? c.user.name : null)" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Válasz</button>
             }
             @if (isOwn(c)) {
               <button (click)="startEdit(c)" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Szerkesztés</button>

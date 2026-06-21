@@ -1,9 +1,11 @@
 using System.Security.Claims;
+using System.Text.Json;
 using AsyncApi.Data.Repositories;
 using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 namespace AsyncApi.Controllers;
 
@@ -11,8 +13,12 @@ namespace AsyncApi.Controllers;
 [Route("")]
 public sealed class CommentsController(
     CommentRepository commentRepository,
-    NotificationService notificationService) : ControllerBase
+    NotificationService notificationService,
+    CommentSseService commentSse,
+    IConnectionMultiplexer redis) : ControllerBase
 {
+    private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     private Guid? CurrentUserId
     {
         get
@@ -22,17 +28,40 @@ public sealed class CommentsController(
         }
     }
 
-    // GET /api/videos/{videoId}/comments — nyílt végpont
+    // GET /api/videos/{videoId}/comments
     [HttpGet("videos/{videoId:guid}/comments")]
     public async Task<IActionResult> GetComments(Guid videoId)
     {
         var comments = await commentRepository.GetByVideoIdAsync(videoId);
-
-        var result = comments.Select(c => MapComment(c, includeReplies: true));
-        return Ok(result);
+        return Ok(comments.Select(c => MapComment(c, includeReplies: true)));
     }
 
-    // POST /api/videos/{videoId}/comments — csak bejelentkezett user
+    // GET /api/videos/{videoId}/comments/stream — SSE
+    [HttpGet("videos/{videoId:guid}/comments/stream")]
+    public async Task StreamComments(Guid videoId, CancellationToken ct)
+    {
+        Response.Headers.Append("Content-Type", "text/event-stream");
+        Response.Headers.Append("Cache-Control", "no-cache");
+        Response.Headers.Append("X-Accel-Buffering", "no");
+        Response.Headers.Append("Connection", "keep-alive");
+
+        var (connId, reader) = commentSse.Subscribe(videoId);
+        try
+        {
+            await foreach (var json in reader.ReadAllAsync(ct))
+            {
+                await Response.WriteAsync($"data: {json}\n\n", ct);
+                await Response.Body.FlushAsync(ct);
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            commentSse.Unsubscribe(videoId, connId);
+        }
+    }
+
+    // POST /api/videos/{videoId}/comments
     [HttpPost("videos/{videoId:guid}/comments")]
     [Authorize]
     public async Task<IActionResult> CreateComment(Guid videoId, [FromBody] CreateCommentRequest request)
@@ -52,10 +81,14 @@ public sealed class CommentsController(
         else
             await notificationService.NotifyNewCommentAsync(videoId, comment.Id, userId, commenterName, content);
 
+        // Publish to Redis → broadcast to SSE subscribers
+        var json = JsonSerializer.Serialize(MapComment(comment, includeReplies: false), _jsonOptions);
+        await redis.GetSubscriber().PublishAsync(RedisChannel.Literal($"comments:{videoId}"), json);
+
         return Ok(MapComment(comment, includeReplies: false));
     }
 
-    // PUT /api/comments/{id} — csak a saját komment szerkeszthető
+    // PUT /api/comments/{id}
     [HttpPut("comments/{id:guid}")]
     [Authorize]
     public async Task<IActionResult> UpdateComment(Guid id, [FromBody] UpdateCommentRequest request)
@@ -72,7 +105,7 @@ public sealed class CommentsController(
         return Ok(MapComment(comment, includeReplies: false));
     }
 
-    // DELETE /api/comments/{id} — csak a saját komment törölhető
+    // DELETE /api/comments/{id}
     [HttpDelete("comments/{id:guid}")]
     [Authorize]
     public async Task<IActionResult> DeleteComment(Guid id)

@@ -152,6 +152,7 @@ try
 
     builder.Services.AddSingleton<QueueService>();
     builder.Services.AddSingleton<StatusService>();
+    builder.Services.AddSingleton<CommentSseService>();
 
     // --- Tárhely (MinIO) ---
     builder.Services.AddSingleton<StorageService>();
@@ -193,6 +194,18 @@ try
     app.UseAuthorization();
     app.UseRateLimiter();
     app.MapControllers();
+
+    // Redis → SSE bridge: minden API instance figyeli a comments:* channel-t
+    var commentSse = app.Services.GetRequiredService<CommentSseService>();
+    var redisSubscriber = app.Services.GetRequiredService<IConnectionMultiplexer>().GetSubscriber();
+    await redisSubscriber.SubscribeAsync(RedisChannel.Pattern("comments:*"), async (channel, msg) =>
+    {
+        if (msg.IsNull) return;
+        var raw = (string)channel!;
+        var videoIdStr = raw["comments:".Length..];
+        if (Guid.TryParse(videoIdStr, out var videoId))
+            await commentSse.BroadcastAsync(videoId, msg!);
+    });
 
     app.Run();
 }

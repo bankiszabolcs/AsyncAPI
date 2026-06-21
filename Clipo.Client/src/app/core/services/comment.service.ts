@@ -27,4 +27,8 @@ export class CommentService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/comments/${id}`);
   }
+
+  openStream(videoId: string): EventSource {
+    return new EventSource(`${this.base}/videos/${videoId}/comments/stream`);
+  }
 }

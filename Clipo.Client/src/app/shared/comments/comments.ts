@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 import { CommentService } from '../../core/services/comment.service';
@@ -10,7 +10,7 @@ import { TimeAgoPipe } from '../pipes/time-ago.pipe';
   imports: [TimeAgoPipe, NgTemplateOutlet],
   templateUrl: './comments.html',
 })
-export class Comments implements OnInit {
+export class Comments implements OnInit, OnDestroy {
   readonly videoId     = input.required<string>();
   readonly highlightId = input<string | null>(null);
 
@@ -19,6 +19,8 @@ export class Comments implements OnInit {
 
   readonly comments = signal<Comment[]>([]);
   readonly loading  = signal(true);
+
+  private stream?: EventSource;
 
   readonly newText     = signal('');
   readonly replyingToId = signal<string | null>(null);
@@ -43,6 +45,30 @@ export class Comments implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.startStream();
+  }
+
+  ngOnDestroy(): void {
+    this.stream?.close();
+  }
+
+  private startStream(): void {
+    this.stream = this.commentService.openStream(this.videoId());
+    this.stream.onmessage = (e: MessageEvent) => {
+      const incoming: Comment = JSON.parse(e.data);
+      this.comments.update(list => {
+        if (list.some(c => c.id === incoming.id || c.replies?.some(r => r.id === incoming.id)))
+          return list;
+        if (incoming.parentCommentId) {
+          return list.map(c =>
+            c.id === incoming.parentCommentId
+              ? { ...c, replies: [...(c.replies ?? []), incoming] }
+              : c
+          );
+        }
+        return [...list, incoming];
+      });
+    };
   }
 
   private load(): void {
@@ -62,16 +88,16 @@ export class Comments implements OnInit {
     });
   }
 
-  startReply(id: string): void {
-    this.replyingToId.set(id);
-    this.replyText.set('');
+  startReply(rootId: string, mention?: string | null): void {
+    this.replyingToId.set(rootId);
+    this.replyText.set(mention ? `@${mention} ` : '');
     this.editingId.set(null);
   }
 
-  submitReply(parentId: string): void {
+  submitReply(rootId: string): void {
     const content = this.replyText().trim();
     if (!content) return;
-    this.commentService.create(this.videoId(), content, parentId).subscribe(() => {
+    this.commentService.create(this.videoId(), content, rootId).subscribe(() => {
       this.replyingToId.set(null);
       this.load();
     });

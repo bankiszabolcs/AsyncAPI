@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { VideoService } from './core/services/video.service';
+import { PlaylistService } from './core/services/playlist.service';
 import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
@@ -63,5 +64,11 @@ export const routes: Routes = [
     path: 'settings/profile',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/settings/profile/profile').then(m => m.Profile),
+  },
+  {
+    path: 'playlists/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/playlists/playlist-detail').then(m => m.PlaylistDetail),
+    providers: [PlaylistService, VideoService],
   },
 ];

@@ -61,6 +61,7 @@ try
     builder.Services.AddScoped<ImageRepository>();
     builder.Services.AddScoped<UserRepository>();
     builder.Services.AddScoped<CommentRepository>();
+    builder.Services.AddScoped<PlaylistRepository>();
 
     // --- Keycloak JWT autentikáció ---
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -123,6 +124,21 @@ try
             return RateLimitPartition.GetFixedWindowLimiter($"search:{ip}", _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 60,
+                Window      = TimeSpan.FromMinutes(1),
+                QueueLimit  = 0
+            });
+        });
+
+        // Playlist írás: 30 mutáció/perc userenként — tömeges lista/videó spam ellen
+        rl.AddPolicy("playlist", ctx =>
+        {
+            var key = ctx.User.FindFirstValue("sub")
+                      ?? ctx.Request.Headers["X-Real-IP"].FirstOrDefault()
+                      ?? ctx.Connection.RemoteIpAddress?.ToString()
+                      ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter($"playlist:{key}", _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 30,
                 Window      = TimeSpan.FromMinutes(1),
                 QueueLimit  = 0
             });

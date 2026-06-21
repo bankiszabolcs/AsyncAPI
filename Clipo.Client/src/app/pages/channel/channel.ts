@@ -5,12 +5,13 @@ import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { VideoService } from '../../core/services/video.service';
 import { VideoCard } from '../../shared/video-card/video-card';
+import { PlaylistList } from './playlist-list/playlist-list';
 
 type Tab = 'videos' | 'playlists' | 'about';
 
 @Component({
   selector: 'app-channel',
-  imports: [RouterLink, VideoCard],
+  imports: [RouterLink, VideoCard, PlaylistList],
   templateUrl: './channel.html',
 })
 export class Channel {

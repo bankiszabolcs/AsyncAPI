@@ -11,21 +11,23 @@ import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../core/auth/auth.service';
 import { SearchBar } from '../../shared/search-bar/search-bar';
 import { VideoService } from '../../core/services/video.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { AppNotification } from '../../core/models/notification.model';
+import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, NgTemplateOutlet, Button, Avatar, Menu, Drawer, Popover, Ripple, SearchBar],
+  imports: [RouterLink, NgTemplateOutlet, Button, Avatar, Menu, Drawer, Popover, Ripple, SearchBar, TimeAgoPipe],
   providers: [VideoService],
   templateUrl: './navbar.html',
 })
 export class Navbar {
   readonly sidebarToggle = output<void>();
-  readonly auth = inject(AuthService);
+  readonly auth     = inject(AuthService);
+  readonly notifSvc = inject(NotificationService);
 
-  // Asztali nézet alatt (~1280px) a profil/értesítés/keresés drawerként nyílik,
-  // fölötte legördülő menüként / popoverként / beágyazott keresőmezőként.
-  readonly isMobile = signal(this.checkMobile());
-  readonly drawerVisible = signal(false);
+  readonly isMobile          = signal(this.checkMobile());
+  readonly drawerVisible     = signal(false);
   readonly searchDrawerVisible = signal(false);
   readonly notifDrawerVisible = signal(false);
 
@@ -41,7 +43,6 @@ export class Navbar {
   onResize(): void {
     const mobile = this.checkMobile();
     this.isMobile.set(mobile);
-    // Asztali nézetre váltva ne maradjanak nyitva a mobil drawerek.
     if (!mobile) {
       this.drawerVisible.set(false);
       this.searchDrawerVisible.set(false);
@@ -57,8 +58,8 @@ export class Navbar {
     }
   }
 
-  // Értesítések: mobilon jobbról beúszó drawer, asztalin popover.
   onBellClick(popover: Popover, event: Event): void {
+    this.notifSvc.loadNotifications();
     if (this.isMobile()) {
       this.notifDrawerVisible.set(true);
     } else {
@@ -66,14 +67,29 @@ export class Navbar {
     }
   }
 
+  onNotifClick(n: AppNotification, popover?: Popover): void {
+    popover?.hide();
+    this.notifDrawerVisible.set(false);
+    this.notifSvc.onNotificationRead(n.id);
+    if (n.link) this.notifSvc.navigateTo(n.link);
+  }
+
   onDrawerItemClick(item: MenuItem): void {
     item.command?.({ originalEvent: undefined as never, item });
     this.drawerVisible.set(false);
   }
 
-  private logout(): void {
-    this.auth.logout();
+  notifIcon(type: string): string {
+    switch (type) {
+      case 'new_video':        return 'pi-video';
+      case 'new_comment':      return 'pi-comment';
+      case 'comment_reply':    return 'pi-reply';
+      case 'video_processed':  return 'pi-check-circle';
+      default:                 return 'pi-bell';
+    }
   }
+
+  private logout(): void { this.auth.logout(); }
 
   private checkMobile(): boolean {
     return typeof window !== 'undefined' && window.innerWidth < 1280;

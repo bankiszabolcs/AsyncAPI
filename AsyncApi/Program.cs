@@ -64,6 +64,8 @@ try
     builder.Services.AddScoped<PlaylistRepository>();
     builder.Services.AddScoped<SavedVideoRepository>();
     builder.Services.AddScoped<SubscriptionRepository>();
+    builder.Services.AddScoped<NotificationRepository>();
+    builder.Services.AddScoped<NotificationService>();
 
     // --- Keycloak JWT autentikáció ---
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

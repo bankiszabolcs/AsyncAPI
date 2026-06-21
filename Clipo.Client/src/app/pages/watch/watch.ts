@@ -41,6 +41,10 @@ export class Watch {
 
   readonly id = this.route.snapshot.paramMap.get('id')!;
 
+  readonly highlightCommentId = toSignal(
+    this.route.queryParamMap.pipe(map(p => p.get('highlight')))
+  );
+
   readonly relatedVideos = toSignal(this.videoService.getRelated(this.id));;
 
   // Az utolsó sikeres válasz — átmeneti hálózati hibánál ezt tartjuk meg

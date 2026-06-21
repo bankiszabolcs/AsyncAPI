@@ -20,6 +20,7 @@ public sealed class VideosController(
     QueueService queueService,
     StatusService statusService,
     VideoRepository videoRepository,
+    NotificationService notificationService,
     IConnectionMultiplexer redis)
     : ControllerBase
 {
@@ -218,10 +219,13 @@ public sealed class VideosController(
             ? null
             : request.Description.Trim();
 
-        var video = await videoRepository.UpdateDetailsAsync(
+        var (video, justPublished) = await videoRepository.UpdateDetailsAsync(
             id, userId, title, description, request.VisibilityId, request.CategoryId);
 
         if (video is null) return NotFound();
+
+        if (justPublished)
+            _ = notificationService.NotifyNewVideoAsync(id);
 
         if (request.Tags is not null)
             await videoRepository.UpdateTagsAsync(id, userId, request.Tags);

@@ -29,7 +29,6 @@
 
   <!-- Jobb: feltöltés + értesítő + avatar -->
   <div class="flex items-center gap-1 shrink-0">
-    <!-- Keresés ikon: csak mobil nézetben -->
     @if (isMobile()) {
       <p-button
         icon="pi pi-search"
@@ -42,7 +41,6 @@
     }
 
     @if (auth.isLoggedIn()) {
-      <!-- Feltöltés: asztalin feliratos gomb, mobilon csak piros ikon -->
       @if (isMobile()) {
         <button
           type="button"
@@ -64,14 +62,24 @@
         />
       }
 
-      <p-button
-        icon="pi pi-bell"
-        [text]="true"
-        [rounded]="true"
-        severity="secondary"
-        aria-label="Értesítések"
-        (click)="onBellClick(notifPopover, $event)"
-      />
+      <!-- Harang + badge -->
+      <div class="relative">
+        <p-button
+          icon="pi pi-bell"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          aria-label="Értesítések"
+          (click)="onBellClick(notifPopover, $event)"
+        />
+        @if (notifSvc.unreadCount() > 0) {
+          <span class="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1
+            bg-red-500 text-white text-[10px] font-bold rounded-full
+            flex items-center justify-center pointer-events-none leading-none">
+            {{ notifSvc.unreadCount() > 99 ? '99+' : notifSvc.unreadCount() }}
+          </span>
+        }
+      </div>
 
       <p-avatar
         [image]="auth.user()?.picture ?? undefined"
@@ -82,7 +90,6 @@
         aria-label="Profil"
       />
     } @else {
-      <!-- Bejelentkezés: mobilon csak ikon, asztalin feliratos -->
       @if (isMobile()) {
         <p-button
           icon="pi pi-sign-in"
@@ -103,7 +110,6 @@
       }
     }
 
-    <!-- Asztali nézet: legördülő menü -->
     <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" styleClass="user-menu !w-64 !mt-2">
       <ng-template #start>
         <div class="flex items-center gap-3 px-3 py-3">
@@ -133,20 +139,26 @@
       </ng-template>
     </p-menu>
 
-    <!-- Értesítések asztali nézetben: lebegő panel (egyelőre dummy skeleton) -->
+    <!-- Asztali értesítés popover -->
     <p-popover #notifPopover styleClass="!mt-2">
-      <div class="w-80">
-        <div class="flex items-center px-1 pb-2 mb-1 border-b border-(--p-surface-border)">
+      <div class="w-96">
+        <div class="flex items-center justify-between px-1 pb-3 mb-1 border-b border-(--p-surface-border)">
           <span class="text-sm font-semibold text-(--p-text-color)">Értesítések</span>
+          @if (notifSvc.unreadCount() > 0) {
+            <button
+              (click)="notifSvc.markAllRead()"
+              class="text-xs text-(--p-primary-color) cursor-pointer bg-transparent border-none hover:underline"
+            >Összes olvasott</button>
+          }
         </div>
-        <ng-container [ngTemplateOutlet]="notifRows" />
+        <ng-container [ngTemplateOutlet]="notifList" [ngTemplateOutletContext]="{ popover: notifPopover }" />
       </div>
     </p-popover>
   </div>
 
 </header>
 
-<!-- Tablet / mobil nézet: jobbról becsúszó panel (YouTube-stílus) -->
+<!-- Profil drawer (mobil) -->
 <p-drawer
   [(visible)]="drawerVisible"
   position="right"
@@ -199,7 +211,7 @@
   </nav>
 </p-drawer>
 
-<!-- Mobil: jobbról beúszó kereső -->
+<!-- Kereső drawer (mobil) -->
 <p-drawer
   [(visible)]="searchDrawerVisible"
   position="right"
@@ -208,34 +220,83 @@
   <ng-template #header>
     <span class="font-semibold text-(--p-text-color)">Keresés</span>
   </ng-template>
-
   <div class="px-2 pt-1">
     <app-search-bar (searched)="searchDrawerVisible.set(false)" />
   </div>
 </p-drawer>
 
-<!-- Mobil: jobbról beúszó értesítések (egyelőre dummy skeleton) -->
+<!-- Értesítés drawer (mobil) -->
 <p-drawer
   [(visible)]="notifDrawerVisible"
   position="right"
   styleClass="!w-80 !max-w-[85vw]"
 >
   <ng-template #header>
-    <span class="font-semibold text-(--p-text-color)">Értesítések</span>
+    <div class="flex items-center justify-between w-full pr-2">
+      <span class="font-semibold text-(--p-text-color)">Értesítések</span>
+      @if (notifSvc.unreadCount() > 0) {
+        <button
+          (click)="notifSvc.markAllRead()"
+          class="text-xs text-(--p-primary-color) cursor-pointer bg-transparent border-none hover:underline"
+        >Összes olvasott</button>
+      }
+    </div>
   </ng-template>
-
-  <ng-container [ngTemplateOutlet]="notifRows" />
+  <ng-container [ngTemplateOutlet]="notifList" />
 </p-drawer>
 
-<!-- Közös értesítés-skeleton (popover + drawer) -->
-<ng-template #notifRows>
-  @for (_ of [1,2,3,4,5]; track $index) {
-    <div class="flex gap-3 p-2 rounded-lg animate-pulse">
-      <div class="w-10 h-10 rounded-full bg-(--p-surface-card) shrink-0"></div>
-      <div class="flex-1 space-y-2 pt-1">
-        <div class="h-3 bg-(--p-surface-card) rounded w-full"></div>
-        <div class="h-3 bg-(--p-surface-card) rounded w-2/3"></div>
+<!-- Közös értesítés lista template -->
+<ng-template #notifList let-popover="popover">
+  @if (notifSvc.isLoading()) {
+    @for (_ of [1,2,3,4]; track $index) {
+      <div class="flex gap-3 p-2 rounded-lg animate-pulse">
+        <div class="w-9 h-9 rounded-full bg-(--p-surface-card) shrink-0"></div>
+        <div class="flex-1 space-y-2 pt-1">
+          <div class="h-3 bg-(--p-surface-card) rounded w-full"></div>
+          <div class="h-3 bg-(--p-surface-card) rounded w-2/3"></div>
+        </div>
       </div>
+    }
+  } @else if (!notifSvc.notifications()?.length) {
+    <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
+      <i class="pi pi-bell text-3xl text-(--p-text-muted-color)"></i>
+      <p class="text-sm text-(--p-text-muted-color)">Nincsenek értesítések</p>
+    </div>
+  } @else {
+    <div class="max-h-[420px] overflow-y-auto -mx-2 px-2">
+      @for (n of notifSvc.notifications()!; track n.id) {
+        <button
+          (click)="onNotifClick(n, popover)"
+          class="w-full flex items-start gap-3 px-2 py-2.5 rounded-lg cursor-pointer text-left
+            bg-transparent border-none transition-colors hover:bg-(--p-surface-hover)"
+          [class.opacity-60]="n.isRead"
+        >
+          <!-- Ikon -->
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+               [class.bg-(--p-primary-color)/15]="!n.isRead"
+               [class.bg-(--p-surface-card)]="n.isRead">
+            <i class="pi {{ notifIcon(n.type) }} text-sm"
+               [class.text-(--p-primary-color)]="!n.isRead"
+               [class.text-(--p-text-muted-color)]="n.isRead"></i>
+          </div>
+
+          <!-- Szöveg -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-(--p-text-color) leading-snug"
+               [class.font-semibold]="!n.isRead">{{ n.title }}</p>
+            @if (n.body) {
+              <p class="text-xs text-(--p-text-muted-color) mt-0.5 leading-snug line-clamp-2">{{ n.body }}</p>
+            }
+            <p class="text-xs text-(--p-text-muted-color) mt-1">{{ n.createDate | timeAgo }}</p>
+          </div>
+
+          <!-- Olvasatlan dot -->
+          @if (!n.isRead) {
+            <div class="w-2 h-2 rounded-full bg-(--p-primary-color) shrink-0 mt-2"></div>
+          }
+        </button>
+      }
     </div>
   }
 </ng-template>
+

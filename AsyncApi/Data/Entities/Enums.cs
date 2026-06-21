@@ -22,3 +22,11 @@ public enum ReactionType
     Like    = 1,
     Dislike = 2
 }
+
+public enum NotificationKind
+{
+    NewVideo       = 1,
+    NewComment     = 2,
+    CommentReply   = 3,
+    VideoProcessed = 4
+}

@@ -1,3 +1,28 @@
+<p-toast>
+  <ng-template #headless let-msg let-closeFn="closeFn">
+    <div
+      class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg
+             bg-(--p-surface-card) border border-(--p-surface-border) min-w-72 max-w-sm"
+      [class.cursor-pointer]="msg.data?.link"
+      (click)="onToastClick(msg, closeFn, $event)"
+    >
+      <i class="pi pi-bell text-base text-(--p-primary-color) mt-0.5 shrink-0"></i>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-(--p-text-color) leading-snug">{{ msg.summary }}</p>
+        @if (msg.detail) {
+          <p class="text-xs text-(--p-text-muted-color) mt-0.5 line-clamp-2">{{ msg.detail }}</p>
+        }
+      </div>
+      <button
+        (click)="$event.stopPropagation(); closeFn($event)"
+        class="shrink-0 p-1 rounded hover:bg-(--p-surface-hover) bg-transparent border-none cursor-pointer"
+      >
+        <i class="pi pi-times text-xs text-(--p-text-muted-color)"></i>
+      </button>
+    </div>
+  </ng-template>
+</p-toast>
+
 @if (loading.isLoading()) {
   <p-progressbar mode="indeterminate" class="loading-bar" />
 }

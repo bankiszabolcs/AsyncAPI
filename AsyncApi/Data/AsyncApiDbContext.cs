@@ -27,6 +27,10 @@ public partial class AsyncApiDbContext : DbContext
 
     public virtual DbSet<Comment> Comments { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
+    public virtual DbSet<NotificationType> NotificationTypes { get; set; }
+
     public virtual DbSet<Image> Images { get; set; }
 
     public virtual DbSet<Playlist> Playlists { get; set; }
@@ -267,6 +271,74 @@ public partial class AsyncApiDbContext : DbContext
             entity.Property(e => e.Version)
                 .HasDefaultValue(1)
                 .HasColumnName("version");
+        });
+
+        modelBuilder.Entity<NotificationType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("notification_types_pkey");
+
+            entity.ToTable("notification_types");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Title)
+                .HasMaxLength(100)
+                .HasColumnName("title");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Active)
+                .HasDefaultValue(true)
+                .HasColumnName("active");
+            entity.Property(e => e.Version)
+                .HasDefaultValue(1)
+                .HasColumnName("version");
+            entity.Property(e => e.CreateDate)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("create_date");
+            entity.Property(e => e.CreateUserId).HasColumnName("create_user_id");
+            entity.Property(e => e.ModifyDate).HasColumnName("modify_date");
+            entity.Property(e => e.ModifyUserId).HasColumnName("modify_user_id");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("notifications_pkey");
+
+            entity.ToTable("notifications");
+
+            entity.HasIndex(e => e.UserId, "idx_notifications_user_id");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.TypeId).HasColumnName("type_id");
+            entity.Property(e => e.Title).HasColumnName("title");
+            entity.Property(e => e.Body).HasColumnName("body");
+            entity.Property(e => e.Link).HasColumnName("link");
+            entity.Property(e => e.IsRead)
+                .HasDefaultValue(false)
+                .HasColumnName("is_read");
+            entity.Property(e => e.Active)
+                .HasDefaultValue(true)
+                .HasColumnName("active");
+            entity.Property(e => e.Version)
+                .HasDefaultValue(1)
+                .HasColumnName("version");
+            entity.Property(e => e.CreateDate)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("create_date");
+            entity.Property(e => e.CreateUserId).HasColumnName("create_user_id");
+            entity.Property(e => e.ModifyDate).HasColumnName("modify_date");
+            entity.Property(e => e.ModifyUserId).HasColumnName("modify_user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("notifications_user_id_fkey");
+
+            entity.HasOne(d => d.NotificationType).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.TypeId)
+                .HasConstraintName("notifications_type_id_fkey");
         });
 
         modelBuilder.Entity<Comment>(entity =>

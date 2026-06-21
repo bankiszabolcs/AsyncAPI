@@ -1,5 +1,6 @@
 using AsyncApi.Enums;
 using AsyncApi.Data.Repositories;
+using AsyncApi.Services;
 using StackExchange.Redis;
 
 namespace AsyncApi.Services;
@@ -35,6 +36,9 @@ public sealed class StatusService(IConnectionMultiplexer redis, IServiceScopeFac
         await using var scope = scopeFactory.CreateAsyncScope();
         var repo = scope.ServiceProvider.GetRequiredService<VideoRepository>();
         await repo.UpdateCompletedAsync(id, durationSeconds);
+
+        var notifSvc = scope.ServiceProvider.GetRequiredService<NotificationService>();
+        await notifSvc.NotifyVideoProcessedAsync(id);
     }
 
     public async Task SetImageStatusAsync(Guid id, ProcessingStatus status, int? width = null, int? height = null)

@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, input, OnInit, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 import { CommentService } from '../../core/services/comment.service';
@@ -11,20 +11,35 @@ import { TimeAgoPipe } from '../pipes/time-ago.pipe';
   templateUrl: './comments.html',
 })
 export class Comments implements OnInit {
-  readonly videoId = input.required<string>();
+  readonly videoId     = input.required<string>();
+  readonly highlightId = input<string | null>(null);
 
   readonly auth = inject(AuthService);
   private readonly commentService = inject(CommentService);
 
   readonly comments = signal<Comment[]>([]);
-  readonly loading = signal(true);
+  readonly loading  = signal(true);
 
-  readonly newText = signal('');
+  readonly newText     = signal('');
   readonly replyingToId = signal<string | null>(null);
-  readonly replyText = signal('');
-  readonly editingId = signal<string | null>(null);
-  readonly editText = signal('');
-  readonly deletingId = signal<string | null>(null);
+  readonly replyText   = signal('');
+  readonly editingId   = signal<string | null>(null);
+  readonly editText    = signal('');
+  readonly deletingId  = signal<string | null>(null);
+
+  constructor() {
+    effect(() => {
+      const id = this.highlightId();
+      if (!id || this.loading()) return;
+      setTimeout(() => {
+        const el = document.getElementById(`comment-${id}`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('comment-flash');
+        setTimeout(() => el.classList.remove('comment-flash'), 2200);
+      }, 350);
+    });
+  }
 
   ngOnInit(): void {
     this.load();

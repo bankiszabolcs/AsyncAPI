@@ -154,7 +154,7 @@
     }
 
     @if (!isNotFound()) {
-      <app-comments [videoId]="id" />
+      <app-comments [videoId]="id" [highlightId]="highlightCommentId() ?? null" />
     }
   </div>
 

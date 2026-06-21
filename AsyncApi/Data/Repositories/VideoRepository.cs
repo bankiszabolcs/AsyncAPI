@@ -59,27 +59,31 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
     }
 
     // Cím / leírás / láthatóság frissítése — kizárólag a tulajdonos módosíthat.
-    // null visszatérés: a videó nem létezik, vagy nem a megadott useré.
-    // ModifyDate-et DB trigger állítja, itt nem írjuk.
-    public async Task<Video?> UpdateDetailsAsync(
+    // null Video: a videó nem létezik, vagy nem a megadott useré.
+    // JustPublished = true: most jelent meg először nyilvánosan (PublishedAt most lett beállítva).
+    public async Task<(Video? Video, bool JustPublished)> UpdateDetailsAsync(
         Guid id, Guid userId, string title, string? description, int visibilityId, Guid? categoryId)
     {
         var video = await db.Videos
             .Include(v => v.Status)
             .FirstOrDefaultAsync(v => v.Id == id && v.UserId == userId && v.Active);
-        if (video is null) return null;
+        if (video is null) return (null, false);
+
+        var wasPublished   = video.PublishedAt.HasValue;
 
         video.Title        = title;
         video.Description  = description;
         video.VisibilityId = visibilityId;
         video.CategoryId   = categoryId;
-        video.PublishedAt = video.PublishedAt is null && visibilityId == (int)Visibility.Public
+        video.PublishedAt  = !wasPublished && visibilityId == (int)Visibility.Public
             ? DateTime.UtcNow
             : video.PublishedAt;
         video.ModifyUserId = userId;
 
         await db.SaveChangesAsync();
-        return video;
+
+        var justPublished = !wasPublished && video.PublishedAt.HasValue;
+        return (video, justPublished);
     }
 
     public async Task<Video?> GetByIdAsync(Guid id)

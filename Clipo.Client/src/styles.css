@@ -94,3 +94,17 @@
 .flat-readonly.p-select .p-select-dropdown {
   display: none;
 }
+
+/* Komment kiemelés: notification deep-link megnyitásakor villan egyet */
+@keyframes comment-flash {
+  0%   { background-color: transparent; }
+  20%  { background-color: color-mix(in srgb, var(--p-primary-color) 20%, transparent); }
+  80%  { background-color: color-mix(in srgb, var(--p-primary-color) 12%, transparent); }
+  100% { background-color: transparent; }
+}
+.comment-flash {
+  animation: comment-flash 2.2s ease-out;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  margin: -0.5rem -0.75rem;
+}

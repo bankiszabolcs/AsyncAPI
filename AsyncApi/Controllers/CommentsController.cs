@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AsyncApi.Data.Repositories;
 using AsyncApi.Models;
+using AsyncApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +10,8 @@ namespace AsyncApi.Controllers;
 [ApiController]
 [Route("")]
 public sealed class CommentsController(
-    CommentRepository commentRepository) : ControllerBase
+    CommentRepository commentRepository,
+    NotificationService notificationService) : ControllerBase
 {
     private Guid? CurrentUserId
     {
@@ -42,6 +44,14 @@ public sealed class CommentsController(
             return BadRequest("Comment content is required.");
 
         var comment = await commentRepository.CreateAsync(videoId, userId, content, request.ParentCommentId);
+
+        var commenterName = comment.User.DisplayName ?? comment.User.Username;
+        if (request.ParentCommentId.HasValue)
+            await notificationService.NotifyCommentReplyAsync(
+                request.ParentCommentId.Value, comment.Id, userId, commenterName, content, videoId);
+        else
+            await notificationService.NotifyNewCommentAsync(videoId, comment.Id, userId, commenterName, content);
+
         return Ok(MapComment(comment, includeReplies: false));
     }
 

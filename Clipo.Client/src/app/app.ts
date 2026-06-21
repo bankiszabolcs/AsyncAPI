@@ -1,18 +1,31 @@
 import { Component, signal, HostListener, inject } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { Drawer } from 'primeng/drawer';
+import { Toast } from 'primeng/toast';
+import { Message } from 'primeng/api';
 import { Navbar } from './layout/navbar/navbar';
 import { Sidebar } from './layout/sidebar/sidebar';
 import { LoadingService } from './core/services/loading.service';
 import { ProgressBar } from 'primeng/progressbar';
+import { NotificationService } from './core/services/notification.service';
+import { AppNotification } from './core/models/notification.model';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, Drawer, Navbar, Sidebar, ProgressBar],
+  imports: [RouterOutlet, RouterLink, Drawer, Toast, Navbar, Sidebar, ProgressBar],
   templateUrl: './app.html',
 })
 export class App {
-  readonly loading = inject(LoadingService);
+  readonly loading   = inject(LoadingService);
+  private readonly notifSvc = inject(NotificationService);
+
+  onToastClick(msg: Message, closeFn: (e: Event) => void, event: Event): void {
+    const n = msg.data as AppNotification | undefined;
+    if (!n?.link) return;
+    closeFn(event);
+    this.notifSvc.onNotificationRead(n.id);
+    this.notifSvc.navigateTo(n.link);
+  }
   // Mobil/tablet nézet (~1280px alatt): nincs beágyazott menüsor, csak a
   // hamburgerrel előhúzható drawer. Asztali nézetben a menü helyben marad,
   // a hamburger csak összecsukja/kinyitja.

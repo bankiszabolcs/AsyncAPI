@@ -85,7 +85,7 @@
 
 <!-- Komment sor template -->
 <ng-template #commentRow let-c let-isReply="isReply">
-  <div class="flex gap-3">
+  <div [id]="'comment-' + c.id" class="flex gap-3">
     <div
       class="rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0"
       [class.w-9]="!isReply" [class.h-9]="!isReply"

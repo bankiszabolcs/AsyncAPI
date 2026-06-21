@@ -748,6 +748,9 @@ public partial class AsyncApiDbContext : DbContext
             entity.Property(e => e.CreateUserId).HasColumnName("create_user_id");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.DislikeCount).HasColumnName("dislike_count");
+            entity.Property(e => e.FileSizeBytes)
+                .HasDefaultValue(0L)
+                .HasColumnName("file_size_bytes");
             entity.Property(e => e.DurationSeconds).HasColumnName("duration_seconds");
             entity.Property(e => e.LikeCount).HasColumnName("like_count");
             entity.Property(e => e.ModifyDate).HasColumnName("modify_date");

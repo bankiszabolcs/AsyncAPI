@@ -12,7 +12,7 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
     private readonly Guid _technicalUserId =
         Guid.Parse(configuration["TechnicalUser:Id"]
             ?? throw new InvalidOperationException("TechnicalUser:Id is not configured."));
-    public async Task<Video> CreateAsync(Guid id, string originalFileName, Guid userId)
+    public async Task<Video> CreateAsync(Guid id, string originalFileName, Guid userId, long fileSizeBytes)
     {
         var video = new Video
         {
@@ -20,6 +20,7 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
             UserId           = userId,
             Title            = originalFileName,
             OriginalFileName = originalFileName,
+            FileSizeBytes    = fileSizeBytes,
             CreateUserId     = userId,
             CreateDate       = DateTime.UtcNow,
             ModifyUserId     = userId,
@@ -34,6 +35,11 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
 
         return video;
     }
+
+    public async Task<long> GetStorageUsedBytesAsync(Guid userId) =>
+        await db.Videos
+            .Where(v => v.UserId == userId && v.Active)
+            .SumAsync(v => v.FileSizeBytes);
 
     public async Task UpdateStatusAsync(Guid id, ProcessingStatus status)
     {

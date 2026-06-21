@@ -10,6 +10,25 @@
     <h1 class="text-xl font-semibold text-(--p-text-color)">Videó feltöltése</h1>
   </div>
 
+  <!-- Tárhely állapot -->
+  @if (storageInfo(); as info) {
+    <div class="mb-6 p-4 rounded-xl border border-(--p-surface-border) bg-(--p-surface-card)">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm text-(--p-text-muted-color)">Tárhely</span>
+        <span class="text-sm font-medium text-(--p-text-color)">
+          {{ formatSize(info.usedBytes) }} / {{ formatSize(info.totalBytes) }}
+        </span>
+      </div>
+      <div class="relative h-2 rounded-full bg-(--p-surface-section) overflow-hidden">
+        <div class="absolute inset-y-0 left-0 rounded-full transition-all duration-300"
+             [style.width.%]="info.usedPercent"
+             [class]="info.usedPercent >= 90 ? 'bg-red-500' : info.usedPercent >= 70 ? 'bg-yellow-500' : 'bg-(--p-primary-color)'">
+        </div>
+      </div>
+      <p class="text-xs text-(--p-text-muted-color) mt-1.5">{{ formatSize(info.freeBytes) }} szabad</p>
+    </div>
+  }
+
   <!-- Sikeres feltöltés -->
   @if (state() === 'success') {
     <div class="rounded-2xl border border-(--p-surface-border) bg-(--p-surface-card) p-10
@@ -68,12 +87,12 @@
           <button
             type="button"
             class="w-11 h-11 rounded-full border transition-colors flex items-center justify-center cursor-pointer"
-            [class]="!files?.length || state() === 'uploading'
+            [class]="!files?.length || state() === 'uploading' || state() === 'error'
               ? 'border-(--p-surface-border) bg-(--p-surface-section) text-(--p-text-muted-color)/30 cursor-not-allowed'
               : 'border-green-500/40 bg-green-500/10 text-green-400 hover:bg-green-500/20'"
             title="Feltöltés"
-            [disabled]="!files?.length || state() === 'uploading'"
-            (click)="files?.length && state() !== 'uploading' && uploadCallback()"
+            [disabled]="!files?.length || state() === 'uploading' || state() === 'error'"
+            (click)="files?.length && state() !== 'uploading' && state() !== 'error' && uploadCallback()"
           >
             @if (state() === 'uploading') {
               <i class="pi pi-spin pi-spinner text-base"></i>

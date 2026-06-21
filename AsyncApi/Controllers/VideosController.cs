@@ -24,6 +24,7 @@ public sealed class VideosController(
     : ControllerBase
 {
     private readonly string _uploadDirectory = configuration["UploadDirectory"] ?? "uploads";
+    private readonly long _userQuotaBytes = long.Parse(configuration["Storage:UserQuotaBytes"] ?? "2147483648");
 
     // A bejelentkezett user Keycloak sub-ja (== DB user Id). null ha nincs/érvénytelen.
     private Guid? CurrentUserId
@@ -50,6 +51,11 @@ public sealed class VideosController(
         if (!videoService.IsValidVideo(file))
             return BadRequest("Invalid video file. Allowed formats: mp4, mov, mkv, avi, webm.");
 
+        var usedBytes = await videoRepository.GetStorageUsedBytesAsync(userId);
+        if (usedBytes + file.Length > _userQuotaBytes)
+            return StatusCode(StatusCodes.Status413PayloadTooLarge,
+                $"Storage quota exceeded. Used {usedBytes} of {_userQuotaBytes} bytes.");
+
         var id = Guid.NewGuid();
         var safeFileName = Path.GetFileName(file.FileName);
         var extension = Path.GetExtension(safeFileName).ToLowerInvariant();
@@ -59,7 +65,7 @@ public sealed class VideosController(
         var originalFilePath = await videoService.SaveOriginalVideoAsync(file, folderPath, fileName);
 
         // DB rekord létrehozása — a tulajdonos a bejelentkezett user
-        await videoRepository.CreateAsync(id, safeFileName, userId);
+        await videoRepository.CreateAsync(id, safeFileName, userId, file.Length);
 
         // Accept-Language alapján határozzuk meg a tagek nyelvét (pl. "hu", "en", "de")
         var language = Request.GetTypedHeaders().AcceptLanguage

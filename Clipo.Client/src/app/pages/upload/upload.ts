@@ -1,35 +1,53 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { FileUpload, FileUploadHandlerEvent, FileSelectEvent } from 'primeng/fileupload';
 import { Button } from 'primeng/button';
-import { ProgressBar } from 'primeng/progressbar';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { environment } from '../../../environments/environment';
+import { VideoService, StorageInfo } from '../../core/services/video.service';
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error';
 
 @Component({
   selector: 'app-upload',
-  imports: [FileUpload, Button, ProgressBar, Toast, RouterLink],
-  providers: [MessageService],
+  imports: [FileUpload, Button, Toast, RouterLink],
+  providers: [MessageService, VideoService],
   templateUrl: './upload.html',
 })
-export class Upload {
+export class Upload implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly messageService = inject(MessageService);
+  private readonly videoService = inject(VideoService);
 
   readonly state = signal<UploadState>('idle');
   readonly progress = signal(0);
   readonly selectedFile = signal<File | null>(null);
   readonly uploadedId = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
+  readonly storageInfo = signal<StorageInfo | null>(null);
+
+  ngOnInit(): void {
+    this.videoService.getStorageInfo().subscribe({
+      next: info => this.storageInfo.set(info),
+      error: () => {},
+    });
+  }
 
   onFileSelect(event: FileSelectEvent): void {
-    this.selectedFile.set(event.currentFiles[0] ?? null);
+    const file = event.currentFiles[0] ?? null;
+    this.selectedFile.set(file);
     this.state.set('idle');
     this.errorMessage.set(null);
+
+    const info = this.storageInfo();
+    if (file && info && file.size > info.freeBytes) {
+      this.state.set('error');
+      this.errorMessage.set(
+        `Nincs elegendő tárhely. Szükséges: ${this.formatSize(file.size)}, elérhető: ${this.formatSize(info.freeBytes)}`
+      );
+    }
   }
 
   onClear(): void {
@@ -60,6 +78,10 @@ export class Upload {
         } else if (e.type === HttpEventType.Response && e.body) {
           this.state.set('success');
           this.uploadedId.set(e.body.id);
+          this.videoService.getStorageInfo().subscribe({
+            next: info => this.storageInfo.set(info),
+            error: () => {},
+          });
         }
       },
       error: err => {

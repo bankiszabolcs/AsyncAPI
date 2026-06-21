@@ -8,6 +8,13 @@ import { VideoStatus } from '../models/video-status.model';
 import { MyVideo } from '../models/my-video.model';
 import { UpdateVideoRequest, UpdateVideoResponse } from '../models/video-update.model';
 
+export interface StorageInfo {
+  usedBytes: number;
+  totalBytes: number;
+  freeBytes: number;
+  usedPercent: number;
+}
+
 @Injectable()
 export class VideoService {
   private readonly http = inject(HttpClient);
@@ -67,6 +74,10 @@ export class VideoService {
     return this.http.post<void>(`${this.baseUrl}/${videoId}/views`, null, {
       headers: { 'X-Session-Id': this.getOrCreateSessionId() },
     });
+  }
+
+  getStorageInfo(): Observable<StorageInfo> {
+    return this.http.get<StorageInfo>(`${environment.apiUrl}/users/me/storage`);
   }
 
   private getOrCreateSessionId(): string {

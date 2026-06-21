@@ -11,9 +11,12 @@ namespace AsyncApi.Controllers;
 [ApiController]
 [Route("users")]
 public sealed class UsersController(
+    IConfiguration configuration,
     UserRepository userRepository,
+    VideoRepository videoRepository,
     StorageService storageService) : ControllerBase
 {
+    private readonly long _userQuotaBytes = long.Parse(configuration["Storage:UserQuotaBytes"] ?? "2147483648");
     // GET /users/me — provisioning + profil visszaadás
     [HttpGet("me")]
     [Authorize]
@@ -45,6 +48,22 @@ public sealed class UsersController(
         if (user is null) return NotFound();
 
         return Ok(MapUser(user));
+    }
+
+    // GET /users/me/storage — felhasznált és szabad tárhely lekérése
+    [HttpGet("me/storage")]
+    [Authorize]
+    public async Task<IActionResult> GetStorageInfo()
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var usedBytes   = await videoRepository.GetStorageUsedBytesAsync(userId);
+        var freeBytes   = Math.Max(0, _userQuotaBytes - usedBytes);
+        var usedPercent = _userQuotaBytes > 0
+            ? Math.Round((double)usedBytes / _userQuotaBytes * 100, 1)
+            : 0;
+
+        return Ok(new { usedBytes, totalBytes = _userQuotaBytes, freeBytes, usedPercent });
     }
 
     private bool TryGetUserId(out Guid userId)

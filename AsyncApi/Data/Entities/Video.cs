@@ -26,6 +26,8 @@ public partial class Video
 
     public Guid? ThumbnailImageId { get; set; }
 
+    public long FileSizeBytes { get; set; }
+
     public long ViewCount { get; set; }
 
     public int LikeCount { get; set; }

@@ -37,7 +37,8 @@ export class Explore {
   });
 
   readonly videosResource = rxResource({
-    stream: () => this.videoService.getAll(1, 20, this.selectedId()),
+    params: () => this.selectedId(),
+    stream: ({ params: categoryId }) => this.videoService.getAll(1, 20, categoryId),
   });
 
   selectCategory(id: string | null): void {

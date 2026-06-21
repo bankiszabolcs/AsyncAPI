@@ -2,7 +2,7 @@ import { Component, signal, HostListener, inject } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { Drawer } from 'primeng/drawer';
 import { Toast } from 'primeng/toast';
-import { Message } from 'primeng/api';
+import { ToastMessageOptions } from 'primeng/api';
 import { Navbar } from './layout/navbar/navbar';
 import { Sidebar } from './layout/sidebar/sidebar';
 import { LoadingService } from './core/services/loading.service';
@@ -19,7 +19,7 @@ export class App {
   readonly loading   = inject(LoadingService);
   private readonly notifSvc = inject(NotificationService);
 
-  onToastClick(msg: Message, closeFn: (e: Event) => void, event: Event): void {
+  onToastClick(msg: ToastMessageOptions, closeFn: (e: Event) => void, event: Event): void {
     const n = msg.data as AppNotification | undefined;
     if (!n?.link) return;
     closeFn(event);

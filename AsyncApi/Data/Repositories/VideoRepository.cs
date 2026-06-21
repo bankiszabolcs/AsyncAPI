@@ -93,8 +93,9 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
             .FirstOrDefaultAsync(v => v.Id == id && v.Active);
     }
 
-    // Csak kész és publikus videók, legújabb elöl; opcionálisan kategória szerint szűrve
-    public async Task<List<Video>> GetListAsync(int page = 1, int pageSize = 20, Guid? categoryId = null)
+    // Csak kész és publikus videók, legújabb elöl; opcionálisan kategória vagy csatorna szerint szűrve
+    public async Task<List<Video>> GetListAsync(
+        int page = 1, int pageSize = 20, Guid? categoryId = null, Guid? channelId = null)
     {
         return await db.Videos
             .Include(v => v.User).ThenInclude(u => u.AvatarImage)
@@ -102,7 +103,8 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
             .Where(v => v.Active
                      && v.StatusId     == (int)ProcessingStatus.Completed
                      && v.VisibilityId == (int)Visibility.Public
-                     && (categoryId == null || v.CategoryId == categoryId))
+                     && (categoryId == null || v.CategoryId == categoryId)
+                     && (channelId  == null || v.UserId     == channelId))
             .OrderByDescending(v => v.PublishedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

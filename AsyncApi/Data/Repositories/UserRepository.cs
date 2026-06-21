@@ -40,6 +40,12 @@ public class UserRepository(AsyncApiDbContext db)
         return user;
     }
 
+    // Publikus csatorna adatok — avatar URL nélkül (azt a controller tölti ki)
+    public async Task<User?> GetPublicChannelAsync(Guid channelId) =>
+        await db.Users
+            .Include(u => u.AvatarImage)
+            .FirstOrDefaultAsync(u => u.Id == channelId && u.Active);
+
     public async Task<User?> UpdateProfileAsync(Guid userId, string? displayName, Guid? avatarImageId)
     {
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.Active);

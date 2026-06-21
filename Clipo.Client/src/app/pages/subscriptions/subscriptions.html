@@ -1,4 +1,87 @@
-<div class="p-6">
-  <h2 class="text-2xl font-bold mb-2 text-(--p-text-color)">Feliratkozások</h2>
-  <p class="text-(--p-text-muted-color)">Hamarosan: feliratkozott csatornák...</p>
+<div class="max-w-6xl mx-auto p-6">
+  <h1 class="text-2xl font-bold text-(--p-text-color) mb-6">Feliratkozások</h1>
+
+  <!-- Csatorna lista -->
+  @if (channelsResource.isLoading()) {
+    <div class="flex gap-4 overflow-x-auto pb-2">
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="flex flex-col items-center gap-2 animate-pulse shrink-0">
+          <div class="w-16 h-16 rounded-full bg-(--p-surface-card)"></div>
+          <div class="h-3 w-14 bg-(--p-surface-card) rounded"></div>
+        </div>
+      }
+    </div>
+  } @else if (channels().length === 0) {
+    <div class="flex flex-col items-center justify-center py-24 gap-4 text-center">
+      <i class="pi pi-users text-6xl text-(--p-text-muted-color)"></i>
+      <p class="text-(--p-text-color) font-medium text-lg">Még nem iratkoztál fel senkire</p>
+      <p class="text-sm text-(--p-text-muted-color)">Keresd meg a kedvenc csatornáidat és kattints a Feliratkozás gombra.</p>
+      <a routerLink="/explore"
+         class="mt-2 px-5 py-2.5 rounded-full bg-(--p-primary-color) text-white text-sm font-semibold no-underline hover:opacity-90 transition-opacity">
+        Felfedezés
+      </a>
+    </div>
+  } @else {
+    <!-- Csatornák vízszintes pill-sora -->
+    <div class="flex gap-3 overflow-x-auto pb-3 scrollbar-thin">
+      @for (ch of channels(); track ch.id) {
+        <button
+          (click)="selectChannel(ch.id)"
+          class="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer border transition-all shrink-0 bg-transparent"
+          [class.border-(--p-primary-color)]="selectedChannelId() === ch.id"
+          [class.border-transparent]="selectedChannelId() !== ch.id"
+          [class.bg-(--p-primary-color)/10]="selectedChannelId() === ch.id"
+          [class.hover:bg-(--p-surface-hover)]="selectedChannelId() !== ch.id"
+        >
+          <div class="w-14 h-14 rounded-full bg-(--p-surface-card) flex items-center justify-center overflow-hidden">
+            @if (ch.avatarUrl) {
+              <img [src]="ch.avatarUrl" alt="" class="w-full h-full object-cover" />
+            } @else {
+              <i class="pi pi-user text-xl text-(--p-text-muted-color)"></i>
+            }
+          </div>
+          <span class="text-xs text-(--p-text-color) font-medium max-w-20 truncate">{{ ch.displayName }}</span>
+          <span class="text-xs text-(--p-text-muted-color)">{{ ch.subscriberCount | viewCount }} fő</span>
+        </button>
+      }
+    </div>
+
+    <!-- Videók a kiválasztott csatornától (vagy összes) -->
+    <div class="mt-6">
+      @if (selectedChannelId()) {
+        <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider mb-4">
+          Videók
+        </h2>
+      } @else {
+        <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider mb-4">
+          Válassz egy csatornát a videóinak megtekintéséhez
+        </h2>
+      }
+
+      @if (videosResource.isLoading()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          @for (_ of [1,2,3,4]; track $index) {
+            <div class="animate-pulse">
+              <div class="w-full aspect-video bg-(--p-surface-card) rounded-xl"></div>
+              <div class="mt-2 space-y-2">
+                <div class="h-4 bg-(--p-surface-card) rounded w-3/4"></div>
+                <div class="h-3 bg-(--p-surface-card) rounded w-1/2"></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (selectedChannelId() && videos().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 gap-3 text-center">
+          <i class="pi pi-video text-4xl text-(--p-text-muted-color)"></i>
+          <p class="text-(--p-text-muted-color) text-sm">Ennek a csatornának még nincs nyilvános videója.</p>
+        </div>
+      } @else if (selectedChannelId()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          @for (v of videos(); track v.id) {
+            <app-video-card [video]="v" />
+          }
+        </div>
+      }
+    </div>
+  }
 </div>

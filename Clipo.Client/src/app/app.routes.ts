@@ -33,6 +33,11 @@ export const routes: Routes = [
     path: 'subscriptions',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/subscriptions/subscriptions').then(m => m.Subscriptions),
+    providers: [VideoService],
+  },
+  {
+    path: 'c/:id',
+    loadComponent: () => import('./pages/public-channel/public-channel').then(m => m.PublicChannel),
   },
   {
     path: 'library',

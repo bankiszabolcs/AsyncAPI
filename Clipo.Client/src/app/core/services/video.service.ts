@@ -20,12 +20,13 @@ export class VideoService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/videos`;
 
-  getAll(page = 1, pageSize = 20, categoryId?: string | null): Observable<Video[]> {
+  getAll(page = 1, pageSize = 20, categoryId?: string | null, channelId?: string | null): Observable<Video[]> {
     let params = new HttpParams()
       .set('page', page)
       .set('pageSize', pageSize);
 
     if (categoryId) params = params.set('categoryId', categoryId);
+    if (channelId)  params = params.set('channelId',  channelId);
 
     return this.http.get<Video[]>(this.baseUrl, { params });
   }

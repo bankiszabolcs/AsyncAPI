@@ -107,6 +107,7 @@ public sealed class VideosController(
     public async Task<IActionResult> GetVideos(
         [FromQuery] string? q = null,
         [FromQuery] Guid? categoryId = null,
+        [FromQuery] Guid? channelId = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -114,7 +115,7 @@ public sealed class VideosController(
             return BadRequest("Search query too long.");
 
         var videos = string.IsNullOrWhiteSpace(q)
-            ? await videoRepository.GetListAsync(page, pageSize, categoryId)
+            ? await videoRepository.GetListAsync(page, pageSize, categoryId, channelId)
             : await videoRepository.SearchAsync(q.Trim(), page, pageSize);
 
         var result = videos.Select(v => new

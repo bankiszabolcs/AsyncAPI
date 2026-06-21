@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { timer, switchMap, map, catchError, of, takeWhile, tap } from 'rxjs';
@@ -14,6 +14,7 @@ import { Comments } from '../../shared/comments/comments';
 import { WatchHistoryService } from '../../core/services/watch-history.service';
 import { VideoCard } from '../../shared/video-card/video-card';
 import { SavedVideoService } from '../../core/services/saved-video.service';
+import { SubscriptionService } from '../../core/services/subscription.service';
 
 // Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
 const POLL_INTERVAL_MS = 4000;
@@ -26,7 +27,7 @@ interface PollResult {
 
 @Component({
   selector: 'app-watch',
-  imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments, VideoCard],
+  imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments, VideoCard, RouterLink],
   providers: [SavedVideoService],
   templateUrl: './watch.html',
 })
@@ -35,6 +36,7 @@ export class Watch {
   private readonly videoService     = inject(VideoService);
   private readonly watchHistory     = inject(WatchHistoryService);
   private readonly savedVideoService = inject(SavedVideoService);
+  private readonly subscriptionSvc  = inject(SubscriptionService);
   readonly auth = inject(AuthService);
 
   readonly id = this.route.snapshot.paramMap.get('id')!;
@@ -141,6 +143,36 @@ export class Watch {
       this.savedVideoService.getStatus(this.id).subscribe(r => this.isSaved.set(r.isSaved));
     }
   }, { allowSignalWrites: true });
+
+  private readonly subState = signal<{ count: number; subscribed: boolean | null } | null>(null);
+  readonly subscriberCount  = computed(() => this.subState()?.count ?? null);
+  readonly isSubscribed     = computed(() => this.subState()?.subscribed ?? null);
+  readonly isSubscribing    = signal(false);
+  readonly isOwnVideo = computed(() => this.auth.profile()?.id === this.video()?.author.id);
+
+  private channelLoaded = false;
+  private readonly channelEffect = effect(() => {
+    const v = this.video();
+    if (!v || this.channelLoaded) return;
+    this.channelLoaded = true;
+    this.subscriptionSvc.getChannel(v.author.id).subscribe(ch =>
+      this.subState.set({ count: ch.subscriberCount, subscribed: ch.isSubscribed })
+    );
+  }, { allowSignalWrites: true });
+
+  toggleSubscribe(): void {
+    if (!this.auth.isLoggedIn()) { this.auth.login(); return; }
+    const v = this.video();
+    if (!v || this.isSubscribing()) return;
+    this.isSubscribing.set(true);
+    const op = this.isSubscribed()
+      ? this.subscriptionSvc.unsubscribe(v.author.id)
+      : this.subscriptionSvc.subscribe(v.author.id);
+    op.subscribe({
+      next:  r  => { this.subState.set({ count: r.subscriberCount, subscribed: r.isSubscribed }); this.isSubscribing.set(false); },
+      error: () => this.isSubscribing.set(false),
+    });
+  }
 
   toggleSave(): void {
     if (!this.auth.isLoggedIn()) {

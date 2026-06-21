@@ -65,15 +65,41 @@
         <div class="flex items-center justify-between mt-3">
           <!-- Feltöltő -->
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-(--p-surface-card) flex items-center justify-center">
-              <i class="pi pi-user text-(--p-text-muted-color)"></i>
-            </div>
+            <a [routerLink]="['/c', v.author.id]" class="shrink-0">
+              <div class="w-10 h-10 rounded-full bg-(--p-surface-card) flex items-center justify-center overflow-hidden">
+                @if (v.author.avatarUrl) {
+                  <img [src]="v.author.avatarUrl" alt="" class="w-full h-full object-cover" />
+                } @else {
+                  <i class="pi pi-user text-(--p-text-muted-color)"></i>
+                }
+              </div>
+            </a>
             <div>
-              <p class="font-medium text-sm text-(--p-text-color)">{{ v.author.name }}</p>
+              <a [routerLink]="['/c', v.author.id]"
+                 class="font-medium text-sm text-(--p-text-color) no-underline hover:underline">
+                {{ v.author.name }}
+              </a>
+              @if (subscriberCount() !== null) {
+                <p class="text-xs text-(--p-text-muted-color)">{{ subscriberCount() | viewCount }} feliratkozó</p>
+              }
               <p class="text-xs text-(--p-text-muted-color)">
                 {{ v.viewCount | viewCount }} megtekintés &middot; {{ v.publishedAt | timeAgo }}
               </p>
             </div>
+
+            @if (!isOwnVideo()) {
+              <button
+                (click)="toggleSubscribe()"
+                [disabled]="isSubscribing()"
+                class="ml-2 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer disabled:opacity-60"
+                [class.bg-(--p-primary-color)]="!isSubscribed()"
+                [class.text-white]="!isSubscribed()"
+                [class.bg-(--p-surface-card)]="isSubscribed()"
+                [class.text-(--p-text-color)]="isSubscribed()"
+              >
+                {{ isSubscribed() ? 'Leiratkozás' : 'Feliratkozás' }}
+              </button>
+            }
           </div>
 
           <!-- Mentés + Like / Dislike -->

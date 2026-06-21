@@ -5,6 +5,7 @@ using AsyncApi.Models;
 using AsyncApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AsyncApi.Controllers;
 
@@ -14,6 +15,7 @@ public sealed class UsersController(
     IConfiguration configuration,
     UserRepository userRepository,
     VideoRepository videoRepository,
+    SubscriptionRepository subscriptionRepository,
     StorageService storageService) : ControllerBase
 {
     private readonly long _userQuotaBytes = long.Parse(configuration["Storage:UserQuotaBytes"] ?? "2147483648");
@@ -66,10 +68,85 @@ public sealed class UsersController(
         return Ok(new { usedBytes, totalBytes = _userQuotaBytes, freeBytes, usedPercent });
     }
 
+    // GET /users/{channelId} — publikus csatorna adatok (bejelentkezés nélkül is)
+    [HttpGet("{channelId:guid}")]
+    public async Task<IActionResult> GetChannel(Guid channelId)
+    {
+        var channel = await userRepository.GetPublicChannelAsync(channelId);
+        if (channel is null) return NotFound();
+
+        var subscriberCount = await subscriptionRepository.GetSubscriberCountAsync(channelId);
+        var isSubscribed    = TryGetUserId(out var currentUserId)
+            ? await subscriptionRepository.IsSubscribedAsync(currentUserId, channelId)
+            : (bool?)null;
+
+        return Ok(MapChannel(channel, subscriberCount, isSubscribed));
+    }
+
+    // GET /users/me/subscriptions — a bejelentkezett user feliratkozásai
+    [HttpGet("me/subscriptions")]
+    [Authorize]
+    public async Task<IActionResult> GetMySubscriptions()
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var subs = await subscriptionRepository.GetMySubscriptionsAsync(userId);
+
+        return Ok(subs.Select(s => MapChannel(s.Channel, s.SubscriberCount, isSubscribed: true)));
+    }
+
+    // POST /users/{channelId}/subscribe — feliratkozás
+    [HttpPost("{channelId:guid}/subscribe")]
+    [Authorize]
+    [EnableRateLimiting("playlist")]
+    public async Task<IActionResult> Subscribe(Guid channelId)
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+        if (userId == channelId) return BadRequest("Cannot subscribe to yourself.");
+
+        var channel = await userRepository.GetPublicChannelAsync(channelId);
+        if (channel is null) return NotFound();
+
+        var subscriberCount = await subscriptionRepository.SubscribeAsync(userId, channelId);
+        return Ok(new { subscriberCount, isSubscribed = true });
+    }
+
+    // DELETE /users/{channelId}/subscribe — leiratkozás
+    [HttpDelete("{channelId:guid}/subscribe")]
+    [Authorize]
+    [EnableRateLimiting("playlist")]
+    public async Task<IActionResult> Unsubscribe(Guid channelId)
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var subscriberCount = await subscriptionRepository.UnsubscribeAsync(userId, channelId);
+        if (subscriberCount is null) return NotFound();
+
+        return Ok(new { subscriberCount, isSubscribed = false });
+    }
+
     private bool TryGetUserId(out Guid userId)
     {
         var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
         return Guid.TryParse(sub, out userId);
+    }
+
+    private object MapChannel(User user, long subscriberCount, bool? isSubscribed)
+    {
+        var avatarUrl = user.AvatarImage is { Extension: var ext }
+            ? storageService.GetPublicUrl(
+                $"{user.AvatarImageId}/{user.AvatarImageId}_w128{ext}",
+                StorageBucket.Images)
+            : null;
+
+        return new
+        {
+            id              = user.Id,
+            displayName     = user.DisplayName ?? user.Username,
+            avatarUrl,
+            subscriberCount,
+            isSubscribed,
+        };
     }
 
     private object MapUser(User user)

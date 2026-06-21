@@ -7,6 +7,11 @@ import { LibrarySavedVideos } from './saved-videos/library-saved-videos';
   selector: 'app-library',
   imports: [Tabs, TabList, Tab, TabPanels, TabPanel, LibraryPlaylists, LibrarySavedVideos],
   templateUrl: './library.html',
-  styles: ``,
+  styles: `
+    :host ::ng-deep .p-tabpanels,
+    :host ::ng-deep .p-tablist {
+      background: transparent;
+    }
+  `,
 })
 export class Library {}

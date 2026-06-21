@@ -24,6 +24,8 @@ public partial class Video
 
     public DateTime? PublishedAt { get; set; }
 
+    public Guid? CategoryId { get; set; }
+
     public Guid? ThumbnailImageId { get; set; }
 
     public long FileSizeBytes { get; set; }
@@ -51,6 +53,8 @@ public partial class Video
     public int Version { get; set; }
 
     public long PgmementoAuditId { get; set; }
+
+    public virtual Category? Category { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 

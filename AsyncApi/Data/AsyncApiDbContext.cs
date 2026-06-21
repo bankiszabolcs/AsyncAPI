@@ -23,6 +23,8 @@ public partial class AsyncApiDbContext : DbContext
 
     public virtual DbSet<AuditTablesDependency> AuditTablesDependencies { get; set; }
 
+    public virtual DbSet<Category> Categories { get; set; }
+
     public virtual DbSet<Comment> Comments { get; set; }
 
     public virtual DbSet<Image> Images { get; set; }
@@ -231,6 +233,38 @@ public partial class AsyncApiDbContext : DbContext
             entity.Property(e => e.Tablename)
                 .HasComment("The name of the table")
                 .HasColumnName("tablename");
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("categories_pkey");
+
+            entity.ToTable("categories");
+
+            entity.HasIndex(e => e.PgmementoAuditId, "categories_pgmemento_audit_id_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.Title)
+                .HasMaxLength(100)
+                .HasColumnName("title");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Active)
+                .HasDefaultValue(true)
+                .HasColumnName("active");
+            entity.Property(e => e.CreateDate)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("create_date");
+            entity.Property(e => e.CreateUserId).HasColumnName("create_user_id");
+            entity.Property(e => e.ModifyDate).HasColumnName("modify_date");
+            entity.Property(e => e.ModifyUserId).HasColumnName("modify_user_id");
+            entity.Property(e => e.PgmementoAuditId)
+                .HasDefaultValueSql("nextval('audit_id_seq'::regclass)")
+                .HasColumnName("pgmemento_audit_id");
+            entity.Property(e => e.Version)
+                .HasDefaultValue(1)
+                .HasColumnName("version");
         });
 
         modelBuilder.Entity<Comment>(entity =>
@@ -741,6 +775,7 @@ public partial class AsyncApiDbContext : DbContext
             entity.Property(e => e.Active)
                 .HasDefaultValue(true)
                 .HasColumnName("active");
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
             entity.Property(e => e.CommentCount).HasColumnName("comment_count");
             entity.Property(e => e.CreateDate)
                 .HasDefaultValueSql("now()")
@@ -780,6 +815,10 @@ public partial class AsyncApiDbContext : DbContext
             entity.Property(e => e.VisibilityId)
                 .HasDefaultValue(3)
                 .HasColumnName("visibility_id");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Videos)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("videos_category_id_fkey");
 
             entity.HasOne(d => d.Status).WithMany(p => p.Videos)
                 .HasForeignKey(d => d.StatusId)

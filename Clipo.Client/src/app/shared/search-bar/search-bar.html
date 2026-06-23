@@ -7,7 +7,7 @@
     <i class="pi pi-search shrink-0 text-(--p-text-muted-color) text-sm"></i>
     <input
       type="search"
-      placeholder="Keresés..."
+      placeholder="Search..."
       autocomplete="off"
       class="flex-1 bg-transparent outline-none border-none text-sm
         text-(--p-text-color) placeholder:text-(--p-text-muted-color)"
@@ -25,12 +25,12 @@
       shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
 
       <div class="flex items-center justify-between px-4 py-2 border-b border-(--p-surface-border)">
-        <span class="text-xs font-semibold text-(--p-text-muted-color) uppercase tracking-wide">Előzmények</span>
+        <span class="text-xs font-semibold text-(--p-text-muted-color) uppercase tracking-wide">History</span>
         <button
           type="button"
           class="text-xs text-(--p-primary-color) hover:underline bg-transparent border-none cursor-pointer px-0"
           (click)="clearHistory($event)"
-        >Törlés</button>
+        >Clear</button>
       </div>
 
       @for (item of history(); track item) {

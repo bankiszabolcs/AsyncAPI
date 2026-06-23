@@ -81,7 +81,7 @@
               class="block w-full bg-transparent p-0 border-0 border-b border-transparent outline-none
                      leading-snug truncate font-medium text-(--p-text-color)
                      placeholder:text-(--p-text-muted-color) read-only:cursor-default"
-              [style.border-bottom-color]="editingId() === v.id ? 'var(--p-orange-500)' : 'transparent'"
+              [style.border-bottom-color]="editingId() === v.id ? 'var(--p-primary-color)' : 'transparent'"
               [ngModel]="editingId() === v.id ? editTitle() : v.title"
               (ngModelChange)="editTitle.set($event)"
             />
@@ -127,7 +127,7 @@
                   data-tag-input
                   type="text"
                   maxlength="20"
-                  placeholder="tag neve..."
+                  placeholder="tag name..."
                   class="h-5 min-w-20 max-w-32 bg-transparent border-0 border-b border-dashed
                          border-(--p-text-muted-color) outline-none text-xs
                          text-(--p-text-color) placeholder:text-(--p-text-muted-color)"

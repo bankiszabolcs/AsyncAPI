@@ -34,7 +34,7 @@
     @if (!isMobile()) {
       <app-sidebar [collapsed]="sidebarCollapsed()" />
     }
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto overflow-x-hidden">
       <router-outlet />
     </main>
   </div>
@@ -45,7 +45,7 @@
   <p-drawer [(visible)]="mobileSidebarOpen" position="left" styleClass="app-sidebar-drawer !w-64">
     <ng-template #header>
       <a routerLink="/" (click)="mobileSidebarOpen.set(false)" class="flex flex-1 items-center justify-center gap-2 no-underline select-none">
-        <i class="pi pi-video text-2xl text-red-500"></i>
+        <i class="pi pi-video text-2xl text-green-500"></i>
         <span class="text-lg font-bold tracking-tight text-(--p-text-color)">Clipo</span>
       </a>
     </ng-template>

@@ -12,9 +12,9 @@
       }
     </div>
     <div class="min-w-0">
-      <h1 class="text-2xl font-bold text-(--p-text-color)">{{ u?.name || 'Csatorna' }}</h1>
+      <h1 class="text-2xl font-bold text-(--p-text-color)">{{ u?.name || 'Channel' }}</h1>
       <p class="text-sm text-(--p-text-muted-color) mt-1">
-        {{ videos().length }} videó
+        {{ videos().length }} videos
       </p>
     </div>
   </div>
@@ -28,7 +28,7 @@
       [class.border-transparent]="activeTab() !== 'videos'"
       [class.text-(--p-text-muted-color)]="activeTab() !== 'videos'"
       (click)="activeTab.set('videos')"
-    >Videók</button>
+    >Videos</button>
     <button
       class="pb-3 -mb-px border-b-2 transition-colors cursor-pointer bg-transparent border-none"
       [class.border-(--p-primary-color)]="activeTab() === 'playlists'"
@@ -36,7 +36,7 @@
       [class.border-transparent]="activeTab() !== 'playlists'"
       [class.text-(--p-text-muted-color)]="activeTab() !== 'playlists'"
       (click)="activeTab.set('playlists')"
-    >Lejátszási listák</button>
+    >Playlists</button>
     <button
       class="pb-3 -mb-px border-b-2 transition-colors cursor-pointer bg-transparent border-none"
       [class.border-(--p-primary-color)]="activeTab() === 'about'"
@@ -44,7 +44,7 @@
       [class.border-transparent]="activeTab() !== 'about'"
       [class.text-(--p-text-muted-color)]="activeTab() !== 'about'"
       (click)="activeTab.set('about')"
-    >Névjegy</button>
+    >About</button>
   </div>
 
   <!-- Videos tab -->
@@ -64,11 +64,11 @@
     } @else if (videos().length === 0) {
       <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
         <i class="pi pi-video text-5xl text-(--p-text-muted-color)"></i>
-        <p class="text-(--p-text-color) font-medium">Még nincs videód</p>
-        <p class="text-sm text-(--p-text-muted-color)">A feltöltött videóid itt fognak megjelenni.</p>
+        <p class="text-(--p-text-color) font-medium">No videos yet</p>
+        <p class="text-sm text-(--p-text-muted-color)">Your uploaded videos will appear here.</p>
         <a routerLink="/upload"
            class="mt-2 px-4 py-2 rounded-lg bg-(--p-primary-color) text-white text-sm font-medium no-underline hover:opacity-90 transition-opacity">
-          Videó feltöltése
+          Upload a video
         </a>
       </div>
     } @else {

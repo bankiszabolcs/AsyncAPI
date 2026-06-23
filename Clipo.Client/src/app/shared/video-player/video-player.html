@@ -50,9 +50,9 @@
         >
           <div class="relative h-1 group-hover/seek:h-1.5 transition-all duration-150 bg-white/25 rounded-full">
             <div class="absolute inset-y-0 left-0 bg-white/40 rounded-full transition-none" [style.width.%]="buffered()"></div>
-            <div class="absolute inset-y-0 left-0 bg-red-500 rounded-full transition-none" [style.width.%]="progress()"></div>
+            <div class="absolute inset-y-0 left-0 bg-green-500 rounded-full transition-none" [style.width.%]="progress()"></div>
             <div
-              class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full
+              class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-green-500 rounded-full
                      opacity-0 group-hover/seek:opacity-100 transition-opacity shadow-md"
               [style.left.%]="progress()"
             ></div>
@@ -66,7 +66,7 @@
             [style.left]="tooltipLeft()"
           >
             <div
-              class="rounded overflow-hidden border border-white/20 shadow-2xl"
+              class="rounded overflow-hidden ring-1 ring-inset ring-white shadow-2xl"
               [style.width.px]="spriteFrame()!.w"
               [style.height.px]="spriteFrame()!.h"
               [style.background-image]="safeSpriteUrl()"
@@ -96,7 +96,7 @@
         </button>
         <input
           type="range" min="0" max="1" step="0.05"
-          class="w-20 accent-red-500 cursor-pointer"
+          class="w-20 accent-green-500 cursor-pointer"
           [value]="isMuted() ? 0 : volume()"
           (input)="onVolumeChange($event)"
         />
@@ -118,7 +118,7 @@
                 <!-- Auto -->
                 <button
                   class="cursor-pointer w-full px-4 py-1.5 text-sm text-left hover:bg-white/10 transition-colors flex items-center justify-between gap-3"
-                  [class.text-red-400]="selectedLevel() === -1"
+                  [class.text-green-400]="selectedLevel() === -1"
                   (click)="setLevel(-1)"
                 >
                   Auto
@@ -130,7 +130,7 @@
                 @for (level of qualityLevels(); track level.index) {
                   <button
                     class="cursor-pointer w-full px-4 py-1.5 text-sm text-left hover:bg-white/10 transition-colors flex items-center justify-between gap-3"
-                    [class.text-red-400]="selectedLevel() === level.index"
+                    [class.text-green-400]="selectedLevel() === level.index"
                     (click)="setLevel(level.index)"
                   >
                     {{ level.label }}

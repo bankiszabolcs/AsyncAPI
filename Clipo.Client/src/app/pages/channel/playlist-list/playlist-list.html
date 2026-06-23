@@ -10,7 +10,7 @@
            bg-(--p-primary-color) text-(--p-primary-contrast-color) hover:opacity-90 transition-opacity"
   >
     <i class="pi pi-plus text-xs"></i>
-    Új lista
+    New list
   </button>
 </div>
 
@@ -32,8 +32,8 @@
 } @else if (playlists().length === 0) {
   <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
     <i class="pi pi-list text-5xl text-(--p-text-muted-color)"></i>
-    <p class="text-(--p-text-color) font-medium">Még nincs lejátszási listád</p>
-    <p class="text-sm text-(--p-text-muted-color)">Hozz létre egyet a videóid rendezéséhez.</p>
+    <p class="text-(--p-text-color) font-medium">No playlists yet</p>
+    <p class="text-sm text-(--p-text-muted-color)">Create one to organize your videos.</p>
     <button
       type="button"
       (click)="openCreate()"
@@ -41,7 +41,7 @@
              border border-(--p-primary-color) text-(--p-primary-color) hover:bg-(--p-primary-color)/10 transition-colors"
     >
       <i class="pi pi-plus text-xs"></i>
-      Első lista létrehozása
+      Create your first list
     </button>
   </div>
 
@@ -75,7 +75,7 @@
                 type="button"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-(--p-text-muted-color)
                        hover:bg-(--p-surface-hover) hover:text-(--p-text-color) transition-colors cursor-pointer"
-                title="Szerkesztés"
+                title="Edit"
                 (click)="openEdit(p, $event)"
               >
                 <i class="pi pi-pencil text-xs"></i>
@@ -84,7 +84,7 @@
                 type="button"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-(--p-text-muted-color)
                        hover:bg-red-500/10 hover:text-red-400 transition-colors cursor-pointer"
-                title="Törlés"
+                title="Delete"
                 (click)="openDelete(p, $event)"
               >
                 <i class="pi pi-trash text-xs"></i>
@@ -127,8 +127,8 @@
       <i class="pi pi-trash text-lg text-red-400"></i>
     </div>
     <div class="flex-1 min-w-0">
-      <h2 class="text-base font-semibold text-(--p-text-color)">Lista törlése</h2>
-      <p class="text-xs text-red-400 mt-0.5">Ez a művelet nem vonható vissza</p>
+      <h2 class="text-base font-semibold text-(--p-text-color)">Delete playlist</h2>
+      <p class="text-xs text-red-400 mt-0.5">This action cannot be undone</p>
     </div>
     <button
       type="button"
@@ -144,8 +144,8 @@
   <!-- Body -->
   <div class="px-6 py-5">
     <p class="text-sm text-(--p-text-muted-color) leading-relaxed">
-      Biztosan törölni szeretnéd ezt a lejátszási listát?
-      <span class="text-(--p-text-color) font-medium">A videók nem törlődnek</span>, csak a lista szűnik meg.
+      Are you sure you want to delete this playlist?
+      <span class="text-(--p-text-color) font-medium">The videos will not be deleted</span>, only the playlist will be removed.
     </p>
   </div>
 
@@ -158,7 +158,7 @@
              border border-(--p-surface-border) text-(--p-text-muted-color)
              hover:border-(--p-text-muted-color) hover:text-(--p-text-color)"
     >
-      Mégse
+      Cancel
     </button>
     <button
       type="button"
@@ -166,7 +166,7 @@
       class="flex-1 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-opacity
              bg-red-500 text-white hover:opacity-90"
     >
-      Törlés
+      Delete
     </button>
   </div>
 </p-dialog>

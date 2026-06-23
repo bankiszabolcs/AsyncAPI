@@ -24,7 +24,7 @@
       <div class="flex-1 min-w-0">
         <h1 class="text-2xl font-bold text-(--p-text-color)">{{ ch.displayName }}</h1>
         <p class="text-sm text-(--p-text-muted-color) mt-1">
-          {{ subscriberCount() | viewCount }} feliratkozó
+          {{ subscriberCount() | viewCount }} subscribers
         </p>
       </div>
 
@@ -42,11 +42,11 @@
         >
           @if (isSubscribed()) {
             <span class="flex items-center gap-2">
-              <i class="pi pi-bell-slash text-xs"></i> Leiratkozás
+              <i class="pi pi-bell-slash text-xs"></i> Unsubscribe
             </span>
           } @else {
             <span class="flex items-center gap-2">
-              <i class="pi pi-bell text-xs"></i> Feliratkozás
+              <i class="pi pi-bell text-xs"></i> Subscribe
             </span>
           }
         </button>
@@ -72,7 +72,7 @@
     } @else if (videos().length === 0) {
       <div class="flex flex-col items-center justify-center text-center gap-3 py-16">
         <i class="pi pi-video text-5xl text-(--p-text-muted-color)"></i>
-        <p class="text-(--p-text-color) font-medium">Még nincs nyilvános videó</p>
+        <p class="text-(--p-text-color) font-medium">No public videos yet</p>
       </div>
     } @else {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -84,7 +84,7 @@
   } @else {
     <div class="flex flex-col items-center justify-center py-24 gap-3">
       <i class="pi pi-exclamation-circle text-5xl text-(--p-text-muted-color)"></i>
-      <p class="text-(--p-text-color) font-medium">A csatorna nem található</p>
+      <p class="text-(--p-text-color) font-medium">Channel not found</p>
     </div>
   }
 

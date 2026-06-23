@@ -54,7 +54,7 @@
 }
 .reaction-dislike-active i,
 .reaction-dislike-active span {
-  color: var(--p-red-500);
+  color: var(--p-primary-color);
 }
 
 /* Avatar crop dialog: a p-dialog-content overflow:auto-ja levágná a kerek
@@ -74,7 +74,7 @@
   height: 3px !important;
 }
 .loading-bar .p-progressbar-value {
-  background: var(--p-red-500);
+  background: var(--p-primary-color);
 }
 
 .flat-select .p-select-label {
@@ -93,6 +93,13 @@
 }
 .flat-readonly.p-select .p-select-dropdown {
   display: none;
+}
+
+/* Jobb oldali nav drawerek (keresés, értesítések, profil): elválasztó szegély a header alatt */
+.nav-drawer .p-drawer-header {
+  border-bottom: 1px solid var(--p-surface-border);
+  padding-top: 1.125rem;
+  padding-bottom: 1.125rem;
 }
 
 /* Komment kiemelés: notification deep-link megnyitásakor villan egyet */

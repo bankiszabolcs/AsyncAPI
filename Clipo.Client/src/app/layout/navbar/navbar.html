@@ -10,10 +10,10 @@
       [rounded]="true"
       severity="secondary"
       (click)="sidebarToggle.emit()"
-      aria-label="Menü"
+      aria-label="Menu"
     />
     <a routerLink="/" class="flex items-center gap-2 px-2 no-underline select-none">
-      <i class="pi pi-video text-2xl text-red-500"></i>
+      <i class="pi pi-video text-2xl text-green-500"></i>
       <span class="text-lg font-bold tracking-tight text-(--p-text-color)">Clipo</span>
     </a>
   </div>
@@ -35,7 +35,7 @@
         [text]="true"
         [rounded]="true"
         severity="secondary"
-        aria-label="Keresés"
+        aria-label="Search"
         (click)="searchDrawerVisible.set(true)"
       />
     }
@@ -45,16 +45,16 @@
         <button
           type="button"
           routerLink="/upload"
-          aria-label="Feltöltés"
+          aria-label="Upload"
           class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer
             bg-transparent border-none hover:bg-(--p-surface-hover) transition-colors"
         >
-          <i class="pi pi-upload text-xl text-red-500"></i>
+          <i class="pi pi-upload text-xl text-green-500"></i>
         </button>
       } @else {
         <p-button
           routerLink="/upload"
-          label="Feltöltés"
+          label="Upload"
           icon="pi pi-upload"
           [outlined]="true"
           size="small"
@@ -69,12 +69,12 @@
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          aria-label="Értesítések"
+          aria-label="Notifications"
           (click)="onBellClick(notifPopover, $event)"
         />
         @if (notifSvc.unreadCount() > 0) {
           <span class="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1
-            bg-red-500 text-white text-[10px] font-bold rounded-full
+            bg-green-500 text-white text-[10px] font-bold rounded-full
             flex items-center justify-center pointer-events-none leading-none">
             {{ notifSvc.unreadCount() > 99 ? '99+' : notifSvc.unreadCount() }}
           </span>
@@ -96,12 +96,12 @@
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          aria-label="Bejelentkezés"
+          aria-label="Sign in"
           (click)="auth.login()"
         />
       } @else {
         <p-button
-          label="Bejelentkezés"
+          label="Sign in"
           icon="pi pi-sign-in"
           [outlined]="true"
           size="small"
@@ -120,8 +120,8 @@
             size="large"
           />
           <div class="flex flex-col min-w-0">
-            <span class="font-medium text-sm text-(--p-text-color) truncate">{{ auth.user()?.name || 'Felhasználó' }}</span>
-            <span class="text-xs text-(--p-text-muted-color) truncate">{{ auth.user()?.email || 'A fiók kezelése' }}</span>
+            <span class="font-medium text-sm text-(--p-text-color) truncate">{{ auth.user()?.name || 'User' }}</span>
+            <span class="text-xs text-(--p-text-muted-color) truncate">{{ auth.user()?.email || 'Manage account' }}</span>
           </div>
         </div>
         <hr class="border-(--p-surface-border) m-0" />
@@ -143,12 +143,12 @@
     <p-popover #notifPopover styleClass="!mt-2">
       <div class="w-96">
         <div class="flex items-center justify-between px-1 pb-3 mb-1 border-b border-(--p-surface-border)">
-          <span class="text-sm font-semibold text-(--p-text-color)">Értesítések</span>
+          <span class="text-sm font-semibold text-(--p-text-color)">Notifications</span>
           @if (notifSvc.unreadCount() > 0) {
             <button
               (click)="notifSvc.markAllRead()"
               class="text-xs text-(--p-primary-color) cursor-pointer bg-transparent border-none hover:underline"
-            >Összes olvasott</button>
+            >Mark all read</button>
           }
         </div>
         <ng-container [ngTemplateOutlet]="notifList" [ngTemplateOutletContext]="{ popover: notifPopover }" />
@@ -162,19 +162,19 @@
 <p-drawer
   [(visible)]="drawerVisible"
   position="right"
-  styleClass="!w-80 !max-w-[85vw]"
+  styleClass="nav-drawer !w-80 !max-w-[85vw]"
 >
   <ng-template #header>
-    <div class="flex items-center gap-3 pl-2 py-2">
+    <div class="flex items-center gap-3">
       <p-avatar
         [image]="auth.user()?.picture ?? undefined"
         [icon]="auth.user()?.picture ? undefined : 'pi pi-user'"
         shape="circle"
         size="large"
       />
-      <div class="flex flex-col">
-        <span class="font-medium text-(--p-text-color)">{{ auth.user()?.name || 'Felhasználó' }}</span>
-        <span class="text-xs text-(--p-text-muted-color)">{{ auth.user()?.email || 'A fiók kezelése' }}</span>
+      <div class="flex flex-col min-w-0">
+        <span class="font-semibold text-(--p-text-color) truncate">{{ auth.user()?.name || 'User' }}</span>
+        <span class="text-xs text-(--p-text-muted-color) truncate">{{ auth.user()?.email || 'Manage account' }}</span>
       </div>
     </div>
   </ng-template>
@@ -215,10 +215,13 @@
 <p-drawer
   [(visible)]="searchDrawerVisible"
   position="right"
-  styleClass="!w-80 !max-w-[85vw]"
+  styleClass="nav-drawer !w-80 !max-w-[85vw]"
 >
   <ng-template #header>
-    <span class="font-semibold text-(--p-text-color)">Keresés</span>
+    <div class="flex items-center gap-2.5">
+      <i class="pi pi-search text-(--p-text-muted-color)"></i>
+      <span class="text-base font-semibold text-(--p-text-color)">Search</span>
+    </div>
   </ng-template>
   <div class="px-2 pt-1">
     <app-search-bar (searched)="searchDrawerVisible.set(false)" />
@@ -229,16 +232,19 @@
 <p-drawer
   [(visible)]="notifDrawerVisible"
   position="right"
-  styleClass="!w-80 !max-w-[85vw]"
+  styleClass="nav-drawer !w-80 !max-w-[85vw]"
 >
   <ng-template #header>
-    <div class="flex items-center justify-between w-full pr-2">
-      <span class="font-semibold text-(--p-text-color)">Értesítések</span>
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-2.5">
+        <i class="pi pi-bell text-(--p-text-muted-color)"></i>
+        <span class="text-base font-semibold text-(--p-text-color)">Notifications</span>
+      </div>
       @if (notifSvc.unreadCount() > 0) {
         <button
           (click)="notifSvc.markAllRead()"
           class="text-xs text-(--p-primary-color) cursor-pointer bg-transparent border-none hover:underline"
-        >Összes olvasott</button>
+        >Mark all read</button>
       }
     </div>
   </ng-template>
@@ -260,7 +266,7 @@
   } @else if (!notifSvc.notifications()?.length) {
     <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
       <i class="pi pi-bell text-3xl text-(--p-text-muted-color)"></i>
-      <p class="text-sm text-(--p-text-muted-color)">Nincsenek értesítések</p>
+      <p class="text-sm text-(--p-text-muted-color)">No notifications</p>
     </div>
   } @else {
     <div class="max-h-[420px] overflow-y-auto -mx-2 px-2">

@@ -129,7 +129,7 @@ public sealed class VideoService(
         await FFMpegArguments
             .FromFileInput(originalFilePath)
             .OutputToFile(spritePath, overwrite: true, options => options
-                .WithCustomArgument($"-vf fps=1/{intervalSeconds},scale=160:90,tile=10x10")
+                .WithCustomArgument($"-vf fps=1/{intervalSeconds},scale=160:90:force_original_aspect_ratio=decrease,pad=160:90:(ow-iw)/2:(oh-ih)/2,tile=10x10")
                 .WithFrameOutputCount(1))
             .ProcessAsynchronously();
 

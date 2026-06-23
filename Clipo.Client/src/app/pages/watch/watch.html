@@ -15,8 +15,8 @@
     } @else if (isNotFound()) {
       <div class="w-full aspect-video bg-(--p-surface-card) rounded-xl flex flex-col items-center justify-center gap-3">
         <i class="pi pi-search text-4xl text-(--p-text-muted-color)"></i>
-        <p class="text-(--p-text-color) font-medium">Nincs ilyen videó</p>
-        <p class="text-sm text-(--p-text-muted-color)">A keresett videó nem található.</p>
+        <p class="text-(--p-text-color) font-medium">Video not found</p>
+        <p class="text-sm text-(--p-text-muted-color)">The requested video could not be found.</p>
       </div>
 
     } @else if (isProcessing()) {
@@ -31,7 +31,7 @@
         <div class="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
           <i class="pi pi-spin pi-spinner text-4xl text-white"></i>
           <p class="text-white font-medium text-lg">{{ statusLabel() }}</p>
-          <p class="text-sm text-white/60">Ez eltarthat néhány percig — az oldal automatikusan frissül.</p>
+          <p class="text-sm text-white/60">This may take a few minutes — the page will refresh automatically.</p>
         </div>
       </div>
 
@@ -48,7 +48,7 @@
       <!-- Sikertelen feldolgozás -->
       <div class="w-full aspect-video bg-(--p-surface-card) rounded-xl flex flex-col items-center justify-center gap-3">
         <i class="pi pi-exclamation-triangle text-4xl text-red-400"></i>
-        <p class="text-(--p-text-color) font-medium">{{ statusLabel() || 'A videó nem elérhető' }}</p>
+        <p class="text-(--p-text-color) font-medium">{{ statusLabel() || 'Video unavailable' }}</p>
       </div>
     }
 
@@ -62,9 +62,9 @@
       <div class="mt-4">
         <h1 class="text-xl font-semibold text-(--p-text-color) leading-snug">{{ v.title }}</h1>
 
-        <div class="flex items-center justify-between mt-3">
+        <div class="flex items-center justify-between mt-3 gap-2">
           <!-- Feltöltő -->
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0">
             <a [routerLink]="['/c', v.author.id]" class="shrink-0">
               <div class="w-10 h-10 rounded-full bg-(--p-surface-card) flex items-center justify-center overflow-hidden">
                 @if (v.author.avatarUrl) {
@@ -74,16 +74,16 @@
                 }
               </div>
             </a>
-            <div>
+            <div class="min-w-0">
               <a [routerLink]="['/c', v.author.id]"
-                 class="font-medium text-sm text-(--p-text-color) no-underline hover:underline">
+                 class="font-medium text-sm text-(--p-text-color) no-underline hover:underline truncate block">
                 {{ v.author.name }}
               </a>
               @if (subscriberCount() !== null) {
-                <p class="text-xs text-(--p-text-muted-color)">{{ subscriberCount() | viewCount }} feliratkozó</p>
+                <p class="text-xs text-(--p-text-muted-color)">{{ subscriberCount() | viewCount }} subscribers</p>
               }
               <p class="text-xs text-(--p-text-muted-color)">
-                {{ v.viewCount | viewCount }} megtekintés &middot; {{ v.publishedAt | timeAgo }}
+                {{ v.viewCount | viewCount }} views &middot; {{ v.publishedAt | timeAgo }}
               </p>
             </div>
 
@@ -91,53 +91,54 @@
               <button
                 (click)="toggleSubscribe()"
                 [disabled]="isSubscribing()"
-                class="ml-2 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer disabled:opacity-60"
+                class="shrink-0 flex items-center gap-2 ml-1 px-3 sm:px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer disabled:opacity-60"
                 [class.bg-(--p-primary-color)]="!isSubscribed()"
                 [class.text-white]="!isSubscribed()"
                 [class.bg-(--p-surface-card)]="isSubscribed()"
                 [class.text-(--p-text-color)]="isSubscribed()"
               >
-                {{ isSubscribed() ? 'Leiratkozás' : 'Feliratkozás' }}
+                <i class="pi text-sm" [class.pi-user-plus]="!isSubscribed()" [class.pi-user-minus]="isSubscribed()"></i>
+                <span class="hidden sm:inline">{{ isSubscribed() ? 'Unsubscribe' : 'Subscribe' }}</span>
               </button>
             }
           </div>
 
           <!-- Mentés + Like / Dislike -->
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 sm:gap-2 shrink-0">
 
           <!-- Szívecske -->
           <button
             (click)="toggleSave()"
-            class="flex items-center gap-2 px-4 py-2 rounded-full bg-(--p-surface-card)
+            class="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-(--p-surface-card)
                    transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
-            [title]="isSaved() ? 'Eltávolítás a mentettekből' : 'Mentés'"
+            [title]="isSaved() ? 'Remove from saved' : 'Save'"
           >
             <i class="pi text-sm transition-colors"
                [class.pi-heart-fill]="isSaved()"
                [class.pi-heart]="!isSaved()"
-               [class.text-red-400]="isSaved()"></i>
-            <span class="text-sm font-medium">{{ isSaved() ? 'Mentve' : 'Mentés' }}</span>
+               [class.text-green-400]="isSaved()"></i>
+            <span class="hidden sm:inline text-sm font-medium">{{ isSaved() ? 'Saved' : 'Save' }}</span>
           </button>
 
           <!-- Megnézendő -->
           <button
             (click)="toggleWatchLater()"
-            class="flex items-center gap-2 px-4 py-2 rounded-full bg-(--p-surface-card)
+            class="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-(--p-surface-card)
                    transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
-            [title]="isWatchLater() ? 'Eltávolítás a megnézendőkből' : 'Hozzáadás a megnézendőkhöz'"
+            [title]="isWatchLater() ? 'Remove from watch later' : 'Add to watch later'"
           >
             <i class="pi text-sm transition-colors"
                [class.pi-clock]="!isWatchLater()"
                [class.pi-check-circle]="isWatchLater()"
                [class.text-(--p-primary-color)]="isWatchLater()"></i>
-            <span class="text-sm font-medium">{{ isWatchLater() ? 'Megnézendő ✓' : 'Megnézendő' }}</span>
+            <span class="hidden sm:inline text-sm font-medium">{{ isWatchLater() ? 'Watch later ✓' : 'Watch later' }}</span>
           </button>
 
           <!-- Like / Dislike -->
           <div class="flex items-center rounded-full overflow-hidden bg-(--p-surface-card)">
             <button
               (click)="react(1)"
-              class="flex items-center gap-2 px-4 py-2 transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
+              class="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
               [class.reaction-like-active]="userReaction() === 1"
             >
               <i class="pi text-sm" [class.pi-thumbs-up-fill]="userReaction() === 1" [class.pi-thumbs-up]="userReaction() !== 1"></i>
@@ -146,7 +147,7 @@
             <div class="w-px h-5 bg-(--p-surface-border)"></div>
             <button
               (click)="react(2)"
-              class="flex items-center gap-2 px-4 py-2 transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
+              class="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
               [class.reaction-dislike-active]="userReaction() === 2"
             >
               <i class="pi text-sm" [class.pi-thumbs-down-fill]="userReaction() === 2" [class.pi-thumbs-down]="userReaction() !== 2"></i>
@@ -161,7 +162,7 @@
           @if (v.description) {
             <p class="whitespace-pre-wrap">{{ v.description }}</p>
           } @else {
-            <p class="italic">Nincs leírás</p>
+            <p class="italic">No description</p>
           }
         </div>
       </div>
@@ -174,7 +175,7 @@
 
   <!-- Jobb oszlop: kapcsolódó videók -->
   <aside class="w-full lg:w-80 shrink-0 space-y-4">
-    <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider">Kapcsolódó videók</h2>
+    <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider">Related videos</h2>
 
     @if (relatedVideos() === undefined) {
       @for (_ of [1,2,3,4,5]; track $index) {
@@ -188,7 +189,7 @@
         </div>
       }
     } @else if (relatedVideos()!.length === 0) {
-      <p class="text-sm text-(--p-text-muted-color) italic">Nincs kapcsolódó videó</p>
+      <p class="text-sm text-(--p-text-muted-color) italic">No related videos</p>
     } @else {
       @for (v of relatedVideos()!; track v.id) {
         <app-video-card [video]="v" [compact]="true" />

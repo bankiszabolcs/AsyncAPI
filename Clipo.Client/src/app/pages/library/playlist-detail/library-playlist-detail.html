@@ -9,10 +9,10 @@
   } @else if (!playlist()) {
     <div class="flex flex-col items-center justify-center text-center gap-3 py-24">
       <i class="pi pi-exclamation-circle text-5xl text-(--p-text-muted-color)"></i>
-      <p class="text-(--p-text-color) font-medium">Lista nem található</p>
+      <p class="text-(--p-text-color) font-medium">Playlist not found</p>
       <a routerLink="/library"
          class="mt-2 px-4 py-2 rounded-lg bg-(--p-primary-color) text-white text-sm font-medium no-underline hover:opacity-90">
-        Vissza a könyvtárba
+        Back to library
       </a>
     </div>
 
@@ -21,7 +21,7 @@
     <div class="mb-8">
       <a routerLink="/library"
          class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) no-underline flex items-center gap-1 mb-3 w-fit">
-        <i class="pi pi-arrow-left text-xs"></i> Könyvtár
+        <i class="pi pi-arrow-left text-xs"></i> Library
       </a>
       <div class="flex items-center gap-2">
         <i class="pi pi-list text-(--p-primary-color)"></i>
@@ -30,7 +30,7 @@
       @if (playlist()!.description) {
         <p class="text-sm text-(--p-text-muted-color) mt-1.5 max-w-lg">{{ playlist()!.description }}</p>
       }
-      <p class="text-xs text-(--p-text-muted-color) mt-2">{{ playlist()!.items.length }} videó</p>
+      <p class="text-xs text-(--p-text-muted-color) mt-2">{{ playlist()!.items.length }} videos</p>
     </div>
 
     <!-- Video list -->
@@ -38,7 +38,7 @@
       <div class="flex flex-col items-center justify-center text-center gap-3 py-16
                   rounded-xl border border-dashed border-(--p-surface-border)">
         <i class="pi pi-video text-4xl text-(--p-text-muted-color)"></i>
-        <p class="text-(--p-text-color) font-medium">Nincs videó ebben a listában</p>
+        <p class="text-(--p-text-color) font-medium">No videos in this playlist</p>
       </div>
     } @else {
       <div class="flex flex-col gap-2">

@@ -1,5 +1,5 @@
 <div class="mt-6">
-  <h2 class="text-base font-semibold text-(--p-text-color) mb-4">Hozzászólások</h2>
+  <h2 class="text-base font-semibold text-(--p-text-color) mb-4">Comments</h2>
 
   <!-- Új komment form -->
   @if (auth.isLoggedIn()) {
@@ -11,14 +11,14 @@
         <textarea
           class="w-full bg-transparent border-b border-(--p-surface-border) focus:border-(--p-primary-color) outline-none resize-none text-sm text-(--p-text-color) pb-1 transition-colors"
           rows="1"
-          placeholder="Írj hozzászólást..."
+          placeholder="Write a comment..."
           [value]="newText()"
           (input)="onNewInput($event)"
         ></textarea>
         @if (newText().trim()) {
           <div class="flex justify-end gap-2 mt-2">
-            <button (click)="newText.set('')" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Mégse</button>
-            <button (click)="submitNew()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity">Küldés</button>
+            <button (click)="newText.set('')" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Cancel</button>
+            <button (click)="submitNew()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity">Send</button>
           </div>
         }
       </div>
@@ -39,7 +39,7 @@
       }
     </div>
   } @else if (!comments().length) {
-    <p class="text-sm text-(--p-text-muted-color) text-center py-8">Még nincs hozzászólás. Légy te az első!</p>
+    <p class="text-sm text-(--p-text-muted-color) text-center py-8">No comments yet. Be the first!</p>
   } @else {
     <div class="space-y-6">
       @for (comment of comments(); track comment.id) {
@@ -63,13 +63,13 @@
                     <textarea
                       class="w-full bg-transparent border-b border-(--p-surface-border) focus:border-(--p-primary-color) outline-none resize-none text-sm text-(--p-text-color) pb-1 transition-colors"
                       rows="1"
-                      placeholder="Írj választ..."
+                      placeholder="Write a reply..."
                       [value]="replyText()"
                       (input)="onReplyInput($event)"
                     ></textarea>
                     <div class="flex justify-end gap-2 mt-2">
-                      <button (click)="cancelReply()" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Mégse</button>
-                      <button (click)="submitReply(comment.id)" [disabled]="!replyText().trim()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40">Küldés</button>
+                      <button (click)="cancelReply()" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Cancel</button>
+                      <button (click)="submitReply(comment.id)" [disabled]="!replyText().trim()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40">Send</button>
                     </div>
                   </div>
                 </div>
@@ -97,7 +97,7 @@
         <span class="text-sm font-medium text-(--p-text-color)">{{ c.user.name }}</span>
         <span class="text-xs text-(--p-text-muted-color)">{{ c.createdAt | timeAgo }}</span>
         @if (c.updatedAt) {
-          <span class="text-xs text-(--p-text-muted-color) italic">(szerkesztve)</span>
+          <span class="text-xs text-(--p-text-muted-color) italic">(edited)</span>
         }
       </div>
 
@@ -111,8 +111,8 @@
             (input)="onEditInput($event)"
           ></textarea>
           <div class="flex justify-end gap-2 mt-2">
-            <button (click)="cancelEdit()" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Mégse</button>
-            <button (click)="saveEdit(c.id)" [disabled]="!editText().trim()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40">Mentés</button>
+            <button (click)="cancelEdit()" class="text-xs px-3 py-1.5 rounded-full hover:bg-(--p-surface-hover) text-(--p-text-muted-color) cursor-pointer transition-colors">Cancel</button>
+            <button (click)="saveEdit(c.id)" [disabled]="!editText().trim()" class="text-xs px-3 py-1.5 rounded-full bg-(--p-primary-color) text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40">Save</button>
           </div>
         </div>
       } @else {
@@ -124,11 +124,11 @@
                [class.-translate-x-3]="deletingId() === c.id"
                [class.pointer-events-none]="deletingId() === c.id">
             @if (auth.isLoggedIn()) {
-              <button (click)="startReply(rootId, isReply ? c.user.name : null)" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Válasz</button>
+              <button (click)="startReply(rootId, isReply ? c.user.name : null)" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Reply</button>
             }
             @if (isOwn(c)) {
-              <button (click)="startEdit(c)" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Szerkesztés</button>
-              <button (click)="startDelete(c.id)" class="text-xs text-red-400 hover:text-red-500 cursor-pointer transition-colors">Törlés</button>
+              <button (click)="startEdit(c)" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Edit</button>
+              <button (click)="startDelete(c.id)" class="text-xs text-red-400 hover:text-red-500 cursor-pointer transition-colors">Delete</button>
             }
           </div>
           <!-- Törlés megerősítés: bejön jobbról, kimegy jobbra törlés után -->
@@ -136,9 +136,9 @@
                [class.opacity-0]="deletingId() !== c.id"
                [class.translate-x-3]="deletingId() !== c.id"
                [class.pointer-events-none]="deletingId() !== c.id">
-            <span class="text-xs text-(--p-text-muted-color)">Biztosan törlöd?</span>
-            <button (click)="confirmDelete(c.id)" class="text-xs text-red-400 hover:text-red-500 cursor-pointer transition-colors">Igen, törlés</button>
-            <button (click)="cancelDelete()" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Mégse</button>
+            <span class="text-xs text-(--p-text-muted-color)">Are you sure?</span>
+            <button (click)="confirmDelete(c.id)" class="text-xs text-red-400 hover:text-red-500 cursor-pointer transition-colors">Yes, delete</button>
+            <button (click)="cancelDelete()" class="text-xs text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer transition-colors">Cancel</button>
           </div>
         </div>
       }

@@ -3,19 +3,19 @@
 
 <div class="max-w-2xl mx-auto p-6">
 
-  <h1 class="text-2xl font-bold text-(--p-text-color)">Profil szerkesztése</h1>
-  <p class="text-sm text-(--p-text-muted-color) mt-1">Állítsd be a megjelenített nevedet és profilképedet.</p>
+  <h1 class="text-2xl font-bold text-(--p-text-color)">Edit profile</h1>
+  <p class="text-sm text-(--p-text-muted-color) mt-1">Set your display name and profile picture.</p>
 
   <!-- Profilkép -->
   <section class="mt-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Profilkép</h2>
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Profile picture</h2>
     <div class="flex items-center gap-6">
 
       <!-- Avatar kör -->
       <div class="relative w-24 h-24 shrink-0">
         <div class="w-24 h-24 rounded-full overflow-hidden bg-(--p-surface-card) flex items-center justify-center">
           @if (avatarPreviewUrl() ?? auth.profile()?.avatarUrl; as url) {
-            <img [src]="url" alt="Profilkép" class="w-full h-full object-cover" />
+            <img [src]="url" alt="Profile picture" class="w-full h-full object-cover" />
           } @else {
             <i class="pi pi-user text-4xl text-(--p-text-muted-color)"></i>
           }
@@ -30,20 +30,20 @@
       <!-- Gomb + státusz -->
       <div class="space-y-2">
         <p-button
-          label="Kép kiválasztása"
+          label="Choose image"
           icon="pi pi-camera"
           severity="secondary"
           [disabled]="avatarState() === 'uploading' || avatarState() === 'processing'"
           (onClick)="openFilePicker()"
         />
         @if (avatarState() === 'uploading') {
-          <p class="text-sm text-(--p-text-muted-color)">Feltöltés...</p>
+          <p class="text-sm text-(--p-text-muted-color)">Uploading...</p>
         } @else if (avatarState() === 'processing') {
-          <p class="text-sm text-(--p-text-muted-color)">Feldolgozás...</p>
+          <p class="text-sm text-(--p-text-muted-color)">Processing...</p>
         } @else if (avatarState() === 'done') {
-          <p class="text-sm text-green-500">Profilkép frissítve!</p>
+          <p class="text-sm text-green-500">Profile picture updated!</p>
         } @else if (avatarState() === 'error') {
-          <p class="text-sm text-red-500">Hiba történt a feltöltés során.</p>
+          <p class="text-sm text-red-500">An error occurred while uploading.</p>
         } @else {
           <p class="text-xs text-(--p-text-muted-color)">JPG, PNG vagy GIF — max. 5 MB</p>
         }
@@ -53,18 +53,18 @@
 
   <!-- Megjelenített név -->
   <section class="mt-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Megjelenített név</h2>
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Display name</h2>
     <div class="flex gap-3 items-start">
       <input
         pInputText
         class="flex-1"
-        placeholder="Írj be egy nevet..."
+        placeholder="Enter a name..."
         [ngModel]="displayName()"
         (ngModelChange)="displayName.set($event)"
         (keydown.enter)="saveDisplayName()"
       />
       <p-button
-        label="Mentés"
+        label="Save"
         [loading]="saveState() === 'saving'"
         [disabled]="!displayName().trim() || saveState() === 'saving'"
         (onClick)="saveDisplayName()"
@@ -72,9 +72,9 @@
     </div>
     <div class="mt-2 h-5">
       @if (saveState() === 'saved') {
-        <p class="text-sm text-green-500">Sikeresen mentve!</p>
+        <p class="text-sm text-green-500">Saved successfully!</p>
       } @else if (saveState() === 'error') {
-        <p class="text-sm text-red-500">Hiba történt a mentés során.</p>
+        <p class="text-sm text-red-500">An error occurred while saving.</p>
       }
     </div>
   </section>
@@ -83,7 +83,7 @@
 
 <!-- Cropper dialog -->
 <p-dialog
-  header="Profilkép kivágása"
+  header="Crop profile picture"
   [visible]="cropperVisible()"
   (visibleChange)="cropperVisible.set($event)"
   [modal]="true"
@@ -123,8 +123,8 @@
 
       <!-- Gombok -->
       <div class="flex justify-end gap-2">
-        <p-button label="Mégse" severity="secondary" (onClick)="cancelCrop()" />
-        <p-button label="Kész" (onClick)="confirmCrop()" />
+        <p-button label="Cancel" severity="secondary" (onClick)="cancelCrop()" />
+        <p-button label="Done" (onClick)="confirmCrop()" />
       </div>
 
     </div>

@@ -20,10 +20,10 @@
     </div>
     <div class="flex-1 min-w-0">
       <h2 class="text-base font-semibold text-(--p-text-color)">
-        {{ mode() === 'edit' ? 'Lista szerkesztése' : 'Új lejátszási lista' }}
+        {{ mode() === 'edit' ? 'Edit playlist' : 'New playlist' }}
       </h2>
       <p class="text-xs text-(--p-text-muted-color) mt-0.5">
-        {{ mode() === 'edit' ? 'Módosítsd a lista adatait' : 'Rendezd videóidat listákba' }}
+        {{ mode() === 'edit' ? 'Edit playlist details' : 'Organize your videos into playlists' }}
       </p>
     </div>
     <button
@@ -42,13 +42,13 @@
 
     <div class="flex flex-col gap-2">
       <label class="text-sm font-medium text-(--p-text-color)">
-        Cím <span class="text-red-400">*</span>
+        Title <span class="text-red-400">*</span>
       </label>
       <input
         pInputText
         type="text"
         maxlength="200"
-        placeholder="Lista neve..."
+        placeholder="Playlist name..."
         [ngModel]="formTitle()"
         (ngModelChange)="formTitle.set($event)"
         class="w-full"
@@ -56,11 +56,11 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <label class="text-sm font-medium text-(--p-text-color)">Leírás</label>
+      <label class="text-sm font-medium text-(--p-text-color)">Description</label>
       <textarea
         rows="3"
         maxlength="2000"
-        placeholder="Opcionális leírás..."
+        placeholder="Optional description..."
         [ngModel]="formDesc()"
         (ngModelChange)="formDesc.set($event)"
         class="w-full resize-none rounded-lg border border-(--p-inputtext-border-color) bg-(--p-inputtext-background)
@@ -70,7 +70,7 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <label class="text-sm font-medium text-(--p-text-color)">Láthatóság</label>
+      <label class="text-sm font-medium text-(--p-text-color)">Visibility</label>
       <div class="rounded-lg ring-2 transition-colors duration-200"
            [class]="formVis() === 1 ? 'ring-green-500/50' : formVis() === 2 ? 'ring-amber-400/50' : 'ring-(--p-surface-border)'">
         <p-select
@@ -119,7 +119,7 @@
              border border-(--p-surface-border) text-(--p-text-muted-color)
              hover:border-(--p-text-muted-color) hover:text-(--p-text-color)"
     >
-      Mégse
+      Cancel
     </button>
     <button
       type="button"
@@ -133,7 +133,7 @@
       @if (isSaving()) {
         <i class="pi pi-spinner pi-spin text-sm"></i>
       }
-      {{ mode() === 'edit' ? 'Mentés' : 'Létrehozás' }}
+      {{ mode() === 'edit' ? 'Save' : 'Create' }}
     </button>
   </div>
 </p-dialog>

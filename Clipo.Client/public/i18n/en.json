@@ -162,6 +162,17 @@
       "header": "Crop profile picture",
       "cancel": "Cancel",
       "done": "Done"
+    },
+    "appearance": {
+      "heading": "Appearance",
+      "dark": {
+        "label": "Dark",
+        "hint": "Black background, green accents"
+      },
+      "light": {
+        "label": "Light",
+        "hint": "White background, orange accents"
+      }
     }
   },
   "comments": {

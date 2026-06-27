@@ -162,6 +162,17 @@
       "header": "Profilkép kivágása",
       "cancel": "Mégse",
       "done": "Kész"
+    },
+    "appearance": {
+      "heading": "Megjelenés",
+      "dark": {
+        "label": "Sötét",
+        "hint": "Fekete alap, zöld kiemelések"
+      },
+      "light": {
+        "label": "Világos",
+        "hint": "Fehér alap, narancssárga kiemelések"
+      }
     }
   },
   "comments": {

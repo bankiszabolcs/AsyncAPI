@@ -10,6 +10,7 @@ import { Dialog } from 'primeng/dialog';
 import { Slider } from 'primeng/slider';
 import { AuthService, UserProfile } from '../../../core/auth/auth.service';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
+import { ThemeService } from '../../../core/services/theme.service';
 
 type AvatarState = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
 type SaveState   = 'idle' | 'saving'    | 'saved'      | 'error';
@@ -24,6 +25,7 @@ export class Profile implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly transloco  = inject(TranslocoService);
   readonly auth               = inject(AuthService);
+  readonly themeService       = inject(ThemeService);
 
   readonly activeLang = toSignal(this.transloco.langChanges$, {
     initialValue: this.transloco.getActiveLang(),

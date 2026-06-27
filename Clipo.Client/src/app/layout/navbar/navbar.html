@@ -13,7 +13,7 @@
       aria-label="Menu"
     />
     <a routerLink="/" class="flex items-center gap-2 px-2 no-underline select-none">
-      <i class="pi pi-video text-2xl text-green-500"></i>
+      <i class="pi pi-video text-2xl text-(--p-primary-color)"></i>
       <span class="text-lg font-bold tracking-tight text-(--p-text-color)">Clipo</span>
     </a>
   </div>
@@ -50,7 +50,7 @@
           class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer
             bg-transparent border-none hover:bg-(--p-surface-hover) transition-colors"
         >
-          <i class="pi pi-upload text-xl text-green-500"></i>
+          <i class="pi pi-upload text-xl text-(--p-primary-color)"></i>
         </button>
       } @else {
         <p-button
@@ -75,7 +75,7 @@
         />
         @if (notifSvc.unreadCount() > 0) {
           <span class="absolute top-0.5 right-0.5 min-w-4.5 h-4.5 px-1
-            bg-green-500 text-white text-[10px] font-bold rounded-full
+            bg-(--p-primary-color) text-white text-[10px] font-bold rounded-full
             flex items-center justify-center pointer-events-none leading-none">
             {{ notifSvc.unreadCount() > 99 ? '99+' : notifSvc.unreadCount() }}
           </span>

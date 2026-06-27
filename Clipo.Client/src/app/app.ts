@@ -9,6 +9,7 @@ import { LoadingService } from './core/services/loading.service';
 import { ProgressBar } from 'primeng/progressbar';
 import { NotificationService } from './core/services/notification.service';
 import { AppNotification } from './core/models/notification.model';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,8 @@ import { AppNotification } from './core/models/notification.model';
 export class App {
   readonly loading   = inject(LoadingService);
   private readonly notifSvc = inject(NotificationService);
+  // ThemeService injection triggers its constructor effect which applies the saved theme
+  private readonly _theme = inject(ThemeService);
 
   onToastClick(msg: ToastMessageOptions, closeFn: (e: Event) => void, event: Event): void {
     const n = msg.data as AppNotification | undefined;

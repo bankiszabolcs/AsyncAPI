@@ -72,6 +72,88 @@
     </div>
   </section>
 
+  <!-- Megjelenés / Téma -->
+  <section class="mt-8">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">
+      {{ 'profile.appearance.heading' | transloco }}
+    </h2>
+    <div class="flex gap-4">
+
+      <!-- Sötét téma kártya -->
+      <button
+        type="button"
+        (click)="themeService.setTheme('dark')"
+        class="flex-1 rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer bg-transparent p-0 text-left"
+        [class]="themeService.theme() === 'dark'
+          ? 'border-(--p-primary-color) shadow-lg'
+          : 'border-(--p-surface-border) hover:border-(--p-text-muted-color)'"
+      >
+        <div class="bg-[#0f0f0f] p-4 h-28 flex flex-col gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded-full bg-[#22c55e]/70 shrink-0"></div>
+            <div class="h-2 w-20 bg-[#1e1e1e] rounded-full"></div>
+          </div>
+          <div class="h-2 w-32 bg-[#1e1e1e] rounded-full mt-1"></div>
+          <div class="h-2 w-24 bg-[#1e1e1e] rounded-full"></div>
+          <div class="flex gap-2 mt-auto">
+            <div class="h-5 w-12 rounded bg-[#22c55e]/80"></div>
+            <div class="h-5 w-16 rounded bg-[#1e1e1e]"></div>
+          </div>
+        </div>
+        <div class="px-4 py-3 bg-(--p-surface-card) flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-(--p-text-color)">
+              {{ 'profile.appearance.dark.label' | transloco }}
+            </p>
+            <p class="text-xs text-(--p-text-muted-color) mt-0.5">
+              {{ 'profile.appearance.dark.hint' | transloco }}
+            </p>
+          </div>
+          @if (themeService.theme() === 'dark') {
+            <i class="pi pi-check-circle text-(--p-primary-color) shrink-0 text-lg"></i>
+          }
+        </div>
+      </button>
+
+      <!-- McLaren téma kártya -->
+      <button
+        type="button"
+        (click)="themeService.setTheme('light')"
+        class="flex-1 rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer bg-transparent p-0 text-left"
+        [class]="themeService.theme() === 'light'
+          ? 'border-(--p-primary-color) shadow-lg'
+          : 'border-(--p-surface-border) hover:border-(--p-text-muted-color)'"
+      >
+        <div class="bg-white p-4 h-28 flex flex-col gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded-full bg-[#FF8000]/80 shrink-0"></div>
+            <div class="h-2 w-20 bg-gray-100 rounded-full"></div>
+          </div>
+          <div class="h-2 w-32 bg-gray-100 rounded-full mt-1"></div>
+          <div class="h-2 w-24 bg-gray-100 rounded-full"></div>
+          <div class="flex gap-2 mt-auto">
+            <div class="h-5 w-12 rounded bg-[#FF8000]/80"></div>
+            <div class="h-5 w-16 rounded bg-gray-100"></div>
+          </div>
+        </div>
+        <div class="px-4 py-3 bg-(--p-surface-card) flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-(--p-text-color)">
+              {{ 'profile.appearance.light.label' | transloco }}
+            </p>
+            <p class="text-xs text-(--p-text-muted-color) mt-0.5">
+              {{ 'profile.appearance.light.hint' | transloco }}
+            </p>
+          </div>
+          @if (themeService.theme() === 'light') {
+            <i class="pi pi-check-circle text-(--p-primary-color) shrink-0 text-lg"></i>
+          }
+        </div>
+      </button>
+
+    </div>
+  </section>
+
   <!-- Megjelenített név -->
   <section class="mt-8">
     <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">{{ 'profile.displayName.heading' | transloco }}</h2>

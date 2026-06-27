@@ -142,7 +142,7 @@
           <div class="py-1.5 cursor-pointer" (click)="seekPreview($event)">
             <div class="relative h-1 group-hover/seek:h-1.5 transition-all duration-150 bg-white/30 rounded-full">
               <div
-                class="absolute inset-y-0 left-0 bg-green-500 rounded-full transition-none"
+                class="absolute inset-y-0 left-0 bg-(--p-primary-color) rounded-full transition-none"
                 [style.width.%]="thumbnailHoverRatio() !== null ? (thumbnailHoverRatio()! * 100) : progress()"
               ></div>
             </div>

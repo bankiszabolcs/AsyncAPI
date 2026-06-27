@@ -3,14 +3,39 @@
 @import 'tailwindcss';
 @import 'primeicons/primeicons.css';
 
-/* Dark mode surface overrides — az Aura preset értékeit felülírjuk,
-   mert az alapértelmezett border szín túl látható. */
+/* Dark mode surface overrides */
 .dark {
   --p-surface-ground:   #0f0f0f;
   --p-surface-section:  #161616;
   --p-surface-card:     #1e1e1e;
   --p-surface-border:   rgba(255, 255, 255, 0.07);
   --p-surface-hover:    rgba(255, 255, 255, 0.07);
+}
+
+/* Light theme: fehér alap, McLaren narancssárga kiemelés */
+.light {
+  --p-surface-ground:   #f4f4f2;
+  --p-surface-section:  #fafaf9;
+  --p-surface-card:     #ffffff;
+  --p-surface-border:   rgba(0, 0, 0, 0.09);
+  --p-surface-hover:    rgba(0, 0, 0, 0.04);
+
+  --p-primary-50:  #fff5e6;
+  --p-primary-100: #ffeacc;
+  --p-primary-200: #ffd599;
+  --p-primary-300: #ffc066;
+  --p-primary-400: #ffaa33;
+  --p-primary-500: #FF8000;
+  --p-primary-600: #cc6600;
+  --p-primary-700: #994d00;
+  --p-primary-800: #663300;
+  --p-primary-900: #331a00;
+  --p-primary-950: #1a0d00;
+
+  --p-primary-color:          #FF8000;
+  --p-primary-contrast-color: #ffffff;
+  --p-primary-hover-color:    #e67300;
+  --p-primary-active-color:   #cc6600;
 }
 
 /* Profil-menü: csak a saját, lekerekített <a> hover látszódjon — a PrimeNG

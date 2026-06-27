@@ -8,6 +8,10 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
+import { provideOAuthClient } from 'angular-oauth2-oidc';
+
+import { routes } from './app.routes';
+import { AuthService } from './core/auth/auth.service';
 
 const ClipoPreset = definePreset(Aura, {
   semantic: {
@@ -26,10 +30,6 @@ const ClipoPreset = definePreset(Aura, {
     }
   }
 });
-import { provideOAuthClient } from 'angular-oauth2-oidc';
-
-import { routes } from './app.routes';
-import { AuthService } from './core/auth/auth.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [

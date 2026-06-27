@@ -1,5 +1,7 @@
 import { Component, computed, inject, input, OnDestroy, signal, viewChild, ElementRef, booleanAttribute } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { TimeAgoPipe } from '../pipes/time-ago.pipe';
 import { ViewCountPipe } from '../pipes/view-count.pipe';
 import { HttpClient } from '@angular/common/http';
@@ -25,7 +27,7 @@ export interface CardVideo {
 
 @Component({
   selector: 'app-video-card',
-  imports: [RouterLink, TimeAgoPipe, ViewCountPipe],
+  imports: [RouterLink, TimeAgoPipe, ViewCountPipe, TranslocoPipe],
   templateUrl: './video-card.html',
 })
 export class VideoCard implements OnDestroy {
@@ -34,10 +36,15 @@ export class VideoCard implements OnDestroy {
 
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly transloco = inject(TranslocoService);
   private readonly videoEl = viewChild<ElementRef<HTMLVideoElement>>('videoPreview');
   private hls: Hls | null = null;
   private readonly frames = signal<SpriteFrame[]>([]);
   private vttLoaded = false;
+
+  private readonly activeLang = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
 
   readonly isHovering = signal(false);
   readonly currentTime = signal(0);
@@ -100,8 +107,14 @@ export class VideoCard implements OnDestroy {
   });
 
   readonly statusLabelText = computed(() => {
-    const labels: Record<number, string> = { 1: 'Sorban áll', 2: 'Feldolgozás alatt', 4: 'Sikertelen' };
-    return labels[this.video().statusId ?? 3] ?? '';
+    void this.activeLang();
+    const keys: Record<number, string> = {
+      1: 'videoCard.status.queued',
+      2: 'videoCard.status.processing',
+      4: 'videoCard.status.failed',
+    };
+    const key = keys[this.video().statusId ?? 3];
+    return key ? this.transloco.translate(key) : '';
   });
 
   readonly statusBadgeClass = computed(() => {

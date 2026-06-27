@@ -34,7 +34,7 @@
       }
       <span class="text-xs text-(--p-text-muted-color)">
         @if (video().viewCount !== undefined) {
-          {{ video().viewCount | viewCount }} views &middot;
+          {{ video().viewCount | viewCount }} {{ 'videoCard.views' | transloco }} &middot;
         }
         {{ video().publishedAt | timeAgo }}
       </span>
@@ -175,7 +175,7 @@
         } @else {
           <span class="text-xs text-(--p-text-muted-color)">
             @if (video().viewCount !== undefined) {
-              {{ video().viewCount | viewCount }} views &middot;
+              {{ video().viewCount | viewCount }} {{ 'videoCard.views' | transloco }} &middot;
             }
             {{ video().publishedAt | timeAgo }}
           </span>

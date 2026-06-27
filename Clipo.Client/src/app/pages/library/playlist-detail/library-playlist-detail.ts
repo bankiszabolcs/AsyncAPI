@@ -3,10 +3,11 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, of, switchMap } from 'rxjs';
 import { PlaylistService } from '../../../core/services/playlist.service';
 import { PlaylistDetail } from '../../../core/models/playlist.model';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-library-playlist-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, TranslocoPipe],
   providers: [PlaylistService],
   templateUrl: './library-playlist-detail.html',
 })

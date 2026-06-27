@@ -3,10 +3,11 @@ import { catchError, of } from 'rxjs';
 import { WatchLaterService } from '../../../core/services/watch-later.service';
 import { WatchLaterItem } from '../../../core/models/watch-later.model';
 import { VideoCard } from '../../../shared/video-card/video-card';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-library-watch-later',
-  imports: [VideoCard],
+  imports: [VideoCard, TranslocoPipe],
   providers: [WatchLaterService],
   templateUrl: './library-watch-later.html',
 })

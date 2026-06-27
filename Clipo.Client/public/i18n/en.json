@@ -1,0 +1,258 @@
+{
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "subscriptions": "Subscriptions",
+    "library": "Library",
+    "history": "History"
+  },
+  "userMenu": {
+    "myChannel": "My channel",
+    "studio": "Studio",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "navbar": {
+    "upload": "Upload",
+    "signIn": "Sign in",
+    "notifications": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications",
+    "search": "Search"
+  },
+  "explore": {
+    "all": "All",
+    "loadError": "Failed to load videos.",
+    "empty": "No videos in this category yet."
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "subscribers": "subscribers",
+    "videos": "Videos",
+    "selectChannel": "Select a channel to view its videos",
+    "noPublicVideos": "This channel has no public videos yet.",
+    "notSubscribed": "You haven't subscribed to anyone yet",
+    "notSubscribedHint": "Find your favorite channels and click the Subscribe button.",
+    "explore": "Explore"
+  },
+  "watch": {
+    "notFound": "Video not found",
+    "notFoundDetail": "The requested video could not be found.",
+    "processingNote": "This may take a few minutes — the page will refresh automatically.",
+    "noDescription": "No description",
+    "subscribe": "Subscribe",
+    "unsubscribe": "Unsubscribe",
+    "save": "Save",
+    "saved": "Saved",
+    "removeFromSaved": "Remove from saved",
+    "watchLater": "Watch later",
+    "watchLaterDone": "Watch later ✓",
+    "removeFromWatchLater": "Remove from watch later",
+    "addToWatchLater": "Add to watch later",
+    "relatedVideos": "Related videos",
+    "noRelatedVideos": "No related videos",
+    "subscribers": "subscribers",
+    "status": {
+      "queued": "Queued",
+      "processing": "Processing",
+      "failed": "Processing failed"
+    }
+  },
+  "videoCard": {
+    "views": "views",
+    "status": {
+      "queued": "Queued",
+      "processing": "Processing",
+      "failed": "Failed"
+    }
+  },
+  "upload": {
+    "title": "Upload a video",
+    "storage": "Storage",
+    "free": "free",
+    "successTitle": "Uploaded successfully!",
+    "successDetail": "The video is being processed, this may take a few minutes.",
+    "viewVideo": "View video",
+    "uploadAnother": "Upload another",
+    "chooseFile": "Choose file",
+    "uploadBtn": "Upload",
+    "clearBtn": "Clear",
+    "dragHere": "Drag your video here",
+    "orChoose": "or click above to choose a file",
+    "maxSize": "maximum 2 GB",
+    "uploadFailed": "Upload failed",
+    "retry": "Retry",
+    "storageError": "Not enough storage. Required: {{ required }}, available: {{ available }}",
+    "errorSummary": "Error"
+  },
+  "studio": {
+    "title": "Studio",
+    "subtitle": "Manage your content and track performance.",
+    "upload": "Upload",
+    "yourVideos": "Your videos",
+    "nothingYet": "Nothing here yet",
+    "nothingHint": "Upload your first video to get started.",
+    "titlePlaceholder": "Title",
+    "descriptionPlaceholder": "No description",
+    "save": "Save",
+    "edit": "Edit",
+    "categoryNone": "Not specified",
+    "stats": {
+      "total": "Total videos",
+      "published": "Published",
+      "drafts": "Drafts"
+    }
+  },
+  "visibility": {
+    "public": {
+      "label": "Public",
+      "hint": "Anyone can search for and watch this video."
+    },
+    "unlisted": {
+      "label": "Unlisted",
+      "hint": "Anyone with the link can watch — it is not listed or searchable."
+    },
+    "private": {
+      "label": "Private",
+      "hint": "Only you can watch this video."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and preferences.",
+    "account": {
+      "title": "Account",
+      "profile": { "label": "Profile", "description": "Name, avatar and channel details" },
+      "privacy": { "label": "Privacy", "description": "Control who can see your activity" }
+    },
+    "playback": {
+      "title": "Playback",
+      "quality": { "label": "Quality", "description": "Default video quality and data usage" },
+      "autoplay": { "label": "Autoplay", "description": "Play the next video automatically" }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "email": { "label": "Email", "description": "Updates and recommendations by email" },
+      "push": { "label": "Push", "description": "Activity from channels you follow" }
+    }
+  },
+  "profile": {
+    "title": "Edit profile",
+    "subtitle": "Set your display name and profile picture.",
+    "language": {
+      "heading": "Language"
+    },
+    "picture": {
+      "heading": "Profile picture",
+      "choose": "Choose image",
+      "uploading": "Uploading...",
+      "processing": "Processing...",
+      "done": "Profile picture updated!",
+      "error": "An error occurred while uploading.",
+      "hint": "JPG, PNG or GIF — max. 5 MB"
+    },
+    "displayName": {
+      "heading": "Display name",
+      "placeholder": "Enter a name...",
+      "save": "Save",
+      "saved": "Saved successfully!",
+      "error": "An error occurred while saving."
+    },
+    "cropDialog": {
+      "header": "Crop profile picture",
+      "cancel": "Cancel",
+      "done": "Done"
+    }
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Write a comment...",
+    "replyPlaceholder": "Write a reply...",
+    "send": "Send",
+    "cancel": "Cancel",
+    "save": "Save",
+    "reply": "Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "areYouSure": "Are you sure?",
+    "yesDelete": "Yes, delete",
+    "noComments": "No comments yet. Be the first!",
+    "edited": "(edited)"
+  },
+  "searchBar": {
+    "placeholder": "Search...",
+    "history": "History",
+    "clear": "Clear"
+  },
+  "player": {
+    "auto": "Auto"
+  },
+  "library": {
+    "title": "Library",
+    "playlists": "Playlists",
+    "savedVideos": "Saved videos",
+    "watchLater": "Watch later",
+    "noPlaylists": "No playlists yet",
+    "noPlaylistsHint": "You can create one on the Channel page.",
+    "noSaved": "No saved videos yet",
+    "noSavedHint": "Click the heart icon to save videos.",
+    "noWatchLater": "No watch later videos yet",
+    "noWatchLaterHint": "Click the clock icon to add videos."
+  },
+  "channel": {
+    "videos": "Videos",
+    "playlists": "Playlists",
+    "about": "About",
+    "noVideos": "No videos yet",
+    "noVideosHint": "Your uploaded videos will appear here.",
+    "uploadFirst": "Upload a video",
+    "noPublicVideos": "No public videos yet"
+  },
+  "publicChannel": {
+    "subscribers": "subscribers",
+    "subscribe": "Subscribe",
+    "unsubscribe": "Unsubscribe",
+    "notFound": "Channel not found"
+  },
+  "history": {
+    "title": "History",
+    "clearAll": "Clear all",
+    "empty": "No videos watched yet."
+  },
+  "search": {
+    "results": "Results",
+    "loadError": "Failed to load search results.",
+    "noResults": "No results for"
+  },
+  "playlist": {
+    "notFound": "Playlist not found",
+    "backToChannel": "Back to channel",
+    "backToLibrary": "Back to library",
+    "noVideos": "No videos in this playlist yet",
+    "noVideosReadonly": "No videos in this playlist",
+    "addVideo": "Add video",
+    "editPlaylist": "Edit playlist",
+    "deletePlaylist": "Delete playlist",
+    "newPlaylist": "New playlist",
+    "editTitle": "Edit playlist details",
+    "newHint": "Organize your videos into playlists",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "visibilityLabel": "Visibility",
+    "titlePlaceholder": "Playlist name...",
+    "descriptionPlaceholder": "Optional description...",
+    "cancel": "Cancel",
+    "create": "Create",
+    "save": "Save",
+    "noAvailableVideos": "No videos available to add",
+    "deleteConfirm": "Are you sure you want to delete this playlist?",
+    "deleteNote": "The videos will not be deleted",
+    "deleteIrreversible": "This action cannot be undone",
+    "delete": "Delete",
+    "newList": "New list",
+    "createFirst": "Create your first list",
+    "noPlaylistsHint": "Create one to organize your videos.",
+    "moveUp": "Move up",
+    "moveDown": "Move down"
+  }
+}

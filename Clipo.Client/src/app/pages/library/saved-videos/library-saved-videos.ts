@@ -3,10 +3,11 @@ import { catchError, of } from 'rxjs';
 import { SavedVideoService } from '../../../core/services/saved-video.service';
 import { SavedVideoItem } from '../../../core/models/saved-video.model';
 import { VideoCard } from '../../../shared/video-card/video-card';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-library-saved-videos',
-  imports: [VideoCard],
+  imports: [VideoCard, TranslocoPipe],
   providers: [SavedVideoService],
   templateUrl: './library-saved-videos.html',
 })

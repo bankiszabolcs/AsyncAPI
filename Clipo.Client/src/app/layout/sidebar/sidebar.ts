@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Ripple } from 'primeng/ripple';
 import { Tooltip } from 'primeng/tooltip';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 interface NavItem {
   label: string;
@@ -12,21 +13,19 @@ interface NavItem {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, Ripple, Tooltip],
+  imports: [RouterLink, RouterLinkActive, Ripple, Tooltip, TranslocoPipe],
   templateUrl: './sidebar.html',
 })
 export class Sidebar {
   readonly collapsed = input(false);
-  // Drawerben (mobil) teljes szélességgel, saját háttér/árnyék nélkül jelenik meg.
   readonly drawerMode = input(false);
-  // Menüpontra kattintva a szülő bezárhatja a mobil drawert.
   readonly itemClick = output<void>();
 
   readonly navItems: NavItem[] = [
-    { label: 'Főoldal',        icon: 'pi-home',      route: '/',              exact: true },
-    { label: 'Felfedezés',     icon: 'pi-compass',   route: '/explore' },
-    { label: 'Feliratkozások', icon: 'pi-users',      route: '/subscriptions' },
-    { label: 'Könyvtár',       icon: 'pi-book',       route: '/library' },
-    { label: 'Előzmények',     icon: 'pi-history',    route: '/history' },
+    { label: 'nav.home',          icon: 'pi-home',    route: '/',              exact: true },
+    { label: 'nav.explore',       icon: 'pi-compass', route: '/explore' },
+    { label: 'nav.subscriptions', icon: 'pi-users',   route: '/subscriptions' },
+    { label: 'nav.library',       icon: 'pi-book',    route: '/library' },
+    { label: 'nav.history',       icon: 'pi-history', route: '/history' },
   ];
 }

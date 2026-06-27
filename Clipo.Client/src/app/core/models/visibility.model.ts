@@ -7,15 +7,14 @@ export enum Visibility {
 
 export interface VisibilityOption {
   value: Visibility;
-  label: string;
   icon: string;
-  hint: string;
+  translationKey: string;
 }
 
 export const VISIBILITY_OPTIONS: readonly VisibilityOption[] = [
-  { value: Visibility.Public,   label: 'Public',   icon: 'pi-globe', hint: 'Anyone can search for and watch this video.' },
-  { value: Visibility.Unlisted, label: 'Unlisted', icon: 'pi-link',  hint: 'Anyone with the link can watch — it is not listed or searchable.' },
-  { value: Visibility.Private,  label: 'Private',  icon: 'pi-lock',  hint: 'Only you can watch this video.' },
+  { value: Visibility.Public,   icon: 'pi-globe', translationKey: 'public' },
+  { value: Visibility.Unlisted, icon: 'pi-link',  translationKey: 'unlisted' },
+  { value: Visibility.Private,  icon: 'pi-lock',  translationKey: 'private' },
 ];
 
 export function visibilityOption(value: number): VisibilityOption | undefined {

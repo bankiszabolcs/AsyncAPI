@@ -13,13 +13,14 @@ import { Router } from '@angular/router';
 import { Subject, Subscription, of, switchMap, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { NavigationEnd } from '@angular/router';
 import { VideoService } from '../../core/services/video.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 const HISTORY_KEY = 'clipo_search_history';
 const MAX_HISTORY = 10;
 
 @Component({
   selector: 'app-search-bar',
-  imports: [FormsModule],
+  imports: [FormsModule, TranslocoPipe],
   templateUrl: './search-bar.html',
 })
 export class SearchBar implements OnInit, OnDestroy {

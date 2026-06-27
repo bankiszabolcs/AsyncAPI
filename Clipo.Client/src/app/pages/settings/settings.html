@@ -1,9 +1,9 @@
 <div class="max-w-3xl mx-auto p-6">
 
-  <h1 class="text-2xl font-bold text-(--p-text-color)">Settings</h1>
-  <p class="text-sm text-(--p-text-muted-color) mt-1">Manage your account and preferences.</p>
+  <h1 class="text-2xl font-bold text-(--p-text-color)">{{ 'settings.title' | transloco }}</h1>
+  <p class="text-sm text-(--p-text-muted-color) mt-1">{{ 'settings.subtitle' | transloco }}</p>
 
-  @for (group of groups; track group.title) {
+  @for (group of groups(); track group.title) {
     <section class="mt-8">
       <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-3">
         {{ group.title }}

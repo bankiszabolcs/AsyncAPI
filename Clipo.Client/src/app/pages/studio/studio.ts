@@ -1,14 +1,16 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { BadgeModule } from 'primeng/badge';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { VideoService } from '../../core/services/video.service';
 import { CategoryService } from '../../core/services/category.service';
 import { MyVideo } from '../../core/models/my-video.model';
-import { Visibility, visibilityOption, VISIBILITY_OPTIONS } from '../../core/models/visibility.model';
+import { Visibility, VISIBILITY_OPTIONS } from '../../core/models/visibility.model';
 import { ProcessingStatus } from '../../core/models/processing-status.model';
 import { Category } from '../../core/models/category.model';
 
@@ -20,26 +22,41 @@ interface Stat {
 
 @Component({
   selector: 'app-studio',
-  imports: [RouterLink, FormsModule, Button, Select, BadgeModule],
+  imports: [RouterLink, FormsModule, Button, Select, BadgeModule, TranslocoPipe],
   templateUrl: './studio.html',
   styles: ``,
 })
 export class Studio {
   private readonly videoService    = inject(VideoService);
   private readonly categoryService = inject(CategoryService);
+  private readonly transloco       = inject(TranslocoService);
 
-  // null = még tölt
+  private readonly activeLang = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
+
   readonly videos = signal<MyVideo[] | null>(null);
   readonly isLoading = computed(() => this.videos() === null);
 
-  readonly visibilityOptions = [...VISIBILITY_OPTIONS];
   readonly categories = signal<Category[]>([]);
-  readonly categoryOptions = computed(() => [
-    { value: null, label: 'Nincs megadva' },
-    ...this.categories().map(c => ({ value: c.id, label: c.title })),
-  ]);
 
-  // Inline szerkesztés állapota
+  readonly visibilityOptions = computed(() => {
+    void this.activeLang();
+    return VISIBILITY_OPTIONS.map(o => ({
+      value: o.value,
+      icon: o.icon,
+      label: this.transloco.translate(`visibility.${o.translationKey}.label`),
+    }));
+  });
+
+  readonly categoryOptions = computed(() => {
+    void this.activeLang();
+    return [
+      { value: null, label: this.transloco.translate('studio.categoryNone') },
+      ...this.categories().map(c => ({ value: c.id, label: c.title })),
+    ];
+  });
+
   readonly editingId       = signal<string | null>(null);
   readonly editTitle       = signal('');
   readonly editDescription = signal('');
@@ -52,14 +69,15 @@ export class Studio {
   readonly tagBadgeStyle = { padding: '0.35rem 1rem' };
 
   readonly stats = computed<Stat[]>(() => {
+    void this.activeLang();
     const list = this.videos() ?? [];
     const published = list.filter(
       v => v.statusId === ProcessingStatus.Completed && v.visibilityId === Visibility.Public,
     ).length;
     return [
-      { label: 'Total videos', value: list.length, icon: 'pi-video' },
-      { label: 'Published',    value: published,   icon: 'pi-globe' },
-      { label: 'Drafts',       value: list.length - published, icon: 'pi-file-edit' },
+      { label: this.transloco.translate('studio.stats.total'),     value: list.length,             icon: 'pi-video' },
+      { label: this.transloco.translate('studio.stats.published'), value: published,               icon: 'pi-globe' },
+      { label: this.transloco.translate('studio.stats.drafts'),    value: list.length - published, icon: 'pi-file-edit' },
     ];
   });
 
@@ -77,10 +95,6 @@ export class Studio {
     const thumbs = v.media.thumbnails;
     if (!thumbs?.length) return null;
     return thumbs.reduce((best, t) => (t.width > best.width ? t : best)).url;
-  }
-
-  visibility(v: MyVideo) {
-    return visibilityOption(v.visibilityId);
   }
 
   isCompleted(v: MyVideo): boolean {
@@ -143,8 +157,6 @@ export class Studio {
     });
   }
 
-  // --- Tag kezelés ---
-
   removeTag(tag: string): void {
     this.editTags.update(tags => tags.filter(t => t !== tag));
   }
@@ -152,7 +164,7 @@ export class Studio {
   onTagKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
     if (event.key === ' ' || event.key === 'Enter') {
       event.preventDefault();
-      this.addTagValue(input); // Space/Enter: hozzáad, input nyitva marad
+      this.addTagValue(input);
     } else if (event.key === 'Escape') {
       input.value = '';
       this.showTagInput.set(false);
@@ -163,7 +175,7 @@ export class Studio {
 
   onTagBlur(input: HTMLInputElement): void {
     this.addTagValue(input);
-    this.showTagInput.set(false); // blur: hozzáad és elrejti az inputot
+    this.showTagInput.set(false);
   }
 
   private addTagValue(input: HTMLInputElement): void {

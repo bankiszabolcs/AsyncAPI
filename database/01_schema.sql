@@ -41,11 +41,11 @@ CREATE TRIGGER trg_processing_statuses_audit
     BEFORE UPDATE ON processing_statuses
     FOR EACH ROW EXECUTE FUNCTION set_audit_fields();
 
-INSERT INTO processing_statuses (id, title, description) VALUES
-    (1, 'Queued',     'Feldolgozásra várakozik'),
-    (2, 'Processing', 'Feldolgozás folyamatban'),
-    (3, 'Completed',  'Feldolgozás sikeresen befejezve'),
-    (4, 'Failed',     'Feldolgozás sikertelen');
+INSERT INTO processing_statuses (id, title, description, create_user_id, modify_user_id, modify_date) VALUES
+    (1, 'Queued',     'Feldolgozásra várakozik',        'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (2, 'Processing', 'Feldolgozás folyamatban',         'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (3, 'Completed',  'Feldolgozás sikeresen befejezve', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (4, 'Failed',     'Feldolgozás sikertelen',          'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now());
 
 -- -----------------------------------------------------------------------------
 
@@ -66,10 +66,10 @@ CREATE TRIGGER trg_visibilities_audit
     BEFORE UPDATE ON visibilities
     FOR EACH ROW EXECUTE FUNCTION set_audit_fields();
 
-INSERT INTO visibilities (id, title, description) VALUES
-    (1, 'Public',   'Mindenki láthatja'),
-    (2, 'Unlisted', 'Csak link alapján érhető el'),
-    (3, 'Private',  'Csak a feltöltő láthatja');
+INSERT INTO visibilities (id, title, description, create_user_id, modify_user_id, modify_date) VALUES
+    (1, 'Public',   'Mindenki láthatja',           'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (2, 'Unlisted', 'Csak link alapján érhető el', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (3, 'Private',  'Csak a feltöltő láthatja',    'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now());
 
 -- -----------------------------------------------------------------------------
 
@@ -90,9 +90,9 @@ CREATE TRIGGER trg_reaction_types_audit
     BEFORE UPDATE ON reaction_types
     FOR EACH ROW EXECUTE FUNCTION set_audit_fields();
 
-INSERT INTO reaction_types (id, title, description) VALUES
-    (1, 'Like',    'Pozitív visszajelzés'),
-    (2, 'Dislike', 'Negatív visszajelzés');
+INSERT INTO reaction_types (id, title, description, create_user_id, modify_user_id, modify_date) VALUES
+    (1, 'Like',    'Pozitív visszajelzés',  'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (2, 'Dislike', 'Negatív visszajelzés', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now());
 
 -- -----------------------------------------------------------------------------
 -- users — felhasználók (egyben "csatornák" is, mint a YouTube-on)
@@ -382,5 +382,5 @@ CREATE INDEX idx_playlist_videos_video_id ON playlist_videos(video_id);
 -- Technical user — feltöltések tulajdonosa auth bevezetéséig
 -- -----------------------------------------------------------------------------
 
-INSERT INTO users (id, username, email, display_name) VALUES
-    ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'system', 'system@asyncapi.internal', 'System');
+INSERT INTO users (id, username, email, display_name, create_user_id, modify_user_id, modify_date) VALUES
+    ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'system', 'system@asyncapi.internal', 'System', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now());

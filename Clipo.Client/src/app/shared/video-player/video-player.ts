@@ -6,12 +6,13 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import Hls from 'hls.js';
 import { parseVtt, SpriteFrame } from './vtt-parser';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 interface QualityLevel { index: number; label: string; }
 
 @Component({
   selector: 'app-video-player',
-  imports: [],
+  imports: [TranslocoPipe],
   templateUrl: './video-player.html',
 })
 export class VideoPlayer implements OnDestroy {

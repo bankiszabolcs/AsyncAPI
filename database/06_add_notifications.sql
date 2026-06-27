@@ -19,11 +19,11 @@ CREATE TRIGGER trg_notification_types_audit
     BEFORE UPDATE ON notification_types
     FOR EACH ROW EXECUTE FUNCTION set_audit_fields();
 
-INSERT INTO notification_types (id, title, description) VALUES
-    (1, 'NewVideo',       'Új videó egy feliratkozott csatornán'),
-    (2, 'NewComment',     'Új hozzászólás a videódon'),
-    (3, 'CommentReply',   'Válasz a hozzászólásodra'),
-    (4, 'VideoProcessed', 'Videó feldolgozás befejeződött');
+INSERT INTO notification_types (id, title, description, create_user_id, modify_user_id, modify_date) VALUES
+    (1, 'NewVideo',       'Új videó egy feliratkozott csatornán', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (2, 'NewComment',     'Új hozzászólás a videódon',            'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (3, 'CommentReply',   'Válasz a hozzászólásodra',             'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now()),
+    (4, 'VideoProcessed', 'Videó feldolgozás befejeződött',       'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', now());
 
 -- -----------------------------------------------------------------------------
 

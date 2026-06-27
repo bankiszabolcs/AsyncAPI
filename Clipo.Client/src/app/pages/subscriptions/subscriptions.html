@@ -1,5 +1,5 @@
 <div class="max-w-6xl mx-auto p-6">
-  <h1 class="text-2xl font-bold text-(--p-text-color) mb-6">Subscriptions</h1>
+  <h1 class="text-2xl font-bold text-(--p-text-color) mb-6">{{ 'subscriptions.title' | transloco }}</h1>
 
   <!-- Csatorna lista -->
   @if (channelsResource.isLoading()) {
@@ -14,11 +14,11 @@
   } @else if (channels().length === 0) {
     <div class="flex flex-col items-center justify-center py-24 gap-4 text-center">
       <i class="pi pi-users text-6xl text-(--p-text-muted-color)"></i>
-      <p class="text-(--p-text-color) font-medium text-lg">You haven't subscribed to anyone yet</p>
-      <p class="text-sm text-(--p-text-muted-color)">Find your favorite channels and click the Subscribe button.</p>
+      <p class="text-(--p-text-color) font-medium text-lg">{{ 'subscriptions.notSubscribed' | transloco }}</p>
+      <p class="text-sm text-(--p-text-muted-color)">{{ 'subscriptions.notSubscribedHint' | transloco }}</p>
       <a routerLink="/explore"
          class="mt-2 px-5 py-2.5 rounded-full bg-(--p-primary-color) text-white text-sm font-semibold no-underline hover:opacity-90 transition-opacity">
-        Explore
+        {{ 'subscriptions.explore' | transloco }}
       </a>
     </div>
   } @else {
@@ -41,7 +41,7 @@
             }
           </div>
           <span class="text-xs text-(--p-text-color) font-medium max-w-20 truncate">{{ ch.displayName }}</span>
-          <span class="text-xs text-(--p-text-muted-color)">{{ ch.subscriberCount | viewCount }} subscribers</span>
+          <span class="text-xs text-(--p-text-muted-color)">{{ ch.subscriberCount | viewCount }} {{ 'subscriptions.subscribers' | transloco }}</span>
         </button>
       }
     </div>
@@ -50,11 +50,11 @@
     <div class="mt-6">
       @if (selectedChannelId()) {
         <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider mb-4">
-          Videos
+          {{ 'subscriptions.videos' | transloco }}
         </h2>
       } @else {
         <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider mb-4">
-          Select a channel to view its videos
+          {{ 'subscriptions.selectChannel' | transloco }}
         </h2>
       }
 
@@ -73,7 +73,7 @@
       } @else if (selectedChannelId() && videos().length === 0) {
         <div class="flex flex-col items-center justify-center py-16 gap-3 text-center">
           <i class="pi pi-video text-4xl text-(--p-text-muted-color)"></i>
-          <p class="text-(--p-text-muted-color) text-sm">This channel has no public videos yet.</p>
+          <p class="text-(--p-text-muted-color) text-sm">{{ 'subscriptions.noPublicVideos' | transloco }}</p>
         </div>
       } @else if (selectedChannelId()) {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

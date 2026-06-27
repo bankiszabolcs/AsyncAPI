@@ -14,8 +14,8 @@
 } @else if (videos().length === 0) {
   <div class="flex flex-col items-center justify-center text-center gap-3 py-20">
     <i class="pi pi-heart text-5xl text-(--p-text-muted-color)"></i>
-    <p class="text-(--p-text-color) font-medium">No saved videos yet</p>
-    <p class="text-sm text-(--p-text-muted-color)">Click the heart icon to save videos.</p>
+    <p class="text-(--p-text-color) font-medium">{{ 'library.noSaved' | transloco }}</p>
+    <p class="text-sm text-(--p-text-muted-color)">{{ 'library.noSavedHint' | transloco }}</p>
   </div>
 
 } @else {

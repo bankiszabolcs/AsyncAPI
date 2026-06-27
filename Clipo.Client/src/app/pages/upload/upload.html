@@ -7,14 +7,14 @@
     <div class="w-10 h-10 rounded-xl bg-(--p-primary-color)/15 flex items-center justify-center">
       <i class="pi pi-cloud-upload text-(--p-primary-color)"></i>
     </div>
-    <h1 class="text-xl font-semibold text-(--p-text-color)">Upload a video</h1>
+    <h1 class="text-xl font-semibold text-(--p-text-color)">{{ 'upload.title' | transloco }}</h1>
   </div>
 
   <!-- Tárhely állapot -->
   @if (storageInfo(); as info) {
     <div class="mb-6 p-4 rounded-xl border border-(--p-surface-border) bg-(--p-surface-card)">
       <div class="flex justify-between items-center mb-2">
-        <span class="text-sm text-(--p-text-muted-color)">Storage</span>
+        <span class="text-sm text-(--p-text-muted-color)">{{ 'upload.storage' | transloco }}</span>
         <span class="text-sm font-medium text-(--p-text-color)">
           {{ formatSize(info.usedBytes) }} / {{ formatSize(info.totalBytes) }}
         </span>
@@ -25,7 +25,7 @@
              [class]="info.usedPercent >= 90 ? 'bg-red-500' : info.usedPercent >= 70 ? 'bg-yellow-500' : 'bg-(--p-primary-color)'">
         </div>
       </div>
-      <p class="text-xs text-(--p-text-muted-color) mt-1.5">{{ formatSize(info.freeBytes) }} free</p>
+      <p class="text-xs text-(--p-text-muted-color) mt-1.5">{{ formatSize(info.freeBytes) }} {{ 'upload.free' | transloco }}</p>
     </div>
   }
 
@@ -37,15 +37,15 @@
         <i class="pi pi-check text-4xl text-green-400"></i>
       </div>
       <div>
-        <h2 class="text-lg font-semibold text-(--p-text-color)">Uploaded successfully!</h2>
+        <h2 class="text-lg font-semibold text-(--p-text-color)">{{ 'upload.successTitle' | transloco }}</h2>
         <p class="text-sm text-(--p-text-muted-color) mt-1 max-w-xs mx-auto">
-          The video is being processed, this may take a few minutes.
+          {{ 'upload.successDetail' | transloco }}
         </p>
       </div>
       <div class="flex gap-3">
-        <p-button label="View video" icon="pi pi-play"
+        <p-button [label]="'upload.viewVideo' | transloco" icon="pi pi-play"
                   [rounded]="true" [routerLink]="['/watch', uploadedId()]" />
-        <p-button label="Upload another" icon="pi pi-upload"
+        <p-button [label]="'upload.uploadAnother' | transloco" icon="pi pi-upload"
                   [rounded]="true" [outlined]="true" (onClick)="retry()" />
       </div>
     </div>
@@ -76,7 +76,7 @@
             class="w-11 h-11 rounded-full border border-(--p-surface-border) bg-(--p-surface-section)
                    hover:bg-(--p-surface-hover) transition-colors flex items-center justify-center
                    text-(--p-text-muted-color) hover:text-(--p-text-color) cursor-pointer"
-            title="Choose file"
+            [title]="'upload.chooseFile' | transloco"
             [disabled]="state() === 'uploading'"
             (click)="chooseCallback()"
           >
@@ -90,7 +90,7 @@
             [class]="!files?.length || state() === 'uploading' || state() === 'error'
               ? 'border-(--p-surface-border) bg-(--p-surface-section) text-(--p-text-muted-color)/30 cursor-not-allowed'
               : 'border-green-500/40 bg-green-500/10 text-green-400 hover:bg-green-500/20'"
-            title="Upload"
+            [title]="'upload.uploadBtn' | transloco"
             [disabled]="!files?.length || state() === 'uploading' || state() === 'error'"
             (click)="files?.length && state() !== 'uploading' && state() !== 'error' && uploadCallback()"
           >
@@ -108,7 +108,7 @@
             [class]="!files?.length || state() === 'uploading'
               ? 'border-(--p-surface-border) bg-(--p-surface-section) text-(--p-text-muted-color)/30 cursor-not-allowed'
               : 'border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20'"
-            title="Clear"
+            [title]="'upload.clearBtn' | transloco"
             [disabled]="!files?.length || state() === 'uploading'"
             (click)="files?.length && state() !== 'uploading' && clearCallback()"
           >
@@ -149,13 +149,13 @@
               <div class="flex items-start gap-3 p-3 rounded-xl bg-red-500/8 border border-red-500/20">
                 <i class="pi pi-exclamation-triangle text-red-400 mt-0.5 shrink-0"></i>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-red-400">Upload failed</p>
+                  <p class="text-sm font-medium text-red-400">{{ 'upload.uploadFailed' | transloco }}</p>
                   <p class="text-xs text-red-400/60 mt-0.5">{{ errorMessage() }}</p>
                 </div>
                 <button type="button"
                         class="text-xs text-red-400 border border-red-500/30 rounded-lg px-2 py-1 hover:bg-red-500/10 transition-colors shrink-0 cursor-pointer"
                         (click)="retry()">
-                  Retry
+                  {{ 'upload.retry' | transloco }}
                 </button>
               </div>
 
@@ -200,8 +200,8 @@
             </div>
           </div>
           <div class="text-center">
-            <p class="font-medium text-(--p-text-color)">Drag your video here</p>
-            <p class="text-sm text-(--p-text-muted-color) mt-1">or click above to choose a file</p>
+            <p class="font-medium text-(--p-text-color)">{{ 'upload.dragHere' | transloco }}</p>
+            <p class="text-sm text-(--p-text-muted-color) mt-1">{{ 'upload.orChoose' | transloco }}</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap justify-center">
             @for (fmt of ['MP4','MOV','MKV','AVI','WEBM']; track fmt) {
@@ -211,7 +211,7 @@
               </span>
             }
           </div>
-          <p class="text-xs text-(--p-text-muted-color)/60">maximum 2 GB</p>
+          <p class="text-xs text-(--p-text-muted-color)/60">{{ 'upload.maxSize' | transloco }}</p>
         </div>
       </ng-template>
 

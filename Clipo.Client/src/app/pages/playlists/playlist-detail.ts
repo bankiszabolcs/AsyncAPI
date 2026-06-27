@@ -10,10 +10,11 @@ import { VideoService } from '../../core/services/video.service';
 import { PlaylistDetail as PlaylistDetailData, PlaylistVideoItem } from '../../core/models/playlist.model';
 import { MyVideo } from '../../core/models/my-video.model';
 import { PlaylistFormDialog, PlaylistFormData } from '../../shared/playlist-form-dialog/playlist-form-dialog';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-playlist-detail',
-  imports: [RouterLink, Button, Dialog, Toast, PlaylistFormDialog],
+  imports: [RouterLink, Button, Dialog, Toast, PlaylistFormDialog, TranslocoPipe],
   providers: [PlaylistService, VideoService, MessageService],
   templateUrl: './playlist-detail.html',
 })

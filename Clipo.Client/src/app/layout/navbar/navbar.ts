@@ -8,6 +8,7 @@ import { Drawer } from 'primeng/drawer';
 import { Popover } from 'primeng/popover';
 import { Ripple } from 'primeng/ripple';
 import { MenuItem } from 'primeng/api';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../core/auth/auth.service';
 import { SearchBar } from '../../shared/search-bar/search-bar';
 import { VideoService } from '../../core/services/video.service';
@@ -17,7 +18,7 @@ import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, NgTemplateOutlet, Button, Avatar, Menu, Drawer, Popover, Ripple, SearchBar, TimeAgoPipe],
+  imports: [RouterLink, NgTemplateOutlet, Button, Avatar, Menu, Drawer, Popover, Ripple, SearchBar, TimeAgoPipe, TranslocoPipe],
   providers: [VideoService],
   templateUrl: './navbar.html',
 })
@@ -25,18 +26,17 @@ export class Navbar {
   readonly sidebarToggle = output<void>();
   readonly auth     = inject(AuthService);
   readonly notifSvc = inject(NotificationService);
-
   readonly isMobile          = signal(this.checkMobile());
   readonly drawerVisible     = signal(false);
   readonly searchDrawerVisible = signal(false);
   readonly notifDrawerVisible = signal(false);
 
   readonly userMenuItems: MenuItem[] = [
-    { label: 'A csatornám', icon: 'pi pi-user',     routerLink: '/channel' },
-    { label: 'Stúdió',      icon: 'pi pi-video',    routerLink: '/studio' },
-    { label: 'Beállítások', icon: 'pi pi-cog',      routerLink: '/settings' },
+    { label: 'userMenu.myChannel', icon: 'pi pi-user',     routerLink: '/channel' },
+    { label: 'userMenu.studio',    icon: 'pi pi-video',    routerLink: '/studio' },
+    { label: 'userMenu.settings',  icon: 'pi pi-cog',      routerLink: '/settings' },
     { separator: true },
-    { label: 'Kijelentkezés', icon: 'pi pi-sign-out', command: () => this.logout() },
+    { label: 'userMenu.signOut',   icon: 'pi pi-sign-out', command: () => this.logout() },
   ];
 
   @HostListener('window:resize')

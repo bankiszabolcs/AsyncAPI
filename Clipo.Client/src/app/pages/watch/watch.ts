@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { timer, switchMap, map, catchError, of, takeWhile, tap } from 'rxjs';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 import { ViewCountPipe } from '../../shared/pipes/view-count.pipe';
 import { VideoService } from '../../core/services/video.service';
@@ -17,7 +18,6 @@ import { SavedVideoService } from '../../core/services/saved-video.service';
 import { WatchLaterService } from '../../core/services/watch-later.service';
 import { SubscriptionService } from '../../core/services/subscription.service';
 
-// Amíg a videó feldolgozás alatt van, ennyi időközönként pollozzuk a státuszt
 const POLL_INTERVAL_MS = 4000;
 
 interface PollResult {
@@ -28,7 +28,7 @@ interface PollResult {
 
 @Component({
   selector: 'app-watch',
-  imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments, VideoCard, RouterLink],
+  imports: [VideoPlayer, TimeAgoPipe, ViewCountPipe, Comments, VideoCard, RouterLink, TranslocoPipe],
   providers: [SavedVideoService, WatchLaterService],
   templateUrl: './watch.html',
 })
@@ -39,6 +39,7 @@ export class Watch {
   private readonly savedVideoService  = inject(SavedVideoService);
   private readonly watchLaterService  = inject(WatchLaterService);
   private readonly subscriptionSvc  = inject(SubscriptionService);
+  private readonly transloco        = inject(TranslocoService);
   readonly auth = inject(AuthService);
 
   readonly id = this.route.snapshot.paramMap.get('id')!;
@@ -49,8 +50,11 @@ export class Watch {
 
   readonly relatedVideos = toSignal(this.videoService.getRelated(this.id));;
 
-  // Az utolsó sikeres válasz — átmeneti hálózati hibánál ezt tartjuk meg
   private readonly lastVideo = signal<VideoDetail | null>(null);
+
+  private readonly activeLang = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
 
   private readonly poll = toSignal(
     timer(0, POLL_INTERVAL_MS).pipe(
@@ -63,22 +67,18 @@ export class Watch {
           )
         )
       ),
-      // amíg nincs kész/hiba, folytatjuk (true = az utolsó értéket is kiadja, mielőtt leáll)
       takeWhile(r => this.shouldKeepPolling(r), true)
     ),
     { initialValue: { video: null, error: null, loading: true } as PollResult }
   );
 
-  // 404 → végleg leállunk; bármi más hiba → újrapróbálkozunk a következő tick-en
   private shouldKeepPolling(r: PollResult): boolean {
     if (r.error) return r.error.status !== 404;
     const s = r.video?.status?.toLowerCase();
     return s !== 'completed' && s !== 'failed';
   }
 
-  // Az aktuális videó: friss válasz, vagy az utolsó ismert (hiba esetén)
   readonly video = computed(() => this.poll().video ?? this.lastVideo());
-
   readonly isLoading = computed(() => this.poll().loading && !this.lastVideo());
 
   readonly isNotFound = computed(() => {
@@ -87,7 +87,6 @@ export class Watch {
   });
 
   readonly status = computed(() => this.video()?.status?.toLowerCase() ?? '');
-
   readonly isReady = computed(() => this.status() === 'completed');
 
   readonly isProcessing = computed(() => {
@@ -95,12 +94,12 @@ export class Watch {
     return s === 'queued' || s === 'processing';
   });
 
-  // Magyar címke a státuszhoz
   readonly statusLabel = computed(() => {
+    void this.activeLang();
     switch (this.status()) {
-      case 'queued':     return 'Sorban áll';
-      case 'processing': return 'Feldolgozás folyamatban';
-      case 'failed':     return 'A feldolgozás sikertelen';
+      case 'queued':     return this.transloco.translate('watch.status.queued');
+      case 'processing': return this.transloco.translate('watch.status.processing');
+      case 'failed':     return this.transloco.translate('watch.status.failed');
       default:           return '';
     }
   });
@@ -127,7 +126,6 @@ export class Watch {
     }
   });
 
-  // Reakció számlálók — override-olja a video() értékét, ha a user éppen lájkolt
   private readonly reactionState = signal<{ likeCount: number; dislikeCount: number; userReaction: 1 | 2 | null } | null>(null);
   readonly likeCount    = computed(() => this.reactionState()?.likeCount    ?? this.video()?.likeCount    ?? 0);
   readonly dislikeCount = computed(() => this.reactionState()?.dislikeCount ?? this.video()?.dislikeCount ?? 0);
@@ -212,6 +210,5 @@ export class Watch {
   });
 
   readonly streamUrl = computed(() => this.video()?.media.masterStream ?? '');
-
   readonly vttUrl = computed(() => this.video()?.media.preview ?? '');
 }

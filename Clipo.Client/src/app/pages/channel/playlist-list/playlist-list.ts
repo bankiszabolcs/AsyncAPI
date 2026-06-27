@@ -7,10 +7,11 @@ import { MessageService } from 'primeng/api';
 import { PlaylistService } from '../../../core/services/playlist.service';
 import { Playlist } from '../../../core/models/playlist.model';
 import { PlaylistFormDialog, PlaylistFormData } from '../../../shared/playlist-form-dialog/playlist-form-dialog';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-playlist-list',
-  imports: [Dialog, Toast, PlaylistFormDialog],
+  imports: [Dialog, Toast, PlaylistFormDialog, TranslocoPipe],
   providers: [PlaylistService, MessageService],
   templateUrl: './playlist-list.html',
 })

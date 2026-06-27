@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { interval, switchMap, takeWhile } from 'rxjs';
 import { ImageCropperComponent, ImageTransform } from 'ngx-image-cropper';
 import { Button } from 'primeng/button';
@@ -9,19 +9,35 @@ import { InputText } from 'primeng/inputtext';
 import { Dialog } from 'primeng/dialog';
 import { Slider } from 'primeng/slider';
 import { AuthService, UserProfile } from '../../../core/auth/auth.service';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 
 type AvatarState = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
 type SaveState   = 'idle' | 'saving'    | 'saved'      | 'error';
 
 @Component({
   selector: 'app-profile',
-  imports: [FormsModule, ImageCropperComponent, Button, InputText, Dialog, Slider],
+  imports: [FormsModule, ImageCropperComponent, Button, InputText, Dialog, Slider, TranslocoPipe],
   templateUrl: './profile.html',
 })
 export class Profile implements OnInit {
   private readonly http       = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly transloco  = inject(TranslocoService);
   readonly auth               = inject(AuthService);
+
+  readonly activeLang = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
+
+  readonly langOptions = [
+    { label: 'English', value: 'en', flag: '🇬🇧' },
+    { label: 'Magyar',  value: 'hu', flag: '🇭🇺' },
+  ];
+
+  setLang(lang: string): void {
+    this.transloco.setActiveLang(lang);
+    localStorage.setItem('clipo_lang', lang);
+  }
 
   private readonly fileInput  = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
   private readonly cropperRef = viewChild(ImageCropperComponent);

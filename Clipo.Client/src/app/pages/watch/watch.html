@@ -15,15 +15,14 @@
     } @else if (isNotFound()) {
       <div class="w-full aspect-video bg-(--p-surface-card) rounded-xl flex flex-col items-center justify-center gap-3">
         <i class="pi pi-search text-4xl text-(--p-text-muted-color)"></i>
-        <p class="text-(--p-text-color) font-medium">Video not found</p>
-        <p class="text-sm text-(--p-text-muted-color)">The requested video could not be found.</p>
+        <p class="text-(--p-text-color) font-medium">{{ 'watch.notFound' | transloco }}</p>
+        <p class="text-sm text-(--p-text-muted-color)">{{ 'watch.notFoundDetail' | transloco }}</p>
       </div>
 
     } @else if (isProcessing()) {
       <!-- Feldolgozás alatt: thumbnail háttér (ha van) + állapot overlay -->
       <div class="w-full aspect-video bg-(--p-surface-card) rounded-xl relative overflow-hidden flex items-center justify-center">
         @if (thumbnail(); as thumb) {
-          <!-- ha a thumbnail még nem töltődött fel (404), elrejtjük a törött képet -->
           <img [src]="thumb" alt="" (error)="$any($event.target).style.visibility='hidden'"
                class="absolute inset-0 w-full h-full object-cover opacity-70 blur-sm scale-105" />
           <div class="absolute inset-0 bg-black/25"></div>
@@ -31,7 +30,7 @@
         <div class="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
           <i class="pi pi-spin pi-spinner text-4xl text-white"></i>
           <p class="text-white font-medium text-lg">{{ statusLabel() }}</p>
-          <p class="text-sm text-white/60">This may take a few minutes — the page will refresh automatically.</p>
+          <p class="text-sm text-white/60">{{ 'watch.processingNote' | transloco }}</p>
         </div>
       </div>
 
@@ -48,7 +47,7 @@
       <!-- Sikertelen feldolgozás -->
       <div class="w-full aspect-video bg-(--p-surface-card) rounded-xl flex flex-col items-center justify-center gap-3">
         <i class="pi pi-exclamation-triangle text-4xl text-red-400"></i>
-        <p class="text-(--p-text-color) font-medium">{{ statusLabel() || 'Video unavailable' }}</p>
+        <p class="text-(--p-text-color) font-medium">{{ statusLabel() }}</p>
       </div>
     }
 
@@ -80,10 +79,10 @@
                 {{ v.author.name }}
               </a>
               @if (subscriberCount() !== null) {
-                <p class="text-xs text-(--p-text-muted-color)">{{ subscriberCount() | viewCount }} subscribers</p>
+                <p class="text-xs text-(--p-text-muted-color)">{{ subscriberCount() | viewCount }} {{ 'watch.subscribers' | transloco }}</p>
               }
               <p class="text-xs text-(--p-text-muted-color)">
-                {{ v.viewCount | viewCount }} views &middot; {{ v.publishedAt | timeAgo }}
+                {{ v.viewCount | viewCount }} {{ 'videoCard.views' | transloco }} &middot; {{ v.publishedAt | timeAgo }}
               </p>
             </div>
 
@@ -98,7 +97,7 @@
                 [class.text-(--p-text-color)]="isSubscribed()"
               >
                 <i class="pi text-sm" [class.pi-user-plus]="!isSubscribed()" [class.pi-user-minus]="isSubscribed()"></i>
-                <span class="hidden sm:inline">{{ isSubscribed() ? 'Unsubscribe' : 'Subscribe' }}</span>
+                <span class="hidden sm:inline">{{ (isSubscribed() ? 'watch.unsubscribe' : 'watch.subscribe') | transloco }}</span>
               </button>
             }
           </div>
@@ -111,13 +110,13 @@
             (click)="toggleSave()"
             class="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-(--p-surface-card)
                    transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
-            [title]="isSaved() ? 'Remove from saved' : 'Save'"
+            [title]="(isSaved() ? 'watch.removeFromSaved' : 'watch.save') | transloco"
           >
             <i class="pi text-sm transition-colors"
                [class.pi-heart-fill]="isSaved()"
                [class.pi-heart]="!isSaved()"
                [class.text-green-400]="isSaved()"></i>
-            <span class="hidden sm:inline text-sm font-medium">{{ isSaved() ? 'Saved' : 'Save' }}</span>
+            <span class="hidden sm:inline text-sm font-medium">{{ (isSaved() ? 'watch.saved' : 'watch.save') | transloco }}</span>
           </button>
 
           <!-- Megnézendő -->
@@ -125,13 +124,13 @@
             (click)="toggleWatchLater()"
             class="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-(--p-surface-card)
                    transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
-            [title]="isWatchLater() ? 'Remove from watch later' : 'Add to watch later'"
+            [title]="(isWatchLater() ? 'watch.removeFromWatchLater' : 'watch.addToWatchLater') | transloco"
           >
             <i class="pi text-sm transition-colors"
                [class.pi-clock]="!isWatchLater()"
                [class.pi-check-circle]="isWatchLater()"
                [class.text-(--p-primary-color)]="isWatchLater()"></i>
-            <span class="hidden sm:inline text-sm font-medium">{{ isWatchLater() ? 'Watch later ✓' : 'Watch later' }}</span>
+            <span class="hidden sm:inline text-sm font-medium">{{ (isWatchLater() ? 'watch.watchLaterDone' : 'watch.watchLater') | transloco }}</span>
           </button>
 
           <!-- Like / Dislike -->
@@ -162,7 +161,7 @@
           @if (v.description) {
             <p class="whitespace-pre-wrap">{{ v.description }}</p>
           } @else {
-            <p class="italic">No description</p>
+            <p class="italic">{{ 'watch.noDescription' | transloco }}</p>
           }
         </div>
       </div>
@@ -175,7 +174,7 @@
 
   <!-- Jobb oszlop: kapcsolódó videók -->
   <aside class="w-full lg:w-80 shrink-0 space-y-4">
-    <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider">Related videos</h2>
+    <h2 class="text-sm font-semibold text-(--p-text-muted-color) uppercase tracking-wider">{{ 'watch.relatedVideos' | transloco }}</h2>
 
     @if (relatedVideos() === undefined) {
       @for (_ of [1,2,3,4,5]; track $index) {
@@ -189,7 +188,7 @@
         </div>
       }
     } @else if (relatedVideos()!.length === 0) {
-      <p class="text-sm text-(--p-text-muted-color) italic">No related videos</p>
+      <p class="text-sm text-(--p-text-muted-color) italic">{{ 'watch.noRelatedVideos' | transloco }}</p>
     } @else {
       @for (v of relatedVideos()!; track v.id) {
         <app-video-card [video]="v" [compact]="true" />

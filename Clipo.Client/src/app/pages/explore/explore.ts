@@ -5,13 +5,14 @@ import { CategoryService } from '../../core/services/category.service';
 import { VideoService } from '../../core/services/video.service';
 import { VideoCard } from '../../shared/video-card/video-card';
 import { Category } from '../../core/models/category.model';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 const INITIAL_VISIBLE = 4;
 const EXPAND_STEP = 5;
 
 @Component({
   selector: 'app-explore',
-  imports: [VideoCard, Skeleton],
+  imports: [VideoCard, Skeleton, TranslocoPipe],
   templateUrl: './explore.html',
   styles: ``,
 })

@@ -5,10 +5,11 @@ import { SubscriptionService } from '../../core/services/subscription.service';
 import { VideoService } from '../../core/services/video.service';
 import { VideoCard } from '../../shared/video-card/video-card';
 import { ViewCountPipe } from '../../shared/pipes/view-count.pipe';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-subscriptions',
-  imports: [RouterLink, VideoCard, ViewCountPipe],
+  imports: [RouterLink, VideoCard, ViewCountPipe, TranslocoPipe],
   templateUrl: './subscriptions.html',
 })
 export class Subscriptions {

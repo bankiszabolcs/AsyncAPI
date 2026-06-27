@@ -1,10 +1,10 @@
 <div class="p-4">
 
   <div class="flex items-center justify-between mb-4">
-    <h2 class="text-xl font-bold text-(--p-text-color)">History</h2>
+    <h2 class="text-xl font-bold text-(--p-text-color)">{{ 'history.title' | transloco }}</h2>
     @if (videos().length) {
       <p-button
-        label="Clear all"
+        [label]="'history.clearAll' | transloco"
         icon="pi pi-trash"
         severity="secondary"
         [text]="true"
@@ -17,7 +17,7 @@
   @if (!videos().length) {
     <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
       <i class="pi pi-history text-4xl"></i>
-      <p>No videos watched yet.</p>
+      <p>{{ 'history.empty' | transloco }}</p>
     </div>
   } @else {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -1,12 +1,13 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { PlaylistService } from '../../../core/services/playlist.service';
 import { Playlist } from '../../../core/models/playlist.model';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-library-playlists',
-  imports: [RouterLink],
+  imports: [TranslocoPipe],
   providers: [PlaylistService],
   templateUrl: './library-playlists.html',
 })

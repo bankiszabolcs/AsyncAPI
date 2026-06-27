@@ -7,10 +7,11 @@ import { Skeleton } from 'primeng/skeleton';
 import { VideoService } from '../../core/services/video.service';
 import { VideoCard } from '../../shared/video-card/video-card';
 import { Video } from '../../core/models/video.model';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-search',
-  imports: [DataView, VideoCard, Skeleton],
+  imports: [DataView, VideoCard, Skeleton, TranslocoPipe],
   templateUrl: './search.html',
 })
 export class Search {

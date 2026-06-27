@@ -5,6 +5,7 @@ import { FileUpload, FileUploadHandlerEvent, FileSelectEvent } from 'primeng/fil
 import { Button } from 'primeng/button';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { environment } from '../../../environments/environment';
 import { VideoService, StorageInfo } from '../../core/services/video.service';
 
@@ -12,7 +13,7 @@ type UploadState = 'idle' | 'uploading' | 'success' | 'error';
 
 @Component({
   selector: 'app-upload',
-  imports: [FileUpload, Button, Toast, RouterLink],
+  imports: [FileUpload, Button, Toast, RouterLink, TranslocoPipe],
   providers: [MessageService, VideoService],
   templateUrl: './upload.html',
 })
@@ -20,6 +21,7 @@ export class Upload implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly messageService = inject(MessageService);
   private readonly videoService = inject(VideoService);
+  private readonly transloco = inject(TranslocoService);
 
   readonly state = signal<UploadState>('idle');
   readonly progress = signal(0);
@@ -45,7 +47,10 @@ export class Upload implements OnInit {
     if (file && info && file.size > info.freeBytes) {
       this.state.set('error');
       this.errorMessage.set(
-        `Nincs elegendő tárhely. Szükséges: ${this.formatSize(file.size)}, elérhető: ${this.formatSize(info.freeBytes)}`
+        this.transloco.translate('upload.storageError', {
+          required: this.formatSize(file.size),
+          available: this.formatSize(info.freeBytes),
+        })
       );
     }
   }
@@ -86,9 +91,13 @@ export class Upload implements OnInit {
       },
       error: err => {
         this.state.set('error');
-        const msg = err.error ?? 'Ismeretlen hiba történt.';
+        const msg = err.error ?? 'Unknown error.';
         this.errorMessage.set(typeof msg === 'string' ? msg : JSON.stringify(msg));
-        this.messageService.add({ severity: 'error', summary: 'Hiba', detail: this.errorMessage() ?? '' });
+        this.messageService.add({
+          severity: 'error',
+          summary: this.transloco.translate('upload.errorSummary'),
+          detail: this.errorMessage() ?? '',
+        });
       },
     });
   }

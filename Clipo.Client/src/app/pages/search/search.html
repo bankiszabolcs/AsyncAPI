@@ -2,7 +2,7 @@
 
   @if (searchQuery()) {
     <h2 class="text-base font-semibold text-(--p-text-muted-color) mb-4">
-      Results: <span class="text-(--p-text-color)">„{{ searchQuery() }}"</span>
+      {{ 'search.results' | transloco }}: <span class="text-(--p-text-color)">„{{ searchQuery() }}"</span>
     </h2>
   }
 
@@ -24,12 +24,12 @@
   } @else if (videosResource.error()) {
     <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
       <i class="pi pi-exclamation-circle text-4xl"></i>
-      <p>Failed to load search results.</p>
+      <p>{{ 'search.loadError' | transloco }}</p>
     </div>
   } @else if (!videosResource.value()?.length) {
     <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
       <i class="pi pi-search text-4xl"></i>
-      <p>No results for: <strong class="text-(--p-text-color)">„{{ searchQuery() }}"</strong></p>
+      <p>{{ 'search.noResults' | transloco }}: <strong class="text-(--p-text-color)">„{{ searchQuery() }}"</strong></p>
     </div>
   } @else {
     <p-dataview [value]="videosResource.value()!" layout="grid">

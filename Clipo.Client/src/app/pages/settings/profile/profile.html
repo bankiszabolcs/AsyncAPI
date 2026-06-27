@@ -3,12 +3,12 @@
 
 <div class="max-w-2xl mx-auto p-6">
 
-  <h1 class="text-2xl font-bold text-(--p-text-color)">Edit profile</h1>
-  <p class="text-sm text-(--p-text-muted-color) mt-1">Set your display name and profile picture.</p>
+  <h1 class="text-2xl font-bold text-(--p-text-color)">{{ 'profile.title' | transloco }}</h1>
+  <p class="text-sm text-(--p-text-muted-color) mt-1">{{ 'profile.subtitle' | transloco }}</p>
 
   <!-- Profilkép -->
   <section class="mt-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Profile picture</h2>
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">{{ 'profile.picture.heading' | transloco }}</h2>
     <div class="flex items-center gap-6">
 
       <!-- Avatar kör -->
@@ -30,41 +30,62 @@
       <!-- Gomb + státusz -->
       <div class="space-y-2">
         <p-button
-          label="Choose image"
+          [label]="'profile.picture.choose' | transloco"
           icon="pi pi-camera"
           severity="secondary"
           [disabled]="avatarState() === 'uploading' || avatarState() === 'processing'"
           (onClick)="openFilePicker()"
         />
         @if (avatarState() === 'uploading') {
-          <p class="text-sm text-(--p-text-muted-color)">Uploading...</p>
+          <p class="text-sm text-(--p-text-muted-color)">{{ 'profile.picture.uploading' | transloco }}</p>
         } @else if (avatarState() === 'processing') {
-          <p class="text-sm text-(--p-text-muted-color)">Processing...</p>
+          <p class="text-sm text-(--p-text-muted-color)">{{ 'profile.picture.processing' | transloco }}</p>
         } @else if (avatarState() === 'done') {
-          <p class="text-sm text-green-500">Profile picture updated!</p>
+          <p class="text-sm text-green-500">{{ 'profile.picture.done' | transloco }}</p>
         } @else if (avatarState() === 'error') {
-          <p class="text-sm text-red-500">An error occurred while uploading.</p>
+          <p class="text-sm text-red-500">{{ 'profile.picture.error' | transloco }}</p>
         } @else {
-          <p class="text-xs text-(--p-text-muted-color)">JPG, PNG vagy GIF — max. 5 MB</p>
+          <p class="text-xs text-(--p-text-muted-color)">{{ 'profile.picture.hint' | transloco }}</p>
         }
       </div>
     </div>
   </section>
 
+  <!-- Nyelv -->
+  <section class="mt-8">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">{{ 'profile.language.heading' | transloco }}</h2>
+    <div class="flex gap-3">
+      @for (opt of langOptions; track opt.value) {
+        <button
+          type="button"
+          (click)="setLang(opt.value)"
+          class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl border text-sm font-medium
+                 transition-all duration-150 cursor-pointer"
+          [class]="activeLang() === opt.value
+            ? 'border-(--p-primary-color) bg-(--p-primary-color)/10 text-(--p-primary-color)'
+            : 'border-(--p-surface-border) bg-(--p-surface-card) text-(--p-text-muted-color) hover:border-(--p-text-muted-color) hover:text-(--p-text-color)'"
+        >
+          <span class="text-lg leading-none">{{ opt.flag }}</span>
+          <span>{{ opt.label }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
   <!-- Megjelenített név -->
   <section class="mt-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">Display name</h2>
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-(--p-text-muted-color) mb-4">{{ 'profile.displayName.heading' | transloco }}</h2>
     <div class="flex gap-3 items-start">
       <input
         pInputText
         class="flex-1"
-        placeholder="Enter a name..."
+        [placeholder]="'profile.displayName.placeholder' | transloco"
         [ngModel]="displayName()"
         (ngModelChange)="displayName.set($event)"
         (keydown.enter)="saveDisplayName()"
       />
       <p-button
-        label="Save"
+        [label]="'profile.displayName.save' | transloco"
         [loading]="saveState() === 'saving'"
         [disabled]="!displayName().trim() || saveState() === 'saving'"
         (onClick)="saveDisplayName()"
@@ -72,9 +93,9 @@
     </div>
     <div class="mt-2 h-5">
       @if (saveState() === 'saved') {
-        <p class="text-sm text-green-500">Saved successfully!</p>
+        <p class="text-sm text-green-500">{{ 'profile.displayName.saved' | transloco }}</p>
       } @else if (saveState() === 'error') {
-        <p class="text-sm text-red-500">An error occurred while saving.</p>
+        <p class="text-sm text-red-500">{{ 'profile.displayName.error' | transloco }}</p>
       }
     </div>
   </section>
@@ -83,7 +104,7 @@
 
 <!-- Cropper dialog -->
 <p-dialog
-  header="Crop profile picture"
+  [header]="'profile.cropDialog.header' | transloco"
   [visible]="cropperVisible()"
   (visibleChange)="cropperVisible.set($event)"
   [modal]="true"
@@ -123,8 +144,8 @@
 
       <!-- Gombok -->
       <div class="flex justify-end gap-2">
-        <p-button label="Cancel" severity="secondary" (onClick)="cancelCrop()" />
-        <p-button label="Done" (onClick)="confirmCrop()" />
+        <p-button [label]="'profile.cropDialog.cancel' | transloco" severity="secondary" (onClick)="cancelCrop()" />
+        <p-button [label]="'profile.cropDialog.done' | transloco" (onClick)="confirmCrop()" />
       </div>
 
     </div>

@@ -9,7 +9,7 @@
       }
     } @else {
 
-      <!-- Mind pill -->
+      <!-- All pill -->
       <button
         type="button"
         (click)="selectCategory(null)"
@@ -18,10 +18,9 @@
           ? 'bg-(--p-primary-color) text-(--p-primary-contrast-color) border-(--p-primary-color)'
           : 'bg-transparent text-(--p-text-color) border-(--p-surface-border) hover:border-(--p-primary-color) hover:text-(--p-primary-color)'"
       >
-        Mind
+        {{ 'explore.all' | transloco }}
       </button>
 
-      <!-- Látható kategóriák -->
       @for (cat of visibleCategories(); track cat.id) {
         <button
           type="button"
@@ -35,7 +34,6 @@
         </button>
       }
 
-      <!-- Több mutató gomb -->
       @if (hasMore()) {
         <button
           type="button"
@@ -70,12 +68,12 @@
   } @else if (videosResource.error()) {
     <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
       <i class="pi pi-exclamation-circle text-4xl"></i>
-      <p>Failed to load videos.</p>
+      <p>{{ 'explore.loadError' | transloco }}</p>
     </div>
   } @else if (!videosResource.value()?.length) {
     <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--p-text-muted-color)">
       <i class="pi pi-video text-4xl"></i>
-      <p>No videos in this category yet.</p>
+      <p>{{ 'explore.empty' | transloco }}</p>
     </div>
   } @else {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

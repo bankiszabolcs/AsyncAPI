@@ -6,10 +6,11 @@ import { SubscriptionService } from '../../core/services/subscription.service';
 import { VideoService } from '../../core/services/video.service';
 import { VideoCard } from '../../shared/video-card/video-card';
 import { ViewCountPipe } from '../../shared/pipes/view-count.pipe';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-public-channel',
-  imports: [VideoCard, ViewCountPipe],
+  imports: [VideoCard, ViewCountPipe, TranslocoPipe],
   providers: [VideoService],
   templateUrl: './public-channel.html',
 })

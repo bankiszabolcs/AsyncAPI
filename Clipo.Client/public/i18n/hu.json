@@ -1,0 +1,258 @@
+{
+  "nav": {
+    "home": "Főoldal",
+    "explore": "Felfedezés",
+    "subscriptions": "Feliratkozások",
+    "library": "Könyvtár",
+    "history": "Előzmények"
+  },
+  "userMenu": {
+    "myChannel": "Csatornám",
+    "studio": "Stúdió",
+    "settings": "Beállítások",
+    "signOut": "Kijelentkezés"
+  },
+  "navbar": {
+    "upload": "Feltöltés",
+    "signIn": "Bejelentkezés",
+    "notifications": "Értesítések",
+    "markAllRead": "Mind olvasott",
+    "noNotifications": "Nincs értesítés",
+    "search": "Keresés"
+  },
+  "explore": {
+    "all": "Mind",
+    "loadError": "Nem sikerült betölteni a videókat.",
+    "empty": "Ebben a kategóriában még nincsenek videók."
+  },
+  "subscriptions": {
+    "title": "Feliratkozások",
+    "subscribers": "feliratkozó",
+    "videos": "Videók",
+    "selectChannel": "Válassz csatornát a videók megtekintéséhez",
+    "noPublicVideos": "Ennek a csatornának még nincsenek nyilvános videói.",
+    "notSubscribed": "Még nem iratkoztál fel senkire",
+    "notSubscribedHint": "Keresd meg a kedvenc csatornáidat, és kattints a Feliratkozás gombra.",
+    "explore": "Felfedezés"
+  },
+  "watch": {
+    "notFound": "A videó nem található",
+    "notFoundDetail": "A kért videó nem található.",
+    "processingNote": "Ez néhány percet vehet igénybe — az oldal automatikusan frissül.",
+    "noDescription": "Nincs leírás",
+    "subscribe": "Feliratkozás",
+    "unsubscribe": "Leiratkozás",
+    "save": "Mentés",
+    "saved": "Mentve",
+    "removeFromSaved": "Eltávolítás a mentettekből",
+    "watchLater": "Megnézendő",
+    "watchLaterDone": "Megnézendő ✓",
+    "removeFromWatchLater": "Eltávolítás a megnézendőkből",
+    "addToWatchLater": "Hozzáadás a megnézendőkhöz",
+    "relatedVideos": "Kapcsolódó videók",
+    "noRelatedVideos": "Nincsenek kapcsolódó videók",
+    "subscribers": "feliratkozó",
+    "status": {
+      "queued": "Sorban áll",
+      "processing": "Feldolgozás folyamatban",
+      "failed": "A feldolgozás sikertelen"
+    }
+  },
+  "videoCard": {
+    "views": "megtekintés",
+    "status": {
+      "queued": "Sorban áll",
+      "processing": "Feldolgozás alatt",
+      "failed": "Sikertelen"
+    }
+  },
+  "upload": {
+    "title": "Videó feltöltése",
+    "storage": "Tárhely",
+    "free": "szabad",
+    "successTitle": "Sikeresen feltöltve!",
+    "successDetail": "A videó feldolgozás alatt áll, ez néhány percet vehet igénybe.",
+    "viewVideo": "Videó megtekintése",
+    "uploadAnother": "Másik feltöltése",
+    "chooseFile": "Fájl kiválasztása",
+    "uploadBtn": "Feltöltés",
+    "clearBtn": "Törlés",
+    "dragHere": "Húzd ide a videót",
+    "orChoose": "vagy kattints fentebb a fájl kiválasztásához",
+    "maxSize": "maximum 2 GB",
+    "uploadFailed": "A feltöltés sikertelen",
+    "retry": "Újrapróbálás",
+    "storageError": "Nincs elegendő tárhely. Szükséges: {{ required }}, elérhető: {{ available }}",
+    "errorSummary": "Hiba"
+  },
+  "studio": {
+    "title": "Stúdió",
+    "subtitle": "Kezeld a tartalmaidat és kövesd a teljesítményt.",
+    "upload": "Feltöltés",
+    "yourVideos": "Videóid",
+    "nothingYet": "Még semmi nincs itt",
+    "nothingHint": "Töltsd fel az első videódat a kezdéshez.",
+    "titlePlaceholder": "Cím",
+    "descriptionPlaceholder": "Nincs leírás",
+    "save": "Mentés",
+    "edit": "Szerkesztés",
+    "categoryNone": "Nincs megadva",
+    "stats": {
+      "total": "Összes videó",
+      "published": "Közzétéve",
+      "drafts": "Vázlat"
+    }
+  },
+  "visibility": {
+    "public": {
+      "label": "Nyilvános",
+      "hint": "Bárki megkeresheti és megnézheti ezt a videót."
+    },
+    "unlisted": {
+      "label": "Nem listázott",
+      "hint": "Aki rendelkezik a linkkel, megnézheti — nem jelenik meg a listákban."
+    },
+    "private": {
+      "label": "Privát",
+      "hint": "Csak te láthatod ezt a videót."
+    }
+  },
+  "settings": {
+    "title": "Beállítások",
+    "subtitle": "Kezeld a fiókodat és a preferenciáidat.",
+    "account": {
+      "title": "Fiók",
+      "profile": { "label": "Profil", "description": "Név, avatar és csatorna adatok" },
+      "privacy": { "label": "Adatvédelem", "description": "Szabályozd, ki láthatja a tevékenységedet" }
+    },
+    "playback": {
+      "title": "Lejátszás",
+      "quality": { "label": "Minőség", "description": "Alapértelmezett videóminőség és adatfelhasználás" },
+      "autoplay": { "label": "Automatikus lejátszás", "description": "A következő videó automatikus lejátszása" }
+    },
+    "notifications": {
+      "title": "Értesítések",
+      "email": { "label": "E-mail", "description": "Frissítések és ajánlások e-mailben" },
+      "push": { "label": "Push", "description": "Tevékenység a követett csatornáktól" }
+    }
+  },
+  "profile": {
+    "title": "Profil szerkesztése",
+    "subtitle": "Állítsd be a megjelenített neved és a profilképed.",
+    "language": {
+      "heading": "Nyelv"
+    },
+    "picture": {
+      "heading": "Profilkép",
+      "choose": "Kép kiválasztása",
+      "uploading": "Feltöltés...",
+      "processing": "Feldolgozás...",
+      "done": "Profilkép frissítve!",
+      "error": "Hiba történt a feltöltés során.",
+      "hint": "JPG, PNG vagy GIF — max. 5 MB"
+    },
+    "displayName": {
+      "heading": "Megjelenített név",
+      "placeholder": "Írd be a neved...",
+      "save": "Mentés",
+      "saved": "Sikeresen mentve!",
+      "error": "Hiba történt a mentés során."
+    },
+    "cropDialog": {
+      "header": "Profilkép kivágása",
+      "cancel": "Mégse",
+      "done": "Kész"
+    }
+  },
+  "comments": {
+    "title": "Hozzászólások",
+    "placeholder": "Írj hozzászólást...",
+    "replyPlaceholder": "Írj választ...",
+    "send": "Küldés",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "reply": "Válasz",
+    "edit": "Szerkesztés",
+    "delete": "Törlés",
+    "areYouSure": "Biztosan törlöd?",
+    "yesDelete": "Igen, törlöm",
+    "noComments": "Még nincs hozzászólás. Legyél az első!",
+    "edited": "(szerkesztve)"
+  },
+  "searchBar": {
+    "placeholder": "Keresés...",
+    "history": "Előzmények",
+    "clear": "Törlés"
+  },
+  "player": {
+    "auto": "Automatikus"
+  },
+  "library": {
+    "title": "Könyvtár",
+    "playlists": "Lejátszási listák",
+    "savedVideos": "Mentett videók",
+    "watchLater": "Megnézendő",
+    "noPlaylists": "Még nincsenek lejátszási listák",
+    "noPlaylistsHint": "Létrehozhatsz egyet a Csatorna oldalon.",
+    "noSaved": "Még nincsenek mentett videók",
+    "noSavedHint": "Kattints a szív ikonra a videók mentéséhez.",
+    "noWatchLater": "Még nincsenek megnézendő videók",
+    "noWatchLaterHint": "Kattints az óra ikonra a videók hozzáadásához."
+  },
+  "channel": {
+    "videos": "Videók",
+    "playlists": "Lejátszási listák",
+    "about": "Névjegy",
+    "noVideos": "Még nincsenek videók",
+    "noVideosHint": "A feltöltött videóid itt jelennek meg.",
+    "uploadFirst": "Videó feltöltése",
+    "noPublicVideos": "Még nincsenek nyilvános videók"
+  },
+  "publicChannel": {
+    "subscribers": "feliratkozó",
+    "subscribe": "Feliratkozás",
+    "unsubscribe": "Leiratkozás",
+    "notFound": "A csatorna nem található"
+  },
+  "history": {
+    "title": "Előzmények",
+    "clearAll": "Összes törlése",
+    "empty": "Még nem néztél meg videókat."
+  },
+  "search": {
+    "results": "Eredmények",
+    "loadError": "Nem sikerült betölteni a keresési eredményeket.",
+    "noResults": "Nincs találat:"
+  },
+  "playlist": {
+    "notFound": "A lejátszási lista nem található",
+    "backToChannel": "Vissza a csatornára",
+    "backToLibrary": "Vissza a könyvtárba",
+    "noVideos": "Még nincsenek videók ebben a listában",
+    "noVideosReadonly": "Nincsenek videók ebben a listában",
+    "addVideo": "Videó hozzáadása",
+    "editPlaylist": "Lista szerkesztése",
+    "deletePlaylist": "Lista törlése",
+    "newPlaylist": "Új lista",
+    "editTitle": "Lista adatainak szerkesztése",
+    "newHint": "Rendezd a videóidat lejátszási listákba",
+    "titleLabel": "Cím",
+    "descriptionLabel": "Leírás",
+    "visibilityLabel": "Láthatóság",
+    "titlePlaceholder": "Lista neve...",
+    "descriptionPlaceholder": "Opcionális leírás...",
+    "cancel": "Mégse",
+    "create": "Létrehozás",
+    "save": "Mentés",
+    "noAvailableVideos": "Nincs elérhető videó a hozzáadáshoz",
+    "deleteConfirm": "Biztosan törlöd ezt a lejátszási listát?",
+    "deleteNote": "A videók nem törlődnek",
+    "deleteIrreversible": "Ez a művelet nem vonható vissza",
+    "delete": "Törlés",
+    "newList": "Új lista",
+    "createFirst": "Hozd létre az első listádat",
+    "noPlaylistsHint": "Hozz létre egyet a videóid rendezéséhez.",
+    "moveUp": "Fel",
+    "moveDown": "Le"
+  }
+}

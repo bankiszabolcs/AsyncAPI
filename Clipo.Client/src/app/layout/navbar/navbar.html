@@ -35,17 +35,18 @@
         [text]="true"
         [rounded]="true"
         severity="secondary"
-        aria-label="Search"
+        [attr.aria-label]="'navbar.search' | transloco"
         (click)="searchDrawerVisible.set(true)"
       />
     }
 
-    @if (auth.isLoggedIn()) {
+
+@if (auth.isLoggedIn()) {
       @if (isMobile()) {
         <button
           type="button"
           routerLink="/upload"
-          aria-label="Upload"
+          [attr.aria-label]="'navbar.upload' | transloco"
           class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer
             bg-transparent border-none hover:bg-(--p-surface-hover) transition-colors"
         >
@@ -54,7 +55,7 @@
       } @else {
         <p-button
           routerLink="/upload"
-          label="Upload"
+          [label]="'navbar.upload' | transloco"
           icon="pi pi-upload"
           [outlined]="true"
           size="small"
@@ -69,11 +70,11 @@
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          aria-label="Notifications"
+          [attr.aria-label]="'navbar.notifications' | transloco"
           (click)="onBellClick(notifPopover, $event)"
         />
         @if (notifSvc.unreadCount() > 0) {
-          <span class="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1
+          <span class="absolute top-0.5 right-0.5 min-w-4.5 h-4.5 px-1
             bg-green-500 text-white text-[10px] font-bold rounded-full
             flex items-center justify-center pointer-events-none leading-none">
             {{ notifSvc.unreadCount() > 99 ? '99+' : notifSvc.unreadCount() }}
@@ -87,7 +88,7 @@
         shape="circle"
         class="cursor-pointer ml-1"
         (click)="onAvatarClick(userMenu, $event)"
-        aria-label="Profil"
+        aria-label="Profile"
       />
     } @else {
       @if (isMobile()) {
@@ -96,12 +97,12 @@
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          aria-label="Sign in"
+          [attr.aria-label]="'navbar.signIn' | transloco"
           (click)="auth.login()"
         />
       } @else {
         <p-button
-          label="Sign in"
+          [label]="'navbar.signIn' | transloco"
           icon="pi pi-sign-in"
           [outlined]="true"
           size="small"
@@ -134,7 +135,7 @@
             text-(--p-text-color) hover:bg-(--p-surface-hover) transition-colors duration-150"
         >
           <i class="pi {{ item.icon }} text-base text-(--p-text-muted-color)"></i>
-          <span class="text-sm">{{ item.label }}</span>
+          <span class="text-sm">{{ item.label | transloco }}</span>
         </a>
       </ng-template>
     </p-menu>
@@ -143,12 +144,12 @@
     <p-popover #notifPopover styleClass="!mt-2">
       <div class="w-96">
         <div class="flex items-center justify-between px-1 pb-3 mb-1 border-b border-(--p-surface-border)">
-          <span class="text-sm font-semibold text-(--p-text-color)">Notifications</span>
+          <span class="text-sm font-semibold text-(--p-text-color)">{{ 'navbar.notifications' | transloco }}</span>
           @if (notifSvc.unreadCount() > 0) {
             <button
               (click)="notifSvc.markAllRead()"
               class="text-xs text-(--p-primary-color) cursor-pointer bg-transparent border-none hover:underline"
-            >Mark all read</button>
+            >{{ 'navbar.markAllRead' | transloco }}</button>
           }
         </div>
         <ng-container [ngTemplateOutlet]="notifList" [ngTemplateOutletContext]="{ popover: notifPopover }" />
@@ -192,7 +193,7 @@
             text-(--p-text-color) hover:bg-(--p-surface-hover) transition-colors duration-150"
         >
           <i class="pi {{ item.icon }} text-xl shrink-0"></i>
-          <span class="text-sm">{{ item.label }}</span>
+          <span class="text-sm">{{ item.label | transloco }}</span>
         </a>
       } @else {
         <button
@@ -204,7 +205,7 @@
             hover:bg-(--p-surface-hover) transition-colors duration-150"
         >
           <i class="pi {{ item.icon }} text-xl shrink-0"></i>
-          <span class="text-sm">{{ item.label }}</span>
+          <span class="text-sm">{{ item.label | transloco }}</span>
         </button>
       }
     }
@@ -220,7 +221,7 @@
   <ng-template #header>
     <div class="flex items-center gap-2.5">
       <i class="pi pi-search text-(--p-text-muted-color)"></i>
-      <span class="text-base font-semibold text-(--p-text-color)">Search</span>
+      <span class="text-base font-semibold text-(--p-text-color)">{{ 'navbar.search' | transloco }}</span>
     </div>
   </ng-template>
   <div class="px-2 pt-1">
@@ -238,13 +239,13 @@
     <div class="flex items-center justify-between w-full">
       <div class="flex items-center gap-2.5">
         <i class="pi pi-bell text-(--p-text-muted-color)"></i>
-        <span class="text-base font-semibold text-(--p-text-color)">Notifications</span>
+        <span class="text-base font-semibold text-(--p-text-color)">{{ 'navbar.notifications' | transloco }}</span>
       </div>
       @if (notifSvc.unreadCount() > 0) {
         <button
           (click)="notifSvc.markAllRead()"
           class="text-xs text-(--p-primary-color) cursor-pointer bg-transparent border-none hover:underline"
-        >Mark all read</button>
+        >{{ 'navbar.markAllRead' | transloco }}</button>
       }
     </div>
   </ng-template>
@@ -266,10 +267,10 @@
   } @else if (!notifSvc.notifications()?.length) {
     <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
       <i class="pi pi-bell text-3xl text-(--p-text-muted-color)"></i>
-      <p class="text-sm text-(--p-text-muted-color)">No notifications</p>
+      <p class="text-sm text-(--p-text-muted-color)">{{ 'navbar.noNotifications' | transloco }}</p>
     </div>
   } @else {
-    <div class="max-h-[420px] overflow-y-auto -mx-2 px-2">
+    <div class="max-h-105 overflow-y-auto -mx-2 px-2">
       @for (n of notifSvc.notifications()!; track n.id) {
         <button
           (click)="onNotifClick(n, popover)"
@@ -305,4 +306,3 @@
     </div>
   }
 </ng-template>
-

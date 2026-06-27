@@ -1,5 +1,6 @@
 import { Component, effect, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../core/auth/auth.service';
 import { CommentService } from '../../core/services/comment.service';
 import { Comment } from '../../core/models/comment.model';
@@ -7,7 +8,7 @@ import { TimeAgoPipe } from '../pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-comments',
-  imports: [TimeAgoPipe, NgTemplateOutlet],
+  imports: [TimeAgoPipe, NgTemplateOutlet, TranslocoPipe],
   templateUrl: './comments.html',
 })
 export class Comments implements OnInit, OnDestroy {

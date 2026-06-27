@@ -12,7 +12,7 @@
       [routerLinkActiveOptions]="{ exact: !!item.exact }"
       (click)="itemClick.emit()"
       pRipple
-      [pTooltip]="collapsed() ? item.label : ''"
+      [pTooltip]="collapsed() ? (item.label | transloco) : ''"
       tooltipPosition="right"
       class="flex items-center gap-4 py-3 my-0.5 mx-2 rounded-xl cursor-pointer
         text-(--p-text-color) no-underline
@@ -22,7 +22,7 @@
     >
       <i class="pi {{ item.icon }} text-xl shrink-0"></i>
       @if (!collapsed()) {
-        <span class="text-sm whitespace-nowrap">{{ item.label }}</span>
+        <span class="text-sm whitespace-nowrap">{{ item.label | transloco }}</span>
       }
     </a>
   }

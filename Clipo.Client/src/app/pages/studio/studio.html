@@ -2,8 +2,8 @@
 
   <div class="flex items-center justify-between gap-4 flex-wrap">
     <div>
-      <h1 class="text-2xl font-bold text-(--p-text-color)">Studio</h1>
-      <p class="text-sm text-(--p-text-muted-color) mt-1">Manage your content and track performance.</p>
+      <h1 class="text-2xl font-bold text-(--p-text-color)">{{ 'studio.title' | transloco }}</h1>
+      <p class="text-sm text-(--p-text-muted-color) mt-1">{{ 'studio.subtitle' | transloco }}</p>
     </div>
     <a
       routerLink="/upload"
@@ -12,7 +12,7 @@
         hover:opacity-90 transition-opacity"
     >
       <i class="pi pi-upload"></i>
-      <span>Upload</span>
+      <span>{{ 'studio.upload' | transloco }}</span>
     </a>
   </div>
 
@@ -30,7 +30,7 @@
   </div>
 
   <!-- Your videos -->
-  <h2 class="text-lg font-semibold text-(--p-text-color) mt-10 mb-4">Your videos</h2>
+  <h2 class="text-lg font-semibold text-(--p-text-color) mt-10 mb-4">{{ 'studio.yourVideos' | transloco }}</h2>
 
   @if (isLoading()) {
     <div class="flex flex-col divide-y divide-(--p-surface-border) rounded-xl bg-(--p-surface-card) overflow-hidden">
@@ -47,8 +47,8 @@
   } @else if (videos()!.length === 0) {
     <div class="flex flex-col items-center justify-center text-center gap-3 py-16 rounded-xl bg-(--p-surface-card)">
       <i class="pi pi-inbox text-5xl text-(--p-text-muted-color)"></i>
-      <p class="text-(--p-text-color) font-medium">Nothing here yet</p>
-      <p class="text-sm text-(--p-text-muted-color)">Upload your first video to get started.</p>
+      <p class="text-(--p-text-color) font-medium">{{ 'studio.nothingYet' | transloco }}</p>
+      <p class="text-sm text-(--p-text-muted-color)">{{ 'studio.nothingHint' | transloco }}</p>
     </div>
   } @else {
     <div class="flex flex-col divide-y divide-(--p-surface-border) rounded-xl bg-(--p-surface-card) overflow-hidden">
@@ -76,7 +76,7 @@
             <input
               type="text"
               maxlength="200"
-              placeholder="Title"
+              [placeholder]="'studio.titlePlaceholder' | transloco"
               [readonly]="editingId() !== v.id"
               class="block w-full bg-transparent p-0 border-0 border-b border-transparent outline-none
                      leading-snug truncate font-medium text-(--p-text-color)
@@ -86,7 +86,7 @@
               (ngModelChange)="editTitle.set($event)"
             />
             <textarea
-              placeholder="No description"
+              [placeholder]="'studio.descriptionPlaceholder' | transloco"
               [readonly]="editingId() !== v.id"
               class="block w-full mt-1 h-8 leading-4 bg-transparent p-0 border-0 outline-none resize-none
                      text-xs text-(--p-text-color) placeholder:text-(--p-text-muted-color) read-only:cursor-default"
@@ -100,12 +100,11 @@
             }
           </div>
 
-          <!-- Tagek — kitölti a fennmaradó helyet a kártya szélességéig -->
+          <!-- Tagek -->
           <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1.5">
             @for (tag of (editingId() === v.id ? editTags() : v.tags); track tag) {
               <span class="inline-flex items-center gap-0.5">
                 <p-badge [value]="tag" [style]="tagBadgeStyle" />
-                <!-- X gomb mindig helyet foglal, nézetben láthatatlan -->
                 <button
                   type="button"
                   (click)="removeTag(tag)"
@@ -152,7 +151,7 @@
           <!-- Láthatóság -->
           <div class="hidden sm:block w-36 shrink-0 text-sm text-(--p-text-muted-color)">
             <p-select
-              [options]="visibilityOptions"
+              [options]="visibilityOptions()"
               optionLabel="label"
               optionValue="value"
               [disabled]="editingId() !== v.id"
@@ -201,7 +200,7 @@
               />
               <p-button
                 icon="pi pi-check"
-                label="Save"
+                [label]="'studio.save' | transloco"
                 size="small"
                 [loading]="saving()"
                 (click)="saveEdit(v)"
@@ -209,7 +208,7 @@
             } @else {
               <p-button
                 icon="pi pi-pencil"
-                label="Edit"
+                [label]="'studio.edit' | transloco"
                 severity="secondary"
                 [text]="true"
                 size="small"

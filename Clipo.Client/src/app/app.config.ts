@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, APP_INITIALIZER } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, APP_INITIALIZER, inject, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -9,9 +9,11 @@ import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
+import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 
 import { routes } from './app.routes';
 import { AuthService } from './core/auth/auth.service';
+import { TranslocoHttpLoader } from './core/i18n/transloco-http.loader';
 
 const ClipoPreset = definePreset(Aura, {
   semantic: {
@@ -38,6 +40,26 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([loadingInterceptor, authInterceptor])),
     provideAnimationsAsync(),
     provideOAuthClient(),
+    provideTransloco({
+      config: {
+        availableLangs: ['en', 'hu'],
+        defaultLang: 'en',
+        fallbackLang: 'en',
+        reRenderOnLangChange: true,
+        prodMode: !isDevMode(),
+      },
+      loader: TranslocoHttpLoader,
+    }),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => () => {
+        const saved = localStorage.getItem('clipo_lang');
+        const browser = navigator.language?.slice(0, 2).toLowerCase();
+        const lang = saved ?? (browser === 'hu' ? 'hu' : 'en');
+        inject(TranslocoService).setActiveLang(lang);
+      },
+      multi: true,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: (auth: AuthService) => () => auth.init(),

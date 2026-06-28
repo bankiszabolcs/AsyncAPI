@@ -135,15 +135,13 @@
 
           <!-- Megosztás -->
           <button
-            (click)="share()"
+            (click)="shareVisible.set(true)"
             class="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-(--p-surface-card)
                    transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
             [title]="'watch.share' | transloco"
           >
-            <i class="pi text-sm" [class.pi-link]="shareCopied()" [class.pi-share-alt]="!shareCopied()"></i>
-            <span class="hidden sm:inline text-sm font-medium">
-              {{ (shareCopied() ? 'watch.linkCopied' : 'watch.share') | transloco }}
-            </span>
+            <i class="pi pi-share-alt text-sm"></i>
+            <span class="hidden sm:inline text-sm font-medium">{{ 'watch.share' | transloco }}</span>
           </button>
 
           <!-- Like / Dislike -->
@@ -210,3 +208,71 @@
   </aside>
 
 </div>
+
+<!-- Megosztás dialóg -->
+<p-dialog
+  [(visible)]="shareVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [header]="'watch.share' | transloco"
+  [style]="{ width: '26rem', maxWidth: '95vw' }"
+  appendTo="body"
+>
+  <!-- Platform ikonok -->
+  <div class="flex justify-center gap-1 py-3">
+    @for (p of sharePlatforms; track p.id) {
+      <button
+        type="button"
+        (click)="shareOn(p.id)"
+        class="flex flex-col items-center gap-2.5 px-3 py-3 rounded-2xl cursor-pointer group
+               transition-colors hover:bg-(--p-surface-hover) min-w-0"
+      >
+        <div class="w-12 h-12 shrink-0 transition-transform duration-150 group-hover:scale-110">
+          @if (p.id === 'facebook') {
+            <!-- Facebook: a path már tartalmazza a kék kört -->
+            <svg viewBox="0 0 24 24" class="w-full h-full" aria-hidden="true">
+              <path [attr.d]="p.path" [attr.fill]="p.color" />
+            </svg>
+          } @else {
+            <!-- Többi: színes kör + fehér ikon -->
+            <div class="w-full h-full rounded-full flex items-center justify-center shadow-sm"
+                 [style.background-color]="p.color">
+              <svg viewBox="0 0 24 24" class="w-6 h-6" fill="white" aria-hidden="true">
+                <path [attr.d]="p.path" />
+              </svg>
+            </div>
+          }
+        </div>
+        <span class="text-xs text-(--p-text-muted-color) group-hover:text-(--p-text-color)
+                     transition-colors text-center leading-tight whitespace-nowrap">
+          {{ p.label }}
+        </span>
+      </button>
+    }
+  </div>
+
+  <p-divider class="my-0" />
+
+  <!-- Link másolása -->
+  <div class="flex items-stretch rounded-xl overflow-hidden border border-(--p-surface-border) bg-(--p-surface-ground)">
+    <div class="flex-1 min-w-0 px-3 py-3 text-sm text-(--p-text-muted-color) truncate font-mono select-all cursor-text">
+      {{ currentUrl }}
+    </div>
+    <button
+      type="button"
+      (click)="copyLink()"
+      class="shrink-0 flex items-center gap-2 px-4 border-l border-(--p-surface-border)
+             bg-(--p-surface-card) hover:bg-(--p-surface-hover) transition-all duration-200 cursor-pointer"
+      [class.text-(--p-primary-color)]="copyDone()"
+      [class.text-(--p-text-muted-color)]="!copyDone()"
+    >
+      <i class="pi text-base transition-all duration-200"
+         [class.pi-check]="copyDone()"
+         [class.pi-copy]="!copyDone()"></i>
+      <span class="text-sm font-medium whitespace-nowrap">
+        {{ (copyDone() ? 'watch.shareDialog.copied' : 'watch.shareDialog.copyLink') | transloco }}
+      </span>
+    </button>
+  </div>
+</p-dialog>

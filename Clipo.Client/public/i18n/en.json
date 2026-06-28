@@ -52,7 +52,10 @@
     "relatedVideos": "Related videos",
     "noRelatedVideos": "No related videos",
     "share": "Share",
-    "linkCopied": "Link copied!",
+    "shareDialog": {
+      "copyLink": "Copy link",
+      "copied": "Copied!"
+    },
     "subscribers": "subscribers",
     "status": {
       "queued": "Queued",

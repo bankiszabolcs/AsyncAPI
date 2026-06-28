@@ -52,7 +52,10 @@
     "relatedVideos": "Kapcsolódó videók",
     "noRelatedVideos": "Nincsenek kapcsolódó videók",
     "share": "Megosztás",
-    "linkCopied": "Link másolva!",
+    "shareDialog": {
+      "copyLink": "Link másolása",
+      "copied": "Másolva!"
+    },
     "subscribers": "feliratkozó",
     "status": {
       "queued": "Sorban áll",

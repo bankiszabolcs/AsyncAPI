@@ -1,38 +1,98 @@
-/* ── Design tokens ── */
+/* ══════════════════════════════════════
+   DESIGN TOKENS — dark (default)
+   ══════════════════════════════════════ */
 :root {
   --clipo-bg:           #0a0a0a;
   --clipo-card:         #111111;
   --clipo-card-border:  rgba(255, 255, 255, 0.07);
   --clipo-input-bg:     #0d0d0d;
   --clipo-input-border: rgba(255, 255, 255, 0.1);
+  --clipo-footer-bg:    rgba(255, 255, 255, 0.02);
+  --clipo-sep:          rgba(255, 255, 255, 0.06);
 
   --clipo-text-primary:   #f1f5f9;
   --clipo-text-secondary: #94a3b8;
   --clipo-text-muted:     #475569;
 
-  --clipo-green:        #22c55e;
-  --clipo-green-dark:   #16a34a;
-  --clipo-green-glow:   rgba(34, 197, 94, 0.12);
-  --clipo-green-ring:   rgba(34, 197, 94, 0.2);
+  --clipo-primary:            #22c55e;
+  --clipo-primary-dark:       #16a34a;
+  --clipo-primary-glow:       rgba(34, 197, 94, 0.12);
+  --clipo-primary-ring:       rgba(34, 197, 94, 0.2);
+  --clipo-primary-ambient:    rgba(34, 197, 94, 0.06);
+  --clipo-primary-card-tint:  rgba(34, 197, 94, 0.04);
+  --clipo-primary-btn-shadow: rgba(34, 197, 94, 0.25);
+  --clipo-primary-reg-border:       rgba(34, 197, 94, 0.3);
+  --clipo-primary-reg-border-hover: rgba(34, 197, 94, 0.6);
+  --clipo-primary-reg-bg-hover:     rgba(34, 197, 94, 0.08);
 
-  /* PatternFly overrides */
+  /* PatternFly token overrides */
   --pf-v5-global--BackgroundColor--100:   var(--clipo-card);
   --pf-v5-global--BackgroundColor--200:   var(--clipo-bg);
   --pf-v5-global--Color--100:             var(--clipo-text-primary);
   --pf-v5-global--Color--200:             var(--clipo-text-secondary);
   --pf-v5-global--Color--300:             var(--clipo-text-muted);
-  --pf-v5-global--primary-color--100:     var(--clipo-green);
-  --pf-v5-global--primary-color--200:     var(--clipo-green-dark);
+  --pf-v5-global--primary-color--100:     var(--clipo-primary);
+  --pf-v5-global--primary-color--200:     var(--clipo-primary-dark);
   --pf-v5-global--BorderColor--100:       var(--clipo-card-border);
   --pf-v5-global--FormControl--BackgroundColor: var(--clipo-input-bg);
   --pf-v5-c-login--BackgroundColor:       var(--clipo-bg);
   --pf-v5-c-login__main--BackgroundColor: var(--clipo-card);
-  --pf-v5-c-button--m-primary--BackgroundColor:        var(--clipo-green);
-  --pf-v5-c-button--m-primary--hover--BackgroundColor: var(--clipo-green-dark);
+  --pf-v5-c-button--m-primary--BackgroundColor:        var(--clipo-primary);
+  --pf-v5-c-button--m-primary--hover--BackgroundColor: var(--clipo-primary-dark);
   --pf-v5-c-button--m-primary--Color:    #ffffff;
 }
 
-/* ── Oldal háttér ── */
+/* ══════════════════════════════════════
+   DESIGN TOKENS — light
+   ══════════════════════════════════════ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --clipo-bg:           #f4f4f2;
+    --clipo-card:         #ffffff;
+    --clipo-card-border:  rgba(0, 0, 0, 0.09);
+    --clipo-input-bg:     #fafaf9;
+    --clipo-input-border: rgba(0, 0, 0, 0.12);
+    --clipo-footer-bg:    rgba(0, 0, 0, 0.02);
+    --clipo-sep:          rgba(0, 0, 0, 0.08);
+
+    --clipo-text-primary:   #0f172a;
+    --clipo-text-secondary: #475569;
+    --clipo-text-muted:     #94a3b8;
+
+    --clipo-primary:            #FF8000;
+    --clipo-primary-dark:       #e67300;
+    --clipo-primary-glow:       rgba(255, 128, 0, 0.12);
+    --clipo-primary-ring:       rgba(255, 128, 0, 0.2);
+    --clipo-primary-ambient:    rgba(255, 128, 0, 0.06);
+    --clipo-primary-card-tint:  rgba(255, 128, 0, 0.04);
+    --clipo-primary-btn-shadow: rgba(255, 128, 0, 0.25);
+    --clipo-primary-reg-border:       rgba(255, 128, 0, 0.3);
+    --clipo-primary-reg-border-hover: rgba(255, 128, 0, 0.6);
+    --clipo-primary-reg-bg-hover:     rgba(255, 128, 0, 0.08);
+  }
+
+  /* Kártya árnyék light módban */
+  main.pf-v5-c-login__main {
+    box-shadow:
+      0 0 0 1px var(--clipo-primary-card-tint),
+      0 4px 16px rgba(0, 0, 0, 0.08),
+      0 16px 40px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* Select option háttér */
+  .pf-v5-c-login__main-header-utilities select option {
+    background-color: #ffffff !important;
+  }
+
+  /* Logo narancssárga változata */
+  #kc-header-wrapper::before {
+    background-image: url('../img/logo-light.svg');
+  }
+}
+
+/* ══════════════════════════════════════
+   LAYOUT
+   ══════════════════════════════════════ */
 body#keycloak-bg,
 html.login-pf {
   background-color: var(--clipo-bg) !important;
@@ -40,11 +100,9 @@ html.login-pf {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-/* ── Fő login wrapper ── */
 .pf-v5-c-login {
   background-color: var(--clipo-bg) !important;
-  /* Zöld ambient glow a háttérben */
-  background-image: radial-gradient(ellipse 60% 40% at 50% 60%, rgba(34, 197, 94, 0.06) 0%, transparent 70%) !important;
+  background-image: radial-gradient(ellipse 60% 40% at 50% 60%, var(--clipo-primary-ambient) 0%, transparent 70%) !important;
   min-height: 100vh !important;
   display: grid !important;
   place-items: center !important;
@@ -100,19 +158,17 @@ main.pf-v5-c-login__main {
   border: 1px solid var(--clipo-card-border) !important;
   border-radius: 20px !important;
   box-shadow:
-    0 0 0 1px rgba(34, 197, 94, 0.04),
+    0 0 0 1px var(--clipo-primary-card-tint),
     0 8px 32px rgba(0, 0, 0, 0.6),
     0 32px 64px rgba(0, 0, 0, 0.4) !important;
   width: 100% !important;
   overflow: hidden !important;
 }
 
-/* ── Kártya fejléc ── */
 .pf-v5-c-login__main-header {
   padding: 28px 28px 0 !important;
 }
 
-/* ── Oldal cím ── */
 #kc-page-title {
   color: var(--clipo-text-primary) !important;
   font-size: 1.2rem !important;
@@ -120,12 +176,11 @@ main.pf-v5-c-login__main {
   letter-spacing: -0.2px !important;
 }
 
-/* ── Form body ── */
 .pf-v5-c-login__main-body {
   padding: 24px 28px !important;
 }
 
-/* ── Nyelvválasztó select ── */
+/* ── Nyelvválasztó ── */
 .pf-v5-c-login__main-header-utilities .pf-v5-c-form-control {
   --pf-v5-c-form-control--before--BorderTopWidth:   0 !important;
   --pf-v5-c-form-control--before--BorderRightWidth: 0 !important;
@@ -167,12 +222,11 @@ main.pf-v5-c-login__main {
   padding-right: 10px !important;
 }
 
-/* ── Űrlap csoportok ── */
+/* ── Űrlap ── */
 .pf-v5-c-form__group {
   margin-bottom: 18px !important;
 }
 
-/* ── Label szövegek ── */
 .pf-v5-c-form__label-text {
   color: var(--clipo-text-secondary) !important;
   font-size: 0.8rem !important;
@@ -219,8 +273,8 @@ input#password {
 }
 
 .pf-v5-c-form-control:focus-within {
-  border-color: var(--clipo-green) !important;
-  box-shadow: 0 0 0 3px var(--clipo-green-ring) !important;
+  border-color: var(--clipo-primary) !important;
+  box-shadow: 0 0 0 3px var(--clipo-primary-ring) !important;
 }
 
 /* ── Jelszó input group ── */
@@ -233,8 +287,8 @@ input#password {
 }
 
 .pf-v5-c-input-group:focus-within {
-  border-color: var(--clipo-green) !important;
-  box-shadow: 0 0 0 3px var(--clipo-green-ring) !important;
+  border-color: var(--clipo-primary) !important;
+  box-shadow: 0 0 0 3px var(--clipo-primary-ring) !important;
 }
 
 .pf-v5-c-input-group .pf-v5-c-form-control {
@@ -255,7 +309,7 @@ button.pf-m-control {
   background-color: transparent !important;
   color: var(--clipo-text-muted) !important;
   border: none !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-left: 1px solid var(--clipo-sep) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   padding: 0 14px !important;
@@ -274,14 +328,14 @@ button.pf-m-control:hover {
   background-color: transparent !important;
 }
 
-/* ── Remember me checkbox ── */
+/* ── Checkbox ── */
 .pf-v5-c-check__label {
   color: var(--clipo-text-secondary) !important;
   font-size: 0.875rem !important;
 }
 
 .pf-v5-c-check__input {
-  accent-color: var(--clipo-green);
+  accent-color: var(--clipo-primary);
 }
 
 /* ── Elfelejtett jelszó link ── */
@@ -293,13 +347,13 @@ button.pf-m-control:hover {
 }
 
 .pf-v5-c-helper-text__item-text a:hover {
-  color: var(--clipo-green) !important;
+  color: var(--clipo-primary) !important;
 }
 
 /* ── Bejelentkezés gomb ── */
 button#kc-login,
 button.pf-m-primary {
-  background: linear-gradient(135deg, var(--clipo-green) 0%, var(--clipo-green-dark) 100%) !important;
+  background: linear-gradient(135deg, var(--clipo-primary) 0%, var(--clipo-primary-dark) 100%) !important;
   border: none !important;
   color: #ffffff !important;
   border-radius: 12px !important;
@@ -307,14 +361,14 @@ button.pf-m-primary {
   height: 46px !important;
   font-size: 0.95rem !important;
   letter-spacing: 0.01em !important;
-  box-shadow: 0 2px 12px var(--clipo-green-glow) !important;
+  box-shadow: 0 2px 12px var(--clipo-primary-glow) !important;
   transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease !important;
 }
 
 button#kc-login:hover,
 button.pf-m-primary:hover {
   opacity: 0.9 !important;
-  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.25) !important;
+  box-shadow: 0 4px 20px var(--clipo-primary-btn-shadow) !important;
 }
 
 button#kc-login:active,
@@ -322,28 +376,26 @@ button.pf-m-primary:active {
   transform: translateY(1px) !important;
 }
 
-/* ── Footer sáv (regisztráció) ── */
+/* ── Footer (regisztráció) ── */
 .pf-v5-c-login__main-footer-band {
-  background-color: rgba(255, 255, 255, 0.02) !important;
+  background-color: var(--clipo-footer-bg) !important;
   border-top: 1px solid var(--clipo-card-border) !important;
   padding: 20px 28px !important;
   text-align: center !important;
 }
 
-/* "Új felhasználó?" szöveg */
 #kc-registration span {
   color: var(--clipo-text-muted) !important;
   font-size: 0.875rem !important;
 }
 
-/* Regisztráció gomb */
 #kc-registration a {
   display: inline-block !important;
   margin-left: 8px !important;
   padding: 5px 14px !important;
-  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  border: 1px solid var(--clipo-primary-reg-border) !important;
   border-radius: 8px !important;
-  color: var(--clipo-green) !important;
+  color: var(--clipo-primary) !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
   text-decoration: none !important;
@@ -351,8 +403,8 @@ button.pf-m-primary:active {
 }
 
 #kc-registration a:hover {
-  border-color: rgba(34, 197, 94, 0.6) !important;
-  background-color: rgba(34, 197, 94, 0.08) !important;
+  border-color: var(--clipo-primary-reg-border-hover) !important;
+  background-color: var(--clipo-primary-reg-bg-hover) !important;
 }
 
 /* ── Hibaüzenetek ── */

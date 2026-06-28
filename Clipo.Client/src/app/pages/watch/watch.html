@@ -133,6 +133,19 @@
             <span class="hidden sm:inline text-sm font-medium">{{ (isWatchLater() ? 'watch.watchLaterDone' : 'watch.watchLater') | transloco }}</span>
           </button>
 
+          <!-- Megosztás -->
+          <button
+            (click)="share()"
+            class="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-(--p-surface-card)
+                   transition-colors cursor-pointer hover:bg-(--p-surface-hover)"
+            [title]="'watch.share' | transloco"
+          >
+            <i class="pi text-sm" [class.pi-link]="shareCopied()" [class.pi-share-alt]="!shareCopied()"></i>
+            <span class="hidden sm:inline text-sm font-medium">
+              {{ (shareCopied() ? 'watch.linkCopied' : 'watch.share') | transloco }}
+            </span>
+          </button>
+
           <!-- Like / Dislike -->
           <div class="flex items-center rounded-full overflow-hidden bg-(--p-surface-card)">
             <button

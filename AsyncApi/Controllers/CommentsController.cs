@@ -15,6 +15,7 @@ public sealed class CommentsController(
     CommentRepository commentRepository,
     NotificationService notificationService,
     CommentSseService commentSse,
+    StorageService storageService,
     IConnectionMultiplexer redis) : ControllerBase
 {
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -118,15 +119,22 @@ public sealed class CommentsController(
         return NoContent();
     }
 
-    private static object MapComment(Data.Entities.Comment c, bool includeReplies) => new
+    private object MapComment(Data.Entities.Comment c, bool includeReplies) => new
     {
         id              = c.Id,
         content         = c.Content,
         createdAt       = c.CreateDate,
         updatedAt       = c.ModifyDate != c.CreateDate ? c.ModifyDate : (DateTime?)null,
         parentCommentId = c.ParentCommentId,
-        user            = new { id = c.User.Id, name = c.User.DisplayName ?? c.User.Username },
-        replies         = includeReplies
+        user            = new
+        {
+            id        = c.User.Id,
+            name      = c.User.DisplayName ?? c.User.Username,
+            avatarUrl = c.User.AvatarImage is { Extension: var ext }
+                ? storageService.GetPublicUrl($"{c.User.AvatarImageId}/{c.User.AvatarImageId}_w128{ext}", StorageBucket.Images)
+                : (string?)null,
+        },
+        replies = includeReplies
             ? c.InverseParentComment
                 .Where(r => r.Active)
                 .OrderBy(r => r.CreateDate)

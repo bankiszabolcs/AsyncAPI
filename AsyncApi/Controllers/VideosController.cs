@@ -284,8 +284,11 @@ public sealed class VideosController(
             userReaction,
             author = new
             {
-                id   = video.User.Id,
-                name = video.User.DisplayName ?? video.User.Username
+                id        = video.User.Id,
+                name      = video.User.DisplayName ?? video.User.Username,
+                avatarUrl = video.User.AvatarImage is { Extension: var avatarExt }
+                    ? storageService.GetPublicUrl($"{video.User.AvatarImageId}/{video.User.AvatarImageId}_w128{avatarExt}", StorageBucket.Images)
+                    : (string?)null,
             },
             tags   = video.VideoTags.Select(vt => vt.Tag.Name),
             media = new

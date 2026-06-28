@@ -51,6 +51,8 @@
     "addToWatchLater": "Add to watch later",
     "relatedVideos": "Related videos",
     "noRelatedVideos": "No related videos",
+    "share": "Share",
+    "linkCopied": "Link copied!",
     "subscribers": "subscribers",
     "status": {
       "queued": "Queued",

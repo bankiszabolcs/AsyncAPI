@@ -102,6 +102,7 @@ services:
       - frontend_net
     volumes:
       - ./Clipo.Client/src:/app/src
+      - ./Clipo.Client/public:/app/public
     depends_on:
       - app
 

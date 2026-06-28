@@ -211,4 +211,19 @@ export class Watch {
 
   readonly streamUrl = computed(() => this.video()?.media.masterStream ?? '');
   readonly vttUrl = computed(() => this.video()?.media.preview ?? '');
+
+  readonly shareCopied = signal(false);
+
+  share(): void {
+    const url = window.location.href;
+    const title = this.video()?.title ?? '';
+    if (navigator.share) {
+      navigator.share({ title, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        this.shareCopied.set(true);
+        setTimeout(() => this.shareCopied.set(false), 2000);
+      });
+    }
+  }
 }

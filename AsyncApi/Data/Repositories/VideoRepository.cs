@@ -89,7 +89,7 @@ public class VideoRepository(AsyncApiDbContext db, IConfiguration configuration)
     public async Task<Video?> GetByIdAsync(Guid id)
     {
         return await db.Videos
-            .Include(v => v.User)
+            .Include(v => v.User).ThenInclude(u => u.AvatarImage)
             .Include(v => v.Status)
             .Include(v => v.ThumbnailImage)
             .Include(v => v.VideoTags)

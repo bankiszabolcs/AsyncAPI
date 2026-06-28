@@ -9,9 +9,9 @@ public class CommentRepository(AsyncApiDbContext db)
     public async Task<List<Comment>> GetByVideoIdAsync(Guid videoId)
     {
         return await db.Comments
-            .Include(c => c.User)
+            .Include(c => c.User).ThenInclude(u => u.AvatarImage)
             .Include(c => c.InverseParentComment.Where(r => r.Active))
-                .ThenInclude(r => r.User)
+                .ThenInclude(r => r.User).ThenInclude(u => u.AvatarImage)
             .Where(c => c.VideoId == videoId && c.Active && c.ParentCommentId == null)
             .OrderByDescending(c => c.CreateDate)
             .ToListAsync();
@@ -40,7 +40,7 @@ public class CommentRepository(AsyncApiDbContext db)
             "UPDATE videos SET comment_count = comment_count + 1 WHERE id = {0}", videoId);
 
         return await db.Comments
-            .Include(c => c.User)
+            .Include(c => c.User).ThenInclude(u => u.AvatarImage)
             .FirstAsync(c => c.Id == comment.Id);
     }
 
@@ -48,7 +48,7 @@ public class CommentRepository(AsyncApiDbContext db)
     public async Task<Comment?> UpdateAsync(Guid id, Guid userId, string content)
     {
         var comment = await db.Comments
-            .Include(c => c.User)
+            .Include(c => c.User).ThenInclude(u => u.AvatarImage)
             .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId && c.Active);
 
         if (comment is null) return null;

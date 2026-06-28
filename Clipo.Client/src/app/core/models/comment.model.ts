@@ -1,6 +1,7 @@
 export interface CommentUser {
   id: string;
   name: string;
+  avatarUrl?: string | null;
 }
 
 export interface Comment {

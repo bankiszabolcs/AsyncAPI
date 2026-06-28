@@ -4,9 +4,7 @@
   <!-- Új komment form -->
   @if (auth.isLoggedIn()) {
     <div class="flex gap-3 mb-6">
-      <div class="w-9 h-9 rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0">
-        <i class="pi pi-user text-sm text-(--p-text-muted-color)"></i>
-      </div>
+      <ng-container *ngTemplateOutlet="avatarTpl; context: { url: auth.profile()?.avatarUrl, size: 'md' }" />
       <div class="flex-1">
         <textarea
           class="w-full bg-transparent border-b border-(--p-surface-border) focus:border-(--p-primary-color) outline-none resize-none text-sm text-(--p-text-color) pb-1 transition-colors"
@@ -44,10 +42,8 @@
     <div class="space-y-6">
       @for (comment of comments(); track comment.id) {
         <div>
-          <!-- Komment -->
           <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: comment, isReply: false, rootId: comment.id }"></ng-container>
 
-          <!-- Válaszok + reply form a szál végén -->
           @if (comment.replies.length || replyingToId() === comment.id) {
             <div class="ml-12 mt-3 space-y-4">
               @for (reply of comment.replies; track reply.id) {
@@ -56,9 +52,7 @@
 
               @if (replyingToId() === comment.id) {
                 <div class="flex gap-3">
-                  <div class="w-7 h-7 rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0">
-                    <i class="pi pi-user text-xs text-(--p-text-muted-color)"></i>
-                  </div>
+                  <ng-container *ngTemplateOutlet="avatarTpl; context: { url: auth.profile()?.avatarUrl, size: 'sm' }" />
                   <div class="flex-1">
                     <textarea
                       class="w-full bg-transparent border-b border-(--p-surface-border) focus:border-(--p-primary-color) outline-none resize-none text-sm text-(--p-text-color) pb-1 transition-colors"
@@ -82,16 +76,25 @@
   }
 </div>
 
+<!-- Avatar helper template -->
+<ng-template #avatarTpl let-url="url" let-size="size">
+  <div
+    class="rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0 overflow-hidden"
+    [class.w-9]="size === 'md'" [class.h-9]="size === 'md'"
+    [class.w-7]="size === 'sm'"  [class.h-7]="size === 'sm'"
+  >
+    @if (url) {
+      <img [src]="url" alt="" class="w-full h-full object-cover" />
+    } @else {
+      <i class="pi pi-user text-(--p-text-muted-color)" [class.text-sm]="size === 'md'" [class.text-xs]="size === 'sm'"></i>
+    }
+  </div>
+</ng-template>
+
 <!-- Komment sor template -->
 <ng-template #commentRow let-c let-isReply="isReply" let-rootId="rootId">
   <div [id]="'comment-' + c.id" class="flex gap-3">
-    <div
-      class="rounded-full bg-(--p-surface-card) flex items-center justify-center shrink-0"
-      [class.w-9]="!isReply" [class.h-9]="!isReply"
-      [class.w-7]="isReply"  [class.h-7]="isReply"
-    >
-      <i class="pi pi-user text-(--p-text-muted-color)" [class.text-sm]="!isReply" [class.text-xs]="isReply"></i>
-    </div>
+    <ng-container *ngTemplateOutlet="avatarTpl; context: { url: c.user.avatarUrl, size: isReply ? 'sm' : 'md' }" />
     <div class="flex-1 min-w-0">
       <div class="flex items-baseline gap-2">
         <span class="text-sm font-medium text-(--p-text-color)">{{ c.user.name }}</span>
@@ -101,7 +104,6 @@
         }
       </div>
 
-      <!-- Szerkesztés mód -->
       @if (editingId() === c.id) {
         <div class="mt-1">
           <textarea
@@ -118,7 +120,6 @@
       } @else {
         <p class="text-sm text-(--p-text-color) mt-0.5 whitespace-pre-wrap break-words">{{ c.content }}</p>
         <div class="relative mt-1.5 h-5 overflow-hidden">
-          <!-- Normál gombok: becsúszik balról, kimegy balra törléskor -->
           <div class="absolute inset-0 flex items-center gap-3 transition-all duration-200"
                [class.opacity-0]="deletingId() === c.id"
                [class.-translate-x-3]="deletingId() === c.id"
@@ -131,7 +132,6 @@
               <button (click)="startDelete(c.id)" class="text-xs text-red-400 hover:text-red-500 cursor-pointer transition-colors">{{ 'comments.delete' | transloco }}</button>
             }
           </div>
-          <!-- Törlés megerősítés: bejön jobbról, kimegy jobbra törlés után -->
           <div class="absolute inset-0 flex items-center gap-3 transition-all duration-200"
                [class.opacity-0]="deletingId() !== c.id"
                [class.translate-x-3]="deletingId() !== c.id"

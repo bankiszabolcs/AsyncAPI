@@ -43,6 +43,7 @@ services:
       - Database__ConnectionString=Host=postgres;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
       - Keycloak__Authority=http://keycloak:8180/auth/realms/clipo
       - Keycloak__ValidIssuer=http://${DOMAIN}/auth/realms/clipo
+      - Cors__AllowedOrigin=http://${DOMAIN}
       - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
       - AI__GeminiApiKey=${AI__GeminiApiKey}
     networks:

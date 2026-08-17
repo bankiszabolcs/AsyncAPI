@@ -27,14 +27,14 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - UploadDirectory=/tmp/uploads
       - Storage__Endpoint=minio:9000
-      - Storage__PublicUrl=http://192.168.0.241/storage
+      - Storage__PublicUrl=http://localhost/storage
       - Redis__ConnectionString=redis:6379,password=${REDIS_PASSWORD}
       - Database__ConnectionString=Host=postgres;Database=asyncapi;Username=postgres;Password=postgres
       - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
       # JWKS letöltés: belső Docker hálózaton éri el a Keycloak-ot (/auth prefix-szel)
       - Keycloak__Authority=http://keycloak:8180/auth/realms/clipo
       # JWT iss claim: a publikus URL (nginx forwarded headerei alapján)
-      - Keycloak__ValidIssuer=http://192.168.0.241/auth/realms/clipo
+      - Keycloak__ValidIssuer=http://localhost/auth/realms/clipo
       # Gemini API kulcs — ha üres, a tag generálás ki van kapcsolva
       - AI__GeminiApiKey=${AI__GeminiApiKey}
     networks:
